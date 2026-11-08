@@ -15,7 +15,7 @@
 mod env;
 mod jni_sys;
 
-use core::ffi::{c_char, c_void};
+use core::ffi::c_void;
 use std::cell::RefCell;
 
 use env::{
@@ -30,7 +30,12 @@ use kb_core::MAX_RESULTS;
 
 #[cfg(target_os = "android")]
 extern "C" {
-    fn __android_log_print(priority: i32, tag: *const c_char, format: *const c_char, ...) -> i32;
+    fn __android_log_print(
+        priority: i32,
+        tag: *const core::ffi::c_char,
+        format: *const core::ffi::c_char,
+        ...
+    ) -> i32;
 }
 
 const LOG_ERROR: i32 = 6;

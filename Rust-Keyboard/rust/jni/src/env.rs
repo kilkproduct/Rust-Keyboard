@@ -357,6 +357,16 @@ pub fn get_string(env: JniEnvPtr, string: JString) -> Option<String> {
     }
 }
 
+/// Creates an `int[]` from `values`.
+pub fn new_int_array(env: JniEnvPtr, values: &[JInt]) -> JIntArray {
+    let array = unsafe { f_NewIntArray(table(env))(env, values.len() as JSize) };
+    if array.is_null() {
+        return array;
+    }
+    set_int_array_region(env, array, 0, values);
+    array
+}
+
 /// Appends an object to a list (`ArrayList#add(Object)`).
 pub fn add_object_to_list(
     env: JniEnvPtr,
