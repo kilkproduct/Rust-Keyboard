@@ -76,12 +76,24 @@ jobs:
             echo '```' >> "$GITHUB_STEP_SUMMARY"
           done
 
+      - name: Publish the compiler output
+        if: failure()
+        run: |
+          mkdir -p ci-logs
+          cat "$RUNNER_TEMP/test.log" "$RUNNER_TEMP/jni.log" > ci-logs/rust-core.log 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f ci-logs/rust-core.log
+          git commit -m "CI: rust-core output for ${GITHUB_SHA}" || exit 0
+          git push
+
       - name: Fail when the crate does not build
         if: steps.test.outcome != 'success' || steps.check.outcome != 'success'
         run: exit 1
 
   apk:
     name: Build APK
+    needs: rust-core
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -151,7 +163,7 @@ jobs:
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
           set -o pipefail
-          ./rust/build-android.sh 2>&1 | tee "$RUNNER_TEMP/rust-build.log"
+          sh ./rust/build-android.sh 2>&1 | tee "$RUNNER_TEMP/rust-build.log"
 
       - name: Build the APKs
         id: gradle
@@ -178,6 +190,17 @@ jobs:
             tail -c 60000 "$log" >> "$GITHUB_STEP_SUMMARY" || true
             echo '```' >> "$GITHUB_STEP_SUMMARY"
           done
+
+      - name: Publish the build output
+        if: failure()
+        run: |
+          mkdir -p ci-logs
+          cat "$RUNNER_TEMP/rust-build.log" > ci-logs/apk.log 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f ci-logs/apk.log
+          git commit -m "CI: apk output for ${GITHUB_SHA}" || exit 0
+          git push
 
       - name: Fail when the build failed
         if: steps.rustbuild.outcome != 'success' || steps.gradle.outcome != 'success'
