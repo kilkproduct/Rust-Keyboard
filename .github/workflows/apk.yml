@@ -1,0 +1,187 @@
+name: APK
+
+# Builds the keyboard APK and, for a version tag, publishes it as a GitHub
+# release.
+#
+# Two things about this repository make the steps below look unusual:
+#   * everything lives one level down, in Rust-Keyboard/, which is why every
+#     step runs in that directory;
+#   * the submodules were never committed as gitlinks, so `submodules: recursive`
+#     does nothing and they have to be cloned from Rust-Keyboard/.gitmodules.
+
+on:
+  push:
+    branches: ['arena/250e75f0-rust-keyboard']
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  PROJECT_DIR: Rust-Keyboard
+  # The four-ABI C++ build takes hours on a hosted runner; arm64 covers
+  # practically every phone. Add ABIs here (and to KB_ABIS) if you need them.
+  KB_ABIS: arm64-v8a
+  NDK_VERSION: 28.2.13676358
+  CMAKE_VERSION: 3.22.1
+
+jobs:
+  rust-core:
+    name: Rust core (tests)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ${{ env.PROJECT_DIR }}/rust/target
+          key: cargo-test-${{ hashFiles('Rust-Keyboard/rust/**/Cargo.toml', 'Rust-Keyboard/rust/**/Cargo.lock') }}
+
+      - name: Unit tests
+        working-directory: ${{ env.PROJECT_DIR }}/rust
+        run: cargo test -p kb-core --all-targets
+
+      - name: Check the JNI crate
+        working-directory: ${{ env.PROJECT_DIR }}/rust
+        run: cargo check -p kb-jni
+
+  apk:
+    name: Build APK
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch submodules
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read -r key path; do
+            name="${key#submodule.}"
+            name="${name%.path}"
+            url=$(git config -f .gitmodules --get "submodule.$name.url")
+            if [ -d "$path" ] && [ -n "$(ls -A "$path" 2>/dev/null)" ]; then
+              echo "== $path already present"
+              continue
+            fi
+            echo "== cloning $url -> $path"
+            if ! GIT_LFS_SKIP_SMUDGE=0 git clone --depth 1 --recursive "$url" "$path"; then
+              echo "::warning::could not clone submodule $path from $url"
+              rm -rf "$path"
+            fi
+          done
+          for required in libs/rime-release.aar libs/futo-swipe-release.aar java/assets/layouts translations java/res-large; do
+            if [ ! -e "$required" ]; then
+              echo "::error::missing $required (submodule not fetched)"
+              exit 1
+            fi
+          done
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android NDK and CMake
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER="$(find "$ANDROID_HOME" -name sdkmanager -type f | head -n 1)"
+          fi
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" "ndk;${NDK_VERSION}" "cmake;${CMAKE_VERSION}" "platforms;android-35" "build-tools;35.0.0"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
+
+      - name: Install Rust targets
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk --locked
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ${{ env.PROJECT_DIR }}/rust/target
+          key: cargo-android-${{ hashFiles('Rust-Keyboard/rust/**/Cargo.toml', 'Rust-Keyboard/rust/**/Cargo.lock') }}
+
+      - name: Build the Rust core
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: ./rust/build-android.sh
+
+      - name: Build the APKs
+        working-directory: ${{ env.PROJECT_DIR }}
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+          VERSION_NAME: ${{ github.ref_type == 'tag' && github.ref_name || format('0.1.0-rust.{0}', github.run_number) }}
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon --stacktrace \
+            -PabiFilter="${KB_ABIS}" \
+            -PskipRust \
+            assembleUnstableRelease assembleStableRelease
+
+      - name: Verify the APKs request no network
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          MANIFESTS=$(find build/intermediates/packaged_manifests -name AndroidManifest.xml 2>/dev/null)
+          echo "$MANIFESTS"
+          if echo "$MANIFESTS" | xargs grep -l "android.permission.INTERNET" 2>/dev/null; then
+            echo "::error::an APK requests android.permission.INTERNET"
+            exit 1
+          fi
+          echo "No INTERNET permission in any packaged manifest"
+
+      - name: Collect APKs
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          mkdir -p dist
+          cp build/outputs/apk/unstable/release/*.apk dist/keyboard-unstable-release.apk
+          cp build/outputs/apk/stable/release/*.apk dist/keyboard-stable-release.apk
+          ls -l dist
+
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: keyboard-apk
+          path: ${{ env.PROJECT_DIR }}/dist/*.apk
+          if-no-files-found: error
+
+      - name: Publish release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.PROJECT_DIR }}/dist/*.apk
+          generate_release_notes: true
+          name: ${{ github.ref_name }}
+          body: |
+            Rust-core build of this keyboard fork (${{ github.ref_name }}).
+
+            * Engine: the Rust dictionary/suggestion core
+              (`libkeyboard_core.so`, see `rust/README.md`) with the C++
+              voice-input library alongside it.
+            * ABI: `${{ env.KB_ABIS }}` (64-bit ARM phones). 32-bit ARM and x86
+              are not included in this build.
+            * Signed with the keystore that ships in the repository
+              (`java/shared.keystore`), so it installs over builds signed with
+              the same key. Uninstall first if your existing copy uses a
+              different key.
+            * No network permission is requested at all: see `PRIVACY.md`.
+            * `keyboard-stable-release.apk` has no package suffix;
+              `keyboard-unstable-release.apk` installs as
+              `org.futo.inputmethod.latin.unstable` and can be installed
+              side by side.
