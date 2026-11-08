@@ -180,6 +180,10 @@ impl Dictionary {
         let source = DataSource::open(path, offset, size)?;
         let header = Header::parse(source.as_slice())?;
         let table = header.code_point_table();
+        // In a single file dictionary the size prefixed buffers start right
+        // after the header; treating the header itself as the first buffer size
+        // marks every bundled dictionary as corrupt.
+        let data_offset = header.size;
 
         if header.is_v4() {
             let mut dict = Dictionary {
@@ -196,7 +200,7 @@ impl Dictionary {
                 corrupted: false,
             };
             dict.has_historical_info = dict.header.has_historical_info();
-            if !dict.split_v4_buffers(0) {
+            if !dict.split_v4_buffers(data_offset) {
                 dict.corrupted = true;
             }
             if updatable {
