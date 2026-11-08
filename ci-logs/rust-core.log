@@ -46,7 +46,7 @@
 
 [1m[33mwarning[0m: `kb-core` (lib) generated 5 warnings
 [1m[33mwarning[0m: `kb-core` (lib test) generated 5 warnings (5 duplicates)
-[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 1.14s
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 1.22s
 [1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/kb_core-f781f3eb047d243a)
 
 running 30 tests
@@ -66,7 +66,7 @@ test proximity::tests::distance_is_small_under_the_key ... ok
 test proximity::tests::finds_key_index ... ok
 test proximity::tests::reads_cell_characters ... ok
 test ptrie::tests::reads_multi_char_v4_node ... ok
-test ptrie::tests::reads_single_char_terminal_v4_node ... FAILED
+test ptrie::tests::reads_single_char_terminal_v4_node ... ok
 test ptrie::tests::reads_two_byte_node_array_size ... ok
 test ptrie::tests::reads_v2_terminal_probability ... ok
 test suggest::tests::parses_option_array ... ok
@@ -81,23 +81,14 @@ test user::tests::prefix_search_works ... ok
 test user::tests::repeated_word_gets_stronger ... ok
 test user::tests::roundtrips_through_disk ... ok
 
-failures:
+test result: ok. 30 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
 
----- ptrie::tests::reads_single_char_terminal_v4_node stdout ----
+[1m[92m     Running[0m unittests examples/probe.rs (target/debug/examples/probe-2496700d9f4ef881)
 
-thread 'ptrie::tests::reads_single_char_terminal_v4_node' (1967) panicked at core/src/ptrie.rs:309:9:
-assertion `left == right` failed
-  left: 1792
- right: 7
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+running 0 tests
 
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-failures:
-    ptrie::tests::reads_single_char_terminal_v4_node
-
-test result: FAILED. 29 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
-[1m[91merror[0m: test failed, to rerun pass `-p kb-core --lib`
 [1m[92m    Checking[0m kb-core v0.1.0 (/home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/rust/core)
 [1m[33mwarning[0m[1m: constant `TERMINAL_ADDRESS_SIZE` is never used[0m
   [1m[94m--> [0mcore/src/dict.rs:29:7
@@ -146,6 +137,18 @@ test result: FAILED. 29 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out;
 
 [1m[33mwarning[0m: `kb-core` (lib) generated 5 warnings
 [1m[92m    Checking[0m kb-jni v0.1.0 (/home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/rust/jni)
+[1m[91merror[E0425][0m[1m: cannot find function `new_int_array` in module `env`[0m
+   [1m[94m--> [0mjni/src/lib.rs:273:30
+    [1m[94m|[0m
+[1m[94m273[0m [1m[94m|[0m         let key_array = env::new_int_array(env, &key_code_points);
+    [1m[94m|[0m                              [1m[91m^^^^^^^^^^^^^[0m [1m[91mnot found in `env`[0m
+
+[1m[91merror[E0425][0m[1m: cannot find function `new_int_array` in module `env`[0m
+   [1m[94m--> [0mjni/src/lib.rs:274:32
+    [1m[94m|[0m
+[1m[94m274[0m [1m[94m|[0m         let value_array = env::new_int_array(env, &value_code_points);
+    [1m[94m|[0m                                [1m[91m^^^^^^^^^^^^^[0m [1m[91mnot found in `env`[0m
+
 [1m[33mwarning[0m[1m: unused import: `c_char`[0m
   [1m[94m--> [0mjni/src/lib.rs:18:17
    [1m[94m|[0m
@@ -154,113 +157,6 @@ test result: FAILED. 29 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out;
    [1m[94m|[0m
    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
 
-[1m[91merror[E0061][0m[1m: this function takes 1 argument but 4 arguments were supplied[0m
-   [1m[94m--> [0mjni/src/env.rs:379:9
-    [1m[94m|[0m
-[1m[94m379[0m [1m[94m|[0m         f_NewObjectA(
-    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^[0m
-[1m[94m380[0m [1m[94m|[0m             api,
-[1m[94m381[0m [1m[94m|[0m             class,
-    [1m[94m|[0m             [1m[94m-----[0m [1m[94munexpected argument #2 of type `*mut c_void`[0m
-[1m[94m382[0m [1m[94m|[0m             init,
-    [1m[94m|[0m             [1m[94m----[0m [1m[94munexpected argument #3 of type `*mut c_void`[0m
-[1m[94m383[0m [1m[94m|[0m             core::ptr::null::<c_void>(),
-    [1m[94m|[0m             [1m[94m---------------------------[0m [1m[94munexpected argument #4 of type `*const c_void`[0m
-    [1m[94m|[0m
-[1m[92mnote[0m: function defined here
-   [1m[94m--> [0mjni/src/env.rs:108:4
-    [1m[94m|[0m
-[1m[94m108[0m [1m[94m|[0m fn f_NewObjectA(table: &JNINativeInterface) -> FnNewObjectA {
-    [1m[94m|[0m    [1m[92m^^^^^^^^^^^^[0m
-[1m[96mhelp[0m: remove the extra arguments
-    [1m[94m|[0m
-[1m[94m380[0m [91m- [0m            api[91m,[0m
-[1m[94m381[0m [91m-             class,[0m
-[1m[94m382[0m [91m-             init,[0m
-[1m[94m383[0m [91m-             core::ptr::null::<c_void>()[0m,
-[1m[94m380[0m [92m+ [0m            api,
-    [1m[94m|[0m
-
-[1m[91merror[E0599][0m[1m: no method named `is_null` found for fn pointer `unsafe extern "system" fn(*const JNINativeInterface, _, _, _) -> _` in the current scope[0m
-   [1m[94m--> [0mjni/src/env.rs:386:17
-    [1m[94m|[0m
-[1m[94m386[0m [1m[94m|[0m     if instance.is_null() {
-    [1m[94m|[0m                 [1m[91m^^^^^^^[0m [1m[91mmethod not found in `unsafe extern "system" fn(*const JNINativeInterface, _, _, _) -> _`[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: the full name for the type has been written to '/home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/rust/target/debug/deps/keyboard_core-8518d9f49142f18a.long-type-12415966088188398524.txt'
-    [1m[94m= [0m[1mnote[0m: consider using `--verbose` to print the full type name to the console
-[1m[96mhelp[0m: use parentheses to call this function pointer
-    [1m[94m|[0m
-[1m[94m386[0m [1m[94m| [0m    if instance[92m(/* *const JNINativeInterface */, /* *mut c_void */, /* *mut c_void */, /* *const c_void */)[0m.is_null() {
-    [1m[94m|[0m                [92m++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++[0m
-
-[1m[91merror[E0061][0m[1m: this function takes 1 argument but 4 arguments were supplied[0m
-   [1m[94m--> [0mjni/src/env.rs:393:9
-    [1m[94m|[0m
-[1m[94m393[0m [1m[94m|[0m         f_GetMethodId(
-    [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^[0m
-[1m[94m394[0m [1m[94m|[0m             table(env),
-[1m[94m395[0m [1m[94m|[0m             class,
-    [1m[94m|[0m             [1m[94m-----[0m [1m[94munexpected argument #2 of type `*mut c_void`[0m
-[1m[94m396[0m [1m[94m|[0m             add_name.as_ptr(),
-    [1m[94m|[0m             [1m[94m-----------------[0m [1m[94munexpected argument #3 of type `*const i8`[0m
-[1m[94m397[0m [1m[94m|[0m             add_signature.as_ptr(),
-    [1m[94m|[0m             [1m[94m----------------------[0m [1m[94munexpected argument #4 of type `*const i8`[0m
-    [1m[94m|[0m
-[1m[92mnote[0m: function defined here
-   [1m[94m--> [0mjni/src/env.rs:103:4
-    [1m[94m|[0m
-[1m[94m103[0m [1m[94m|[0m fn f_GetMethodId(table: &JNINativeInterface) -> FnGetMethodId {
-    [1m[94m|[0m    [1m[92m^^^^^^^^^^^^^[0m
-[1m[96mhelp[0m: remove the extra arguments
-    [1m[94m|[0m
-[1m[94m394[0m [91m- [0m            table(env)[91m,[0m
-[1m[94m395[0m [91m-             class,[0m
-[1m[94m396[0m [91m-             add_name.as_ptr(),[0m
-[1m[94m397[0m [91m-             add_signature.as_ptr()[0m,
-[1m[94m394[0m [92m+ [0m            table(env),
-    [1m[94m|[0m
-
-[1m[91merror[E0599][0m[1m: no method named `is_null` found for fn pointer `unsafe extern "system" fn(*const JNINativeInterface, _, _, _) -> _` in the current scope[0m
-   [1m[94m--> [0mjni/src/env.rs:400:12
-    [1m[94m|[0m
-[1m[94m400[0m [1m[94m|[0m     if add.is_null() {
-    [1m[94m|[0m            [1m[91m^^^^^^^[0m [1m[91mmethod not found in `unsafe extern "system" fn(*const JNINativeInterface, _, _, _) -> _`[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: the full name for the type has been written to '/home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/rust/target/debug/deps/keyboard_core-8518d9f49142f18a.long-type-1976208276674176258.txt'
-    [1m[94m= [0m[1mnote[0m: consider using `--verbose` to print the full type name to the console
-[1m[96mhelp[0m: use parentheses to call this function pointer
-    [1m[94m|[0m
-[1m[94m400[0m [1m[94m| [0m    if add[92m(/* *const JNINativeInterface */, /* *mut c_void */, /* *const i8 */, /* *const i8 */)[0m.is_null() {
-    [1m[94m|[0m           [92m++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++[0m
-
-[1m[91merror[E0308][0m[1m: mismatched types[0m
-   [1m[94m--> [0mjni/src/env.rs:404:11
-    [1m[94m|[0m
-[1m[94m404[0m [1m[94m|[0m     Some((instance, add))
-    [1m[94m|[0m           [1m[91m^^^^^^^^[0m [1m[91mexpected `*mut c_void`, found fn pointer[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: expected raw pointer `[1m[35m*mut c_void[0m`
-                found fn pointer `[1m[35munsafe extern "system" fn(*const JNINativeInterface, *mut c_void, *mut c_void, *const c_void) -> *mut c_void[0m`
-[1m[96mhelp[0m: use parentheses to call this function pointer
-    [1m[94m|[0m
-[1m[94m404[0m [1m[94m| [0m    Some((instance[92m(/* *const JNINativeInterface */, /* *mut c_void */, /* *mut c_void */, /* *const c_void */)[0m, add))
-    [1m[94m|[0m                   [92m++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++[0m
-
-[1m[91merror[E0308][0m[1m: mismatched types[0m
-   [1m[94m--> [0mjni/src/env.rs:404:21
-    [1m[94m|[0m
-[1m[94m404[0m [1m[94m|[0m     Some((instance, add))
-    [1m[94m|[0m                     [1m[91m^^^[0m [1m[91mexpected `*mut c_void`, found fn pointer[0m
-    [1m[94m|[0m
-    [1m[94m= [0m[1mnote[0m: expected raw pointer `[1m[35m*mut c_void[0m`
-                found fn pointer `[1m[35munsafe extern "system" fn(*const JNINativeInterface, *mut c_void, *const i8, *const i8) -> *mut c_void[0m`
-[1m[96mhelp[0m: use parentheses to call this function pointer
-    [1m[94m|[0m
-[1m[94m404[0m [1m[94m| [0m    Some((instance, add[92m(/* *const JNINativeInterface */, /* *mut c_void */, /* *const i8 */, /* *const i8 */)[0m))
-    [1m[94m|[0m                        [92m++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++[0m
-
-[1mSome errors have detailed explanations: E0061, E0308, E0599.[0m
-[1mFor more information about an error, try `rustc --explain E0061`.[0m
+[1mFor more information about this error, try `rustc --explain E0425`.[0m
 [1m[33mwarning[0m: `kb-jni` (lib) generated 1 warning
-[1m[91merror[0m: could not compile `kb-jni` (lib) due to 6 previous errors; 1 warning emitted
+[1m[91merror[0m: could not compile `kb-jni` (lib) due to 2 previous errors; 1 warning emitted
