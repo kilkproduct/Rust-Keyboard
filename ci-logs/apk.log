@@ -1,0 +1,262 @@
+warning: Environment variable `ANDROID_NDK_HOME = "/usr/local/lib/android/sdk/ndk/28.2.13676358"` doesn't match `ANDROID_NDK_ROOT = "/usr/local/lib/android/sdk/ndk/27.3.13750724"`
+    Building arm64-v8a (aarch64-linux-android)
+[1m[92m   Compiling[0m kb-core v0.1.0 (/home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/rust/core)
+[1m[33mwarning[0m[1m: constant `TERMINAL_ADDRESS_SIZE` is never used[0m
+  [1m[94m--> [0mcore/src/dict.rs:29:7
+   [1m[94m|[0m
+[1m[94m29[0m [1m[94m|[0m const TERMINAL_ADDRESS_SIZE: usize = 3;
+   [1m[94m|[0m       [1m[33m^^^^^^^^^^^^^^^^^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m[1m: constant `NOT_A_TERMINAL_ADDRESS` is never used[0m
+  [1m[94m--> [0mcore/src/dict.rs:30:7
+   [1m[94m|[0m
+[1m[94m30[0m [1m[94m|[0m const NOT_A_TERMINAL_ADDRESS: u32 = 0;
+   [1m[94m|[0m       [1m[33m^^^^^^^^^^^^^^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: field `file` is never read[0m
+  [1m[94m--> [0mcore/src/mmap.rs:38:5
+   [1m[94m|[0m
+[1m[94m32[0m [1m[94m|[0m pub struct DataSource {
+   [1m[94m|[0m            [1m[94m----------[0m [1m[94mfield in this struct[0m
+[1m[94m...[0m
+[1m[94m38[0m [1m[94m|[0m     file: Option<File>,
+   [1m[94m|[0m     [1m[33m^^^^[0m
+
+[1m[33mwarning[0m[1m: field `most_common_key_height` is never read[0m
+  [1m[94m--> [0mcore/src/proximity.rs:32:5
+   [1m[94m|[0m
+[1m[94m24[0m [1m[94m|[0m pub struct ProximityInfo {
+   [1m[94m|[0m            [1m[94m-------------[0m [1m[94mfield in this struct[0m
+[1m[94m...[0m
+[1m[94m32[0m [1m[94m|[0m     most_common_key_height: i32,
+   [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: fields `proximity` and `proximity_len` are never read[0m
+   [1m[94m--> [0mcore/src/suggest.rs:139:5
+    [1m[94m|[0m
+[1m[94m135[0m [1m[94m|[0m struct InputState {
+    [1m[94m|[0m        [1m[94m----------[0m [1m[94mfields in this struct[0m
+[1m[94m...[0m
+[1m[94m139[0m [1m[94m|[0m     proximity: [i32; MAX_PROXIMITY_CHARS_SIZE],
+    [1m[94m|[0m     [1m[33m^^^^^^^^^[0m
+[1m[94m140[0m [1m[94m|[0m     proximity_len: u8,
+    [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: `InputState` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+[1m[33mwarning[0m: `kb-core` (lib) generated 5 warnings
+[1m[92m   Compiling[0m kb-jni v0.1.0 (/home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/rust/jni)
+[1m[33mwarning[0m[1m: type alias `JFieldId` is never used[0m
+  [1m[94m--> [0mjni/src/env.rs:29:10
+   [1m[94m|[0m
+[1m[94m29[0m [1m[94m|[0m pub type JFieldId = *mut c_void;
+   [1m[94m|[0m          [1m[33m^^^^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m[1m: type alias `FnNewObjectA` is never used[0m
+  [1m[94m--> [0mjni/src/env.rs:69:6
+   [1m[94m|[0m
+[1m[94m69[0m [1m[94m|[0m type FnNewObjectA =
+   [1m[94m|[0m      [1m[33m^^^^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: type alias `FnCallVoidMethod` is never used[0m
+  [1m[94m--> [0mjni/src/env.rs:73:6
+   [1m[94m|[0m
+[1m[94m73[0m [1m[94m|[0m type FnCallVoidMethod = unsafe extern "system" fn(JniEnvPtr, JObject, JMethodId, *const c_void);
+   [1m[94m|[0m      [1m[33m^^^^^^^^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: function `f_NewObjectA` is never used[0m
+   [1m[94m--> [0mjni/src/env.rs:108:4
+    [1m[94m|[0m
+[1m[94m108[0m [1m[94m|[0m fn f_NewObjectA(table: &JNINativeInterface) -> FnNewObjectA {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: function `f_CallVoidMethod` is never used[0m
+   [1m[94m--> [0mjni/src/env.rs:193:4
+    [1m[94m|[0m
+[1m[94m193[0m [1m[94m|[0m fn f_CallVoidMethod(table: &JNINativeInterface) -> FnCallVoidMethod {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: function `register_natives` is never used[0m
+   [1m[94m--> [0mjni/src/env.rs:468:8
+    [1m[94m|[0m
+[1m[94m468[0m [1m[94m|[0m pub fn register_natives(
+    [1m[94m|[0m        [1m[33m^^^^^^^^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: function `call_void` is never used[0m
+   [1m[94m--> [0mjni/src/env.rs:494:8
+    [1m[94m|[0m
+[1m[94m494[0m [1m[94m|[0m pub fn call_void(env: JniEnvPtr, object: JObject, method: JMethodId) {
+    [1m[94m|[0m        [1m[33m^^^^^^^^^[0m
+
+[1m[33mwarning[0m[1m: structure field `DestroyJavaVM` should have a snake case name[0m
+  [1m[94m--> [0mjni/src/env.rs:48:9
+   [1m[94m|[0m
+[1m[94m48[0m [1m[94m|[0m     pub DestroyJavaVM: *mut c_void,
+   [1m[94m|[0m         [1m[33m^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `destroy_java_vm`[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(non_snake_case)]` (part of `#[warn(nonstandard_style)]`) on by default
+
+[1m[33mwarning[0m[1m: structure field `AttachCurrentThread` should have a snake case name[0m
+  [1m[94m--> [0mjni/src/env.rs:49:9
+   [1m[94m|[0m
+[1m[94m49[0m [1m[94m|[0m     pub AttachCurrentThread: *mut c_void,
+   [1m[94m|[0m         [1m[33m^^^^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `attach_current_thread`[0m
+
+[1m[33mwarning[0m[1m: structure field `DetachCurrentThread` should have a snake case name[0m
+  [1m[94m--> [0mjni/src/env.rs:50:9
+   [1m[94m|[0m
+[1m[94m50[0m [1m[94m|[0m     pub DetachCurrentThread: *mut c_void,
+   [1m[94m|[0m         [1m[33m^^^^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `detach_current_thread`[0m
+
+[1m[33mwarning[0m[1m: structure field `GetEnv` should have a snake case name[0m
+  [1m[94m--> [0mjni/src/env.rs:51:9
+   [1m[94m|[0m
+[1m[94m51[0m [1m[94m|[0m     pub GetEnv: *mut c_void,
+   [1m[94m|[0m         [1m[33m^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `get_env`[0m
+
+[1m[33mwarning[0m[1m: structure field `AttachCurrentThreadAsDaemon` should have a snake case name[0m
+  [1m[94m--> [0mjni/src/env.rs:52:9
+   [1m[94m|[0m
+[1m[94m52[0m [1m[94m|[0m     pub AttachCurrentThreadAsDaemon: *mut c_void,
+   [1m[94m|[0m         [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `attach_current_thread_as_daemon`[0m
+
+[1m[33mwarning[0m[1m: function `f_GetFindClass` should have a snake case name[0m
+  [1m[94m--> [0mjni/src/env.rs:98:4
+   [1m[94m|[0m
+[1m[94m98[0m [1m[94m|[0m fn f_GetFindClass(table: &JNINativeInterface) -> FnFindClass {
+   [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_get_find_class`[0m
+
+[1m[33mwarning[0m[1m: function `f_GetMethodId` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:103:4
+    [1m[94m|[0m
+[1m[94m103[0m [1m[94m|[0m fn f_GetMethodId(table: &JNINativeInterface) -> FnGetMethodId {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_get_method_id`[0m
+
+[1m[33mwarning[0m[1m: function `f_NewObjectA` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:108:4
+    [1m[94m|[0m
+[1m[94m108[0m [1m[94m|[0m fn f_NewObjectA(table: &JNINativeInterface) -> FnNewObjectA {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_new_object_a`[0m
+
+[1m[33mwarning[0m[1m: function `f_CallBooleanMethod` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:113:4
+    [1m[94m|[0m
+[1m[94m113[0m [1m[94m|[0m fn f_CallBooleanMethod(table: &JNINativeInterface) -> FnCallBooleanMethod {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_call_boolean_method`[0m
+
+[1m[33mwarning[0m[1m: function `f_DeleteLocalRef` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:118:4
+    [1m[94m|[0m
+[1m[94m118[0m [1m[94m|[0m fn f_DeleteLocalRef(table: &JNINativeInterface) -> FnDeleteLocalRef {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_delete_local_ref`[0m
+
+[1m[33mwarning[0m[1m: function `f_GetArrayLength` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:123:4
+    [1m[94m|[0m
+[1m[94m123[0m [1m[94m|[0m fn f_GetArrayLength(table: &JNINativeInterface) -> FnGetArrayLength {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_get_array_length`[0m
+
+[1m[33mwarning[0m[1m: function `f_NewIntArray` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:128:4
+    [1m[94m|[0m
+[1m[94m128[0m [1m[94m|[0m fn f_NewIntArray(table: &JNINativeInterface) -> FnNewIntArray {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_new_int_array`[0m
+
+[1m[33mwarning[0m[1m: function `f_GetIntArrayRegion` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:133:4
+    [1m[94m|[0m
+[1m[94m133[0m [1m[94m|[0m fn f_GetIntArrayRegion(table: &JNINativeInterface) -> FnGetIntArrayRegion {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_get_int_array_region`[0m
+
+[1m[33mwarning[0m[1m: function `f_SetIntArrayRegion` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:138:4
+    [1m[94m|[0m
+[1m[94m138[0m [1m[94m|[0m fn f_SetIntArrayRegion(table: &JNINativeInterface) -> FnSetIntArrayRegion {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_set_int_array_region`[0m
+
+[1m[33mwarning[0m[1m: function `f_SetBooleanArrayRegion` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:143:4
+    [1m[94m|[0m
+[1m[94m143[0m [1m[94m|[0m fn f_SetBooleanArrayRegion(table: &JNINativeInterface) -> FnSetBooleanArrayRegion {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_set_boolean_array_region`[0m
+
+[1m[33mwarning[0m[1m: function `f_GetFloatArrayRegion` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:148:4
+    [1m[94m|[0m
+[1m[94m148[0m [1m[94m|[0m fn f_GetFloatArrayRegion(table: &JNINativeInterface) -> FnGetFloatArrayRegion {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_get_float_array_region`[0m
+
+[1m[33mwarning[0m[1m: function `f_SetFloatArrayRegion` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:153:4
+    [1m[94m|[0m
+[1m[94m153[0m [1m[94m|[0m fn f_SetFloatArrayRegion(table: &JNINativeInterface) -> FnSetFloatArrayRegion {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_set_float_array_region`[0m
+
+[1m[33mwarning[0m[1m: function `f_GetObjectArrayElement` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:158:4
+    [1m[94m|[0m
+[1m[94m158[0m [1m[94m|[0m fn f_GetObjectArrayElement(table: &JNINativeInterface) -> FnGetObjectArrayElement {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_get_object_array_element`[0m
+
+[1m[33mwarning[0m[1m: function `f_GetStringUtfChars` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:163:4
+    [1m[94m|[0m
+[1m[94m163[0m [1m[94m|[0m fn f_GetStringUtfChars(table: &JNINativeInterface) -> FnGetStringUtfChars {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_get_string_utf_chars`[0m
+
+[1m[33mwarning[0m[1m: function `f_ReleaseStringUtfChars` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:168:4
+    [1m[94m|[0m
+[1m[94m168[0m [1m[94m|[0m fn f_ReleaseStringUtfChars(table: &JNINativeInterface) -> FnReleaseStringUtfChars {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_release_string_utf_chars`[0m
+
+[1m[33mwarning[0m[1m: function `f_RegisterNatives` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:173:4
+    [1m[94m|[0m
+[1m[94m173[0m [1m[94m|[0m fn f_RegisterNatives(table: &JNINativeInterface) -> FnRegisterNatives {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_register_natives`[0m
+
+[1m[33mwarning[0m[1m: function `f_ExceptionCheck` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:178:4
+    [1m[94m|[0m
+[1m[94m178[0m [1m[94m|[0m fn f_ExceptionCheck(table: &JNINativeInterface) -> FnExceptionCheck {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_exception_check`[0m
+
+[1m[33mwarning[0m[1m: function `f_ExceptionClear` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:183:4
+    [1m[94m|[0m
+[1m[94m183[0m [1m[94m|[0m fn f_ExceptionClear(table: &JNINativeInterface) -> FnExceptionClear {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_exception_clear`[0m
+
+[1m[33mwarning[0m[1m: function `f_GetVersion` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:188:4
+    [1m[94m|[0m
+[1m[94m188[0m [1m[94m|[0m fn f_GetVersion(table: &JNINativeInterface) -> FnGetVersion {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_get_version`[0m
+
+[1m[33mwarning[0m[1m: function `f_CallVoidMethod` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:193:4
+    [1m[94m|[0m
+[1m[94m193[0m [1m[94m|[0m fn f_CallVoidMethod(table: &JNINativeInterface) -> FnCallVoidMethod {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_call_void_method`[0m
+
+[1m[33mwarning[0m[1m: function `f_NewStringUtf` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:391:4
+    [1m[94m|[0m
+[1m[94m391[0m [1m[94m|[0m fn f_NewStringUtf(api: &JNINativeInterface) -> FnNewStringUtf {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_new_string_utf`[0m
+
+[1m[33mwarning[0m[1m: function `f_GetObjectClass` should have a snake case name[0m
+   [1m[94m--> [0mjni/src/env.rs:396:4
+    [1m[94m|[0m
+[1m[94m396[0m [1m[94m|[0m fn f_GetObjectClass(api: &JNINativeInterface) -> FnGetObjectClass {
+    [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_get_object_class`[0m
+
+[1m[33mwarning[0m: `kb-jni` (lib) generated 34 warnings
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 3.38s
+     Copying libraries to /home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/jniLibs
+rust: libkeyboard_core.so written to java/jniLibs
