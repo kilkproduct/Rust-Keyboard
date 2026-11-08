@@ -205,6 +205,19 @@ android {
         testApplicationId 'org.futo.inputmethod.latin.tests'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = false
+
+        // Optional ABI filter so that CI (and anyone in a hurry) can build a
+        // single-ABI APK without waiting for the C++ engine to compile four
+        // times:
+        //   ./gradlew assembleStableDebug -PabiFilter=arm64-v8a
+        final def abiFilter = project.findProperty('abiFilter')
+        if (abiFilter) {
+            final def abis = abiFilter.toString().split(',').collect { it.trim() }.findAll { it }
+            ndk {
+                abiFilters.addAll(abis)
+            }
+            project.logger.lifecycle("Restricting native ABIs to ${abis}")
+        }
     }
 
     bundle {
