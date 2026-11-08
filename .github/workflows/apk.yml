@@ -227,12 +227,16 @@ jobs:
           cp build/outputs/apk/stable/release/*.apk dist/keyboard-stable-release.apk
           ls -l dist
 
+      # Release assets are published from dist/ below; the workflow artifact is a
+      # convenience copy for branch builds and must never block the release, so a
+      # storage-quota failure here is not fatal.
       - name: Upload APKs
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: keyboard-apk
           path: ${{ env.PROJECT_DIR }}/dist/*.apk
-          if-no-files-found: error
+          if-no-files-found: warn
 
       - name: Publish release
         if: github.ref_type == 'tag'
