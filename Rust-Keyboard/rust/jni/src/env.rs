@@ -39,12 +39,14 @@ pub struct JniNativeMethod {
 }
 
 /// Mirror of `JNIInvokeInterface_` (the JavaVM function table).
+///
+/// Three reserved slots, then DestroyJavaVM; see `rust/tools/jni.h`. A fourth
+/// reserved slot here would resolve `GetEnv` to `AttachCurrentThreadAsDaemon`.
 #[repr(C)]
 pub struct JniInvokeInterface {
     pub reserved0: *mut c_void,
     pub reserved1: *mut c_void,
     pub reserved2: *mut c_void,
-    pub reserved3: *mut c_void,
     pub DestroyJavaVM: *mut c_void,
     pub AttachCurrentThread: *mut c_void,
     pub DetachCurrentThread: *mut c_void,
@@ -53,11 +55,31 @@ pub struct JniInvokeInterface {
 }
 
 
+/// A table of null function pointers, returned instead of dereferencing a null
+/// environment. It is only ever reached if the VM hands us something broken.
+struct EmptyTable(JNINativeInterface);
+
+// The table is immutable and never written to.
+unsafe impl Sync for EmptyTable {}
+
+static EMPTY_TABLE: EmptyTable = EmptyTable(unsafe { core::mem::zeroed() });
+
 #[inline]
 fn table(env: JniEnvPtr) -> &'static JNINativeInterface {
-    // `env` is a pointer to the VM-owned function table, valid for the whole
-    // lifetime of the process.
-    unsafe { &*env }
+    // A JNIEnv points at a structure whose first word is the address of the
+    // function table (`(*env)->FindClass` in C). Reading the table straight out
+    // of `env` makes every slot address an address inside the VM, so the first
+    // call jumps into nothing - which is what crashed the app on launch.
+    unsafe {
+        if env.is_null() {
+            return &EMPTY_TABLE.0;
+        }
+        let functions = *(env as *const *const JNINativeInterface);
+        if functions.is_null() {
+            return &EMPTY_TABLE.0;
+        }
+        &*functions
+    }
 }
 
 // --- functions -----------------------------------------------------------------
@@ -507,7 +529,13 @@ pub fn get_env_from_vm(vm: JavaVmPtr) -> Option<JniEnvPtr> {
     if vm.is_null() {
         return None;
     }
-    let api = unsafe { &*vm };
+    // `vm` is the handle the VM passed to JNI_OnLoad; like a JNIEnv it points at
+    // a word holding the function table address (`(*vm)->GetEnv` in C).
+    let functions = unsafe { *(vm as *const *const JniInvokeInterface) };
+    if functions.is_null() {
+        return None;
+    }
+    let api = unsafe { &*functions };
     let get_env: FnGetEnv = unsafe { core::mem::transmute_copy(&api.GetEnv) };
     let mut env: *mut c_void = core::ptr::null_mut();
     let result = unsafe { get_env(vm, &mut env, JNI_VERSION_1_6) };
