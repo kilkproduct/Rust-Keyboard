@@ -403,6 +403,12 @@ pub fn add_object_to_list(
     unsafe {
         f_CallBooleanMethodA(table(env))(env, list, add_method, args.as_ptr() as *const c_void);
     }
+    // Every call into Java may leave an exception pending; nothing below this
+    // point can do anything useful with one, and a pending exception makes the
+    // next JNI call a debugging error.
+    if exception_check(env) {
+        exception_clear(env);
+    }
 }
 
 

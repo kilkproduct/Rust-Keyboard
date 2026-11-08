@@ -142,6 +142,17 @@ jobs:
             -Djava.library.path="$PWD/target/release" \
             org.futo.inputmethod.latin.EngineSmoke 2>&1 | tee "$RUNNER_TEMP/jni-smoke.log"
 
+      # A native that fails to register only explodes later, on the phone, with
+      # an UnsatisfiedLinkError; the harness declares every method the engine
+      # registers, so any message here is a signature that must be fixed.
+      - name: Fail when a native did not register
+        working-directory: ${{ env.PROJECT_DIR }}/rust
+        run: |
+          if grep -q "cannot register" "$RUNNER_TEMP/jni-smoke.log"; then
+            echo "::error::some natives did not register; see the log above"
+            exit 1
+          fi
+
       - name: Report the smoke test output
         if: always()
         run: |

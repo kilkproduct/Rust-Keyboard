@@ -391,7 +391,17 @@ unsafe extern "system" fn get_max_probability_of_exact_matches_native(
         None => return kb_core::NOT_A_PROBABILITY,
     };
     let code_points = read_int_array(env, word);
-    dictionary.dict.get_max_probability_of_exact_matches(&code_points)
+    let mut best = dictionary.dict.get_max_probability_of_exact_matches(&code_points);
+    // Words the user taught us live in the personalisation log, not in the trie,
+    // so they have to be considered here as well; getProbabilityNative does.
+    if let Some(user_dict) = dictionary.dict.user.as_ref() {
+        if let Some(probability) = user_dict.lookup_any_context(&code_points) {
+            if probability > best {
+                best = probability;
+            }
+        }
+    }
+    best
 }
 
 unsafe extern "system" fn get_ngram_probability_native(

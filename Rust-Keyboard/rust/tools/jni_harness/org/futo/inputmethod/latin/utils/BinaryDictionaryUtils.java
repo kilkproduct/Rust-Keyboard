@@ -9,6 +9,9 @@ public final class BinaryDictionaryUtils {
     private static native boolean createEmptyDictFileNative(String filePath, long dictVersion,
             String locale, String[] attributeKeyStringArray, String[] attributeValueStringArray);
 
+    static native float calcNormalizedScoreNative(int[] before, int[] after, int score);
+    static native int setCurrentTimeForTestNative(int currentTime);
+
     /** Mirrors the real helper, minus the Android-only DictionaryHeader round trip. */
     public static boolean createEmptyDictFile(String filePath, long dictVersion, String locale) {
         final String[] keys = {"dictionary", "version", "locale"};

@@ -43,6 +43,37 @@ public final class BinaryDictionary {
             boolean isNotAWord, boolean isPossiblyOffensive, int timestamp);
 
     static native boolean removeUnigramEntryNative(long dict, int[] word);
+    static native boolean needsToRunGCNative(long dict, boolean mindsBlockByGC);
+    static native boolean flushWithGCNative(long dict, String filePath);
+
+    static native int getNgramProbabilityNative(long dict, int[][] prevWordCodePointArrays,
+            boolean[] isBeginningOfSentenceArray, int[] word);
+
+    static native void getWordPropertyNative(long dict, int[] word, boolean isBeginningOfSentence,
+            int[] outCodePoints, boolean[] outFlags, int[] outProbabilityInfo,
+            ArrayList<int[][]> outNgramPrevWordsArray,
+            ArrayList<boolean[]> outNgramPrevWordIsBeginningOfSentenceArray,
+            ArrayList<int[]> outNgramTargets, ArrayList<int[]> outNgramProbabilityInfo,
+            ArrayList<int[]> outShortcutTargets, ArrayList<Integer> outShortcutProbabilities);
+
+    static native int getNextWordNative(long dict, int token, int[] outCodePoints,
+            boolean[] outIsBeginningOfSentence);
+
+    static native void getNextValidCodePointsNative(long dict, long traverseSession,
+            int[] inputCodePoints, int inputSize, int[] outValidCodePoints);
+
+    static native boolean addNgramEntryNative(long dict, int[][] prevWordCodePointArrays,
+            boolean[] isBeginningOfSentenceArray, int[] word, int probability, int timestamp);
+
+    static native boolean removeNgramEntryNative(long dict, int[][] prevWordCodePointArrays,
+            boolean[] isBeginningOfSentenceArray, int[] word);
+
+    static native boolean updateEntriesForWordWithNgramContextNative(long dict,
+            int[][] prevWordCodePointArrays, boolean[] isBeginningOfSentenceArray, int[] word,
+            boolean isValidWord, int count, int timestamp);
+
+    static native boolean migrateNative(long dict, String dictFilePath, long newFormatVersion);
+    static native long getITrieHandleNative(long dict, String letters, boolean allowBadWords);
     static native String getPropertyNative(long dict, String query);
     static native boolean isCorruptedNative(long dict);
 
