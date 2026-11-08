@@ -14,9 +14,11 @@ and collects and sends nothing.
   upload or mailed; the `Copy logs` action in the settings still assembles a
   report on the device, only when the user taps it, and puts it on the
   clipboard.
-* **No update checking.** `checkForUpdate()` is a documented no-op; the update
+* **No update checking.** `checkForUpdate()` is a documented no-op, the update
   job is never scheduled (`UPDATE_CHECKING_NETWORK` is false and the scheduler
-  returns immediately).
+  returns immediately), and the `UpdateCheckingService` / `InstallReceiver`
+  declarations were removed from the stable manifest along with the APK-download
+  update screen.
 * **No dictionary downloads.** The AOSP dictionary provider (`dictionarypack/`)
   has been removed; only its `MD5Calculator` helper survives because the theme
   importer uses it to verify local files.
