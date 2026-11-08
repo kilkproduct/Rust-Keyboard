@@ -46,13 +46,39 @@ jobs:
             ${{ env.PROJECT_DIR }}/rust/target
           key: cargo-test-${{ hashFiles('Rust-Keyboard/rust/**/Cargo.toml', 'Rust-Keyboard/rust/**/Cargo.lock') }}
 
+      # The logs of a private repository's jobs cannot be downloaded from the
+      # API used here, so every compiler invocation is copied into the job
+      # summary; that is the only readable copy of the errors.
       - name: Unit tests
+        id: test
+        continue-on-error: true
         working-directory: ${{ env.PROJECT_DIR }}/rust
-        run: cargo test -p kb-core --all-targets
+        run: |
+          set -o pipefail
+          cargo test -p kb-core --all-targets 2>&1 | tee "$RUNNER_TEMP/test.log"
 
       - name: Check the JNI crate
+        id: check
+        continue-on-error: true
         working-directory: ${{ env.PROJECT_DIR }}/rust
-        run: cargo check -p kb-jni
+        run: |
+          set -o pipefail
+          cargo check -p kb-jni 2>&1 | tee "$RUNNER_TEMP/jni.log"
+
+      - name: Report compiler output
+        if: always()
+        run: |
+          for log in "$RUNNER_TEMP/test.log" "$RUNNER_TEMP/jni.log"; do
+            [ -f "$log" ] || continue
+            echo "### $(basename "$log")" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            tail -c 60000 "$log" >> "$GITHUB_STEP_SUMMARY" || true
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          done
+
+      - name: Fail when the crate does not build
+        if: steps.test.outcome != 'success' || steps.check.outcome != 'success'
+        run: exit 1
 
   apk:
     name: Build APK
@@ -120,10 +146,17 @@ jobs:
           key: cargo-android-${{ hashFiles('Rust-Keyboard/rust/**/Cargo.toml', 'Rust-Keyboard/rust/**/Cargo.lock') }}
 
       - name: Build the Rust core
+        id: rustbuild
+        continue-on-error: true
         working-directory: ${{ env.PROJECT_DIR }}
-        run: ./rust/build-android.sh
+        run: |
+          set -o pipefail
+          ./rust/build-android.sh 2>&1 | tee "$RUNNER_TEMP/rust-build.log"
 
       - name: Build the APKs
+        id: gradle
+        if: steps.rustbuild.outcome == 'success'
+        continue-on-error: true
         working-directory: ${{ env.PROJECT_DIR }}
         env:
           VERSION_CODE: ${{ github.run_number }}
@@ -134,6 +167,21 @@ jobs:
             -PabiFilter="${KB_ABIS}" \
             -PskipRust \
             assembleUnstableRelease assembleStableRelease
+
+      - name: Report build output
+        if: always()
+        run: |
+          for log in "$RUNNER_TEMP/rust-build.log"; do
+            [ -f "$log" ] || continue
+            echo "### $(basename "$log")" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            tail -c 60000 "$log" >> "$GITHUB_STEP_SUMMARY" || true
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          done
+
+      - name: Fail when the build failed
+        if: steps.rustbuild.outcome != 'success' || steps.gradle.outcome != 'success'
+        run: exit 1
 
       - name: Verify the APKs request no network
         working-directory: ${{ env.PROJECT_DIR }}
