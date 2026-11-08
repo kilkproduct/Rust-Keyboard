@@ -175,10 +175,11 @@ jobs:
           VERSION_NAME: ${{ github.ref_type == 'tag' && github.ref_name || format('0.1.0-rust.{0}', github.run_number) }}
         run: |
           chmod +x ./gradlew
-          ./gradlew --no-daemon --stacktrace \
+          set -o pipefail
+          ./gradlew --no-daemon --console=plain --stacktrace \
             -PabiFilter="${KB_ABIS}" \
             -PskipRust \
-            assembleUnstableRelease assembleStableRelease
+            assembleUnstableRelease assembleStableRelease 2>&1 | tee "$RUNNER_TEMP/gradle.log"
 
       - name: Report build output
         if: always()
@@ -195,7 +196,8 @@ jobs:
         if: ${{ always() && (steps.rustbuild.outcome != 'success' || steps.gradle.outcome != 'success') }}
         run: |
           mkdir -p ci-logs
-          cat "$RUNNER_TEMP/rust-build.log" > ci-logs/apk.log 2>/dev/null || true
+          cat "$RUNNER_TEMP/rust-build.log" "$RUNNER_TEMP/gradle.log" > ci-logs/apk.log 2>/dev/null || true
+          echo "rustbuild=${{ steps.rustbuild.outcome }} gradle=${{ steps.gradle.outcome }}" >> ci-logs/apk.log
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f ci-logs/apk.log
