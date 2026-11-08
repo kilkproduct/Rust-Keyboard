@@ -208,16 +208,23 @@ jobs:
         if: steps.rustbuild.outcome != 'success' || steps.gradle.outcome != 'success'
         run: exit 1
 
-      - name: Verify the APKs request no network
+      - name: Verify the packaged APKs
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
           MANIFESTS=$(find build/intermediates/packaged_manifests -name AndroidManifest.xml 2>/dev/null)
-          echo "$MANIFESTS"
           if echo "$MANIFESTS" | xargs grep -l "android.permission.INTERNET" 2>/dev/null; then
             echo "::error::an APK requests android.permission.INTERNET"
             exit 1
           fi
           echo "No INTERNET permission in any packaged manifest"
+          for apk in dist/*.apk; do
+            echo "== $apk"
+            unzip -l "$apk" | grep -E "lib/.*\\.so$" || true
+            unzip -l "$apk" | grep -q "lib/${KB_ABIS}/libkeyboard_core.so" \
+              || { echo "::error::$apk does not contain lib/${KB_ABIS}/libkeyboard_core.so"; exit 1; }
+            unzip -l "$apk" | grep -q "lib/${KB_ABIS}/libjni_latinime.so" \
+              || { echo "::error::$apk does not contain lib/${KB_ABIS}/libjni_latinime.so"; exit 1; }
+          done
 
       - name: Collect APKs
         working-directory: ${{ env.PROJECT_DIR }}
@@ -238,27 +245,48 @@ jobs:
           path: ${{ env.PROJECT_DIR }}/dist/*.apk
           if-no-files-found: warn
 
+      - name: Compose release notes
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          {
+            echo "Rust-core build of this keyboard fork (${{ github.ref_name }})."
+            echo
+            echo "| APK | size |"
+            echo "| --- | --- |"
+            for apk in dist/*.apk; do
+              echo "| \`$(basename "$apk")\` | $(du -h "$apk" | cut -f1) |"
+            done
+            echo
+            echo "Native libraries inside the package:"
+            echo
+            echo '```'
+            for apk in dist/*.apk; do
+              echo "\$ $(basename "$apk")"
+              unzip -l "$apk" | grep -E "lib/.*\.so$" | awk '{printf "  %10d  %s\n", $1, $4}'
+            done
+            echo '```'
+            echo
+            cat <<'TEXT'
+          * Engine: the Rust dictionary/suggestion core (`libkeyboard_core.so`,
+            see `rust/README.md`) with the C++ voice-input library alongside it.
+          * Signed with the keystore that ships in the repository
+            (`java/shared.keystore`). Uninstall first if your existing copy is
+            signed with a different key.
+          * No network permission is requested at all: see `PRIVACY.md`.
+          * `keyboard-stable-release.apk` installs as
+            `org.futo.inputmethod.latin`; `keyboard-unstable-release.apk`
+            installs as `org.futo.inputmethod.latin.unstable` and can be
+            installed side by side.
+          TEXT
+          } > dist/RELEASE_BODY.md
+          cat dist/RELEASE_BODY.md
+
       - name: Publish release
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ env.PROJECT_DIR }}/dist/*.apk
-          generate_release_notes: true
+          body_path: ${{ env.PROJECT_DIR }}/dist/RELEASE_BODY.md
           name: ${{ github.ref_name }}
-          body: |
-            Rust-core build of this keyboard fork (${{ github.ref_name }}).
-
-            * Engine: the Rust dictionary/suggestion core
-              (`libkeyboard_core.so`, see `rust/README.md`) with the C++
-              voice-input library alongside it.
-            * ABI: `${{ env.KB_ABIS }}` (64-bit ARM phones). 32-bit ARM and x86
-              are not included in this build.
-            * Signed with the keystore that ships in the repository
-              (`java/shared.keystore`), so it installs over builds signed with
-              the same key. Uninstall first if your existing copy uses a
-              different key.
-            * No network permission is requested at all: see `PRIVACY.md`.
-            * `keyboard-stable-release.apk` has no package suffix;
-              `keyboard-unstable-release.apk` installs as
-              `org.futo.inputmethod.latin.unstable` and can be installed
-              side by side.
+          draft: false
+          prerelease: false
