@@ -1,0 +1,35 @@
+[kb-rust] kb-core 0.1.0 registered (JNI 0xa0000)
+[kb-rust] cannot register org/futo/inputmethod/latin/BinaryDictionary::needsToRunGCNative(JZ)Z
+[kb-rust] cannot register org/futo/inputmethod/latin/BinaryDictionary::flushWithGCNative(JLjava/lang/String;)Z
+[kb-rust] cannot register org/futo/inputmethod/latin/BinaryDictionary::getNgramProbabilityNative(J[[I[Z[I)I
+[kb-rust] cannot register org/futo/inputmethod/latin/BinaryDictionary::getWordPropertyNative(J[IZ[I[Z[ILjava/util/ArrayList;Ljava/util/ArrayList;Ljava/util/ArrayList;Ljava/util/ArrayList;Ljava/util/ArrayList;Ljava/util/ArrayList;)V
+[kb-rust] cannot register org/futo/inputmethod/latin/BinaryDictionary::getNextWordNative(JI[I[Z)I
+[kb-rust] cannot register org/futo/inputmethod/latin/BinaryDictionary::getNextValidCodePointsNative(JJ[II[I)V
+[kb-rust] cannot register org/futo/inputmethod/latin/BinaryDictionary::addNgramEntryNative(J[[I[Z[III)Z
+[kb-rust] cannot register org/futo/inputmethod/latin/BinaryDictionary::removeNgramEntryNative(J[[I[Z[I)Z
+[kb-rust] cannot register org/futo/inputmethod/latin/BinaryDictionary::updateEntriesForWordWithNgramContextNative(J[[I[Z[IZII)Z
+[kb-rust] cannot register org/futo/inputmethod/latin/BinaryDictionary::migrateNative(JLjava/lang/String;J)Z
+[kb-rust] cannot register org/futo/inputmethod/latin/BinaryDictionary::getITrieHandleNative(JLjava/lang/String;Z)J
+[kb-rust] cannot register org/futo/inputmethod/latin/utils/BinaryDictionaryUtils::calcNormalizedScoreNative([I[II)F
+[kb-rust] cannot register org/futo/inputmethod/latin/utils/BinaryDictionaryUtils::setCurrentTimeForTestNative(I)I
+== libkeyboard_core loaded
+== empty dictionary created: 82 bytes
+WARNING in native method: JNI call made without checking exceptions when required to from CallBooleanMethodA
+	at org.futo.inputmethod.latin.BinaryDictionary.getHeaderInfoNative(Native Method)
+	at org.futo.inputmethod.latin.EngineSmoke.main(EngineSmoke.java:71)
+WARNING in native method: JNI call made without checking exceptions when required to from CallBooleanMethodA
+	at org.futo.inputmethod.latin.BinaryDictionary.getHeaderInfoNative(Native Method)
+	at org.futo.inputmethod.latin.EngineSmoke.main(EngineSmoke.java:71)
+WARNING in native method: JNI call made without checking exceptions when required to from CallBooleanMethodA
+	at org.futo.inputmethod.latin.BinaryDictionary.getHeaderInfoNative(Native Method)
+	at org.futo.inputmethod.latin.EngineSmoke.main(EngineSmoke.java:71)
+WARNING in native method: JNI call made without checking exceptions when required to from CallBooleanMethodA
+	at org.futo.inputmethod.latin.BinaryDictionary.getHeaderInfoNative(Native Method)
+	at org.futo.inputmethod.latin.EngineSmoke.main(EngineSmoke.java:71)
+WARNING in native method: JNI call made without checking exceptions when required to from CallBooleanMethodA
+	at org.futo.inputmethod.latin.BinaryDictionary.getHeaderInfoNative(Native Method)
+	at org.futo.inputmethod.latin.EngineSmoke.main(EngineSmoke.java:71)
+== header read: version 403, 3 attributes, size 50
+Exception in thread "main" java.lang.AssertionError: exact match probability lookup failed
+	at org.futo.inputmethod.latin.EngineSmoke.check(EngineSmoke.java:27)
+	at org.futo.inputmethod.latin.EngineSmoke.main(EngineSmoke.java:88)
