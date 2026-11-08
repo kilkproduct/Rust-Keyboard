@@ -228,6 +228,39 @@ impl Dictionary {
         }
     }
 
+    /// Writes a valid but empty version 4 dictionary to `path`.
+    ///
+    /// Android asks the native code to create the file for a user dictionary
+    /// (`createEmptyDictFileNative`); the file has to be a real dictionary,
+    /// otherwise opening it fails and every later personalisation call is lost.
+    /// Words are *not* stored in this file: they live in the sidecar log owned by
+    /// [`crate::user::UserDict`], so the file itself stays a valid empty trie.
+    pub fn write_empty_v4(path: &str, version: u16, attributes: &[(&str, &str)]) -> bool {
+        let mut bytes = crate::header::serialize(version, attributes);
+
+        // Buffer 0: the trie, containing a single root node array with no nodes.
+        let trie: [u8; 4] = [0, 0, 0, 0];
+        bytes.extend_from_slice(&(trie.len() as u32).to_be_bytes());
+        bytes.extend_from_slice(&trie);
+        // Buffers 1..7: terminal table, language model map and counters, shortcut
+        // lookup table, address table and content, all empty.
+        for _ in 1..V4_BUFFER_COUNT {
+            bytes.extend_from_slice(&0u32.to_be_bytes());
+        }
+
+        let temporary = format!("{}.tmp", path);
+        let write_result = std::fs::write(&temporary, &bytes);
+        if write_result.is_err() {
+            let _ = std::fs::remove_file(&temporary);
+            return false;
+        }
+        if std::fs::rename(&temporary, path).is_err() {
+            let _ = std::fs::remove_file(&temporary);
+            return false;
+        }
+        true
+    }
+
     /// Splits a version 4 body into its seven size-prefixed buffers.
     fn split_v4_buffers(&mut self, data_offset: usize) -> bool {
         let data = self.body.as_slice();
@@ -665,5 +698,31 @@ mod tests {
         let root = dict.root_array();
         assert_eq!(root.count, 0);
         assert_eq!(dict.get_probability(&[0x61]), NOT_A_PROBABILITY);
+    }
+
+    #[test]
+    fn writes_and_reopens_an_empty_dictionary() {
+        let mut path = std::env::temp_dir();
+        path.push(format!("kb-core-empty-{}.dict", std::process::id()));
+        let path = path.to_string_lossy().to_string();
+        let _ = std::fs::remove_file(&path);
+        let _ = std::fs::remove_file(format!("{}.userlog", path));
+
+        assert!(Dictionary::write_empty_v4(
+            &path,
+            403,
+            &[("dictionary", "user"), ("version", "403"), ("locale", "en")]
+        ));
+
+        let dict = Dictionary::open(&path, 0, 0, false).expect("empty dictionary must reopen");
+        assert!(!dict.corrupted, "an empty dictionary is not a corrupt one");
+        assert_eq!(dict.header.number, 403);
+        assert_eq!(dict.header.locale().as_deref(), Some("en"));
+        assert_eq!(dict.header.attribute_i32("version"), Some(403));
+        assert_eq!(dict.root_array().count, 0);
+        assert_eq!(dict.get_probability(&[0x61]), NOT_A_PROBABILITY);
+        assert_eq!(dict.get_max_probability_of_exact_matches(&[0x61]), NOT_A_PROBABILITY);
+
+        let _ = std::fs::remove_file(&path);
     }
 }

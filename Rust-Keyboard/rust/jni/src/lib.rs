@@ -25,7 +25,6 @@ use env::{
 use kb_core::dict::Dictionary;
 use kb_core::proximity::ProximityInfo;
 use kb_core::suggest::{self, SuggestOptions, SuggestedWord};
-use kb_core::user::UserDict;
 use kb_core::MAX_RESULTS;
 
 #[cfg(target_os = "android")]
@@ -618,10 +617,10 @@ unsafe extern "system" fn get_suggestions_native(
         Some(value) => value,
         None => return,
     };
-    let proximity: &ProximityInfo = &*(proximity_handle as *const ProximityInfo);
     if proximity_handle == 0 {
         return;
     }
+    let proximity: &ProximityInfo = &*(proximity_handle as *const ProximityInfo);
 
     let count = input_size.max(0) as usize;
     let mut xs = vec![0i32; count];
@@ -1078,22 +1077,69 @@ unsafe extern "system" fn create_empty_dict_file_native(
     env: JniEnvPtr,
     _class: JClass,
     path: JString,
-    _dict_version: JLong,
-    _locale: JString,
-    _attribute_keys: JObjectArray,
-    _attribute_values: JObjectArray,
+    dict_version: JLong,
+    locale: JString,
+    attribute_keys: JObjectArray,
+    attribute_values: JObjectArray,
 ) -> JBoolean {
     let path = match env::get_string(env, path) {
         Some(value) => value,
         None => return 0,
     };
-    let mut user = UserDict::empty(&path);
-    user.set_path(&path);
-    if user.flush() {
+    let version = if dict_version > 0 && dict_version <= u16::MAX as i64 {
+        dict_version as u16
+    } else {
+        403
+    };
+    // The caller (ExpandableBinaryDictionary) hands us the header attributes it
+    // will read back afterwards, so they have to end up in the file verbatim.
+    let keys = read_string_array(env, attribute_keys);
+    let values = read_string_array(env, attribute_values);
+    let mut attributes: Vec<(String, String)> = Vec::with_capacity(keys.len() + 2);
+    for (index, key) in keys.iter().enumerate() {
+        if key.is_empty() {
+            continue;
+        }
+        let value = match values.get(index) {
+            Some(value) => value.clone(),
+            None => String::new(),
+        };
+        attributes.push((key.clone(), value));
+    }
+    if !attributes.iter().any(|(key, _)| key == "version") {
+        attributes.push(("version".to_string(), version.to_string()));
+    }
+    if !attributes.iter().any(|(key, _)| key == "locale") {
+        attributes.push((
+            "locale".to_string(),
+            env::get_string(env, locale).unwrap_or_default(),
+        ));
+    }
+    let borrowed: Vec<(&str, &str)> = attributes
+        .iter()
+        .map(|(key, value)| (key.as_str(), value.as_str()))
+        .collect();
+    if Dictionary::write_empty_v4(&path, version, &borrowed) {
         1
     } else {
         0
     }
+}
+
+fn read_string_array(env: JniEnvPtr, array: JObjectArray) -> Vec<String> {
+    let length = env::array_length(env, array);
+    let mut values = Vec::with_capacity(length.min(64));
+    for index in 0..length.min(64) {
+        let element = env::object_array_element(env, array, index);
+        if element.is_null() {
+            values.push(String::new());
+            continue;
+        }
+        let value = env::get_string(env, element as JString).unwrap_or_default();
+        env::delete_local_ref(env, element);
+        values.push(value);
+    }
+    values
 }
 
 unsafe extern "system" fn calc_normalized_score_native(

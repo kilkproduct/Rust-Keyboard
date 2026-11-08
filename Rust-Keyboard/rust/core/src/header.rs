@@ -216,30 +216,40 @@ impl Header {
     }
 }
 
+/// Serialises a header with the given format version and attributes.
+///
+/// The Rust engine never writes real dictionaries, but an *empty* version 4
+/// dictionary (header plus seven empty buffers) is needed for the user
+/// dictionary files that Android asks us to create. Keeping the writer and the
+/// reader in the same module means the two cannot drift apart.
+pub fn serialize(number: u16, attributes: &[(&str, &str)]) -> Vec<u8> {
+    let mut body: Vec<u8> = Vec::new();
+    for (key, value) in attributes {
+        for ch in key.chars() {
+            body.push(ch as u8);
+        }
+        body.push(bytes::CHARACTER_ARRAY_TERMINATOR);
+        for ch in value.chars() {
+            body.push(ch as u8);
+        }
+        body.push(bytes::CHARACTER_ARRAY_TERMINATOR);
+    }
+    let size = HEADER_MINIMUM_SIZE + body.len();
+    let mut out: Vec<u8> = Vec::with_capacity(size);
+    out.extend_from_slice(&MAGIC_NUMBER.to_be_bytes());
+    out.extend_from_slice(&number.to_be_bytes());
+    out.extend_from_slice(&0u16.to_be_bytes());
+    out.extend_from_slice(&(size as u32).to_be_bytes());
+    out.extend_from_slice(&body);
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     fn build_header(version: u16, attributes: &[(&str, &str)]) -> Vec<u8> {
-        let mut body: Vec<u8> = Vec::new();
-        for (key, value) in attributes {
-            for ch in key.chars() {
-                body.push(ch as u8);
-            }
-            body.push(bytes::CHARACTER_ARRAY_TERMINATOR);
-            for ch in value.chars() {
-                body.push(ch as u8);
-            }
-            body.push(bytes::CHARACTER_ARRAY_TERMINATOR);
-        }
-        let size = 12 + body.len();
-        let mut out: Vec<u8> = Vec::new();
-        out.extend_from_slice(&MAGIC_NUMBER.to_be_bytes());
-        out.extend_from_slice(&version.to_be_bytes());
-        out.extend_from_slice(&0u16.to_be_bytes());
-        out.extend_from_slice(&(size as u32).to_be_bytes());
-        out.extend_from_slice(&body);
-        out
+        super::serialize(version, attributes)
     }
 
     #[test]

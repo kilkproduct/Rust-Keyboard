@@ -91,9 +91,74 @@ jobs:
         if: steps.test.outcome != 'success' || steps.check.outcome != 'success'
         run: exit 1
 
+  jni-smoke:
+    name: JNI smoke test (desktop JVM)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ${{ env.PROJECT_DIR }}/rust/target
+          key: cargo-jni-smoke-${{ hashFiles('Rust-Keyboard/rust/**/Cargo.toml', 'Rust-Keyboard/rust/**/Cargo.lock') }}
+
+      # Two defects that shipped in the first release -- a wrong JNI table slot
+      # and a variadic call where the `A' variant was required -- both abort the
+      # process on a phone and both fail here in about a minute.
+      - name: Build the engine for the host
+        working-directory: ${{ env.PROJECT_DIR }}/rust
+        run: cargo build -p kb-jni --release
+
+      - name: Compile the harness
+        working-directory: ${{ env.PROJECT_DIR }}/rust
+        run: |
+          mkdir -p "$RUNNER_TEMP/classes"
+          javac -Xlint:-options -d "$RUNNER_TEMP/classes" \
+            $(find tools/jni_harness -name '*.java' | sort)
+
+      - name: Run the smoke test
+        working-directory: ${{ env.PROJECT_DIR }}/rust
+        run: |
+          set -o pipefail
+          java -cp "$RUNNER_TEMP/classes" \
+            -Djava.library.path="$PWD/target/release" \
+            org.futo.inputmethod.latin.EngineSmoke 2>&1 | tee "$RUNNER_TEMP/jni-smoke.log"
+
+      - name: Report the smoke test output
+        if: always()
+        run: |
+          echo '### JNI smoke test' >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          tail -c 40000 "$RUNNER_TEMP/jni-smoke.log" >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish the smoke test log when it fails
+        if: failure()
+        run: |
+          mkdir -p ci-logs
+          cp "$RUNNER_TEMP/jni-smoke.log" ci-logs/jni-smoke.log 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f ci-logs/jni-smoke.log
+          git commit -m "CI: JNI smoke test output for ${GITHUB_SHA}" || exit 0
+          git push
+
   apk:
     name: Build APK
-    needs: rust-core
+    needs: [rust-core, jni-smoke]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4

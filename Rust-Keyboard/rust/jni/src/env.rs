@@ -68,9 +68,9 @@ type FnGetMethodId =
     unsafe extern "system" fn(JniEnvPtr, JClass, *const c_char, *const c_char) -> JMethodId;
 type FnNewObjectA =
     unsafe extern "system" fn(JniEnvPtr, JClass, JMethodId, *const c_void) -> JObject;
-type FnCallBooleanMethod =
+type FnCallBooleanMethodA =
     unsafe extern "system" fn(JniEnvPtr, JObject, JMethodId, *const c_void) -> JBoolean;
-type FnCallVoidMethod = unsafe extern "system" fn(JniEnvPtr, JObject, JMethodId, *const c_void);
+type FnCallVoidMethodA = unsafe extern "system" fn(JniEnvPtr, JObject, JMethodId, *const c_void);
 type FnDeleteLocalRef = unsafe extern "system" fn(JniEnvPtr, JObject);
 type FnGetArrayLength = unsafe extern "system" fn(JniEnvPtr, JArray) -> JSize;
 type FnNewIntArray = unsafe extern "system" fn(JniEnvPtr, JSize) -> JIntArray;
@@ -110,8 +110,8 @@ fn f_NewObjectA(table: &JNINativeInterface) -> FnNewObjectA {
 }
 
 #[inline]
-fn f_CallBooleanMethod(table: &JNINativeInterface) -> FnCallBooleanMethod {
-    unsafe { core::mem::transmute_copy(&table.CallBooleanMethod) }
+fn f_CallBooleanMethodA(table: &JNINativeInterface) -> FnCallBooleanMethodA {
+    unsafe { core::mem::transmute_copy(&table.CallBooleanMethodA) }
 }
 
 #[inline]
@@ -190,8 +190,8 @@ fn f_GetVersion(table: &JNINativeInterface) -> FnGetVersion {
 }
 
 #[inline]
-fn f_CallVoidMethod(table: &JNINativeInterface) -> FnCallVoidMethod {
-    unsafe { core::mem::transmute_copy(&table.CallVoidMethod) }
+fn f_CallVoidMethodA(table: &JNINativeInterface) -> FnCallVoidMethodA {
+    unsafe { core::mem::transmute_copy(&table.CallVoidMethodA) }
 }
 
 // --- safe wrappers -------------------------------------------------------------
@@ -379,7 +379,7 @@ pub fn add_object_to_list(
     }
     let args: [usize; 1] = [value as usize];
     unsafe {
-        f_CallBooleanMethod(table(env))(env, list, add_method, args.as_ptr() as *const c_void);
+        f_CallBooleanMethodA(table(env))(env, list, add_method, args.as_ptr() as *const c_void);
     }
 }
 
@@ -496,7 +496,7 @@ pub fn call_void(env: JniEnvPtr, object: JObject, method: JMethodId) {
         return;
     }
     unsafe {
-        f_CallVoidMethod(table(env))(env, object, method, core::ptr::null::<c_void>());
+        f_CallVoidMethodA(table(env))(env, object, method, core::ptr::null::<c_void>());
     }
 }
 
