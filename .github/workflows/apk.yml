@@ -77,7 +77,7 @@ jobs:
           done
 
       - name: Publish the compiler output
-        if: failure()
+        if: ${{ always() && (steps.test.outcome != 'success' || steps.check.outcome != 'success') }}
         run: |
           mkdir -p ci-logs
           cat "$RUNNER_TEMP/test.log" "$RUNNER_TEMP/jni.log" > ci-logs/rust-core.log 2>/dev/null || true
@@ -192,7 +192,7 @@ jobs:
           done
 
       - name: Publish the build output
-        if: failure()
+        if: ${{ always() && (steps.rustbuild.outcome != 'success' || steps.gradle.outcome != 'success') }}
         run: |
           mkdir -p ci-logs
           cat "$RUNNER_TEMP/rust-build.log" > ci-logs/apk.log 2>/dev/null || true
