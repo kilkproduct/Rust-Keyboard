@@ -299,7 +299,7 @@ mod tests {
             0x10, // flags: terminal
             0x00, 0x00, 0x00, // parent offset: none
             0x61, // 'a'
-            0x00, 0x00, 0x07, // terminal id 7
+            0x00, 0x00, 0x00, 0x07, // terminal id 7 (a V4 terminal id is 4 bytes)
             0x00, 0x00, 0x00, // children: none
         ];
         let node = read_node(&data, 0, Layout::V4, None).expect("node");
