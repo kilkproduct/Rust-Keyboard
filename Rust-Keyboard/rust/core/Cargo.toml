@@ -1,0 +1,19 @@
+[package]
+name = "kb-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Memory-tight binary dictionary, proximity and gesture/typing suggestion core for the keyboard."
+
+[lib]
+name = "kb_core"
+path = "src/lib.rs"
+
+# Deliberately zero dependencies: this crate is built for Android with only the
+# Rust standard library so that it can be audited easily and pulls in no
+# network-capable code whatsoever.
+[dependencies]
+
+[[example]]
+name = "probe"
+path = "examples/probe.rs"

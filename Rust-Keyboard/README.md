@@ -24,6 +24,17 @@ Due to custom license, pull requests to this repository require signing a [CLA](
 
 Please do not submit AI-generated pull requests, as these tend to make the codebase more difficult to understand. Pull requests made with clear heavy use of AI may be closed without comment. Please also avoid using AI to write issues, and try to explain it in your own words instead.
 
+## Rust core
+
+The dictionary and suggestion engine is being ported from C++ to Rust to cut
+memory use; see [`rust/README.md`](rust/README.md) for the architecture, the
+porting status and the build steps. `./gradlew assembleDebug` builds it
+automatically when a Rust toolchain is installed and falls back to the C++
+engine otherwise.
+
+The keyboard does not talk to the network. What was removed, and how to verify
+it, is documented in [`PRIVACY.md`](PRIVACY.md).
+
 ## Layouts
 
 If you want to contribute layouts, check out the [layouts repo](https://github.com/futo-org/futo-keyboard-layouts).

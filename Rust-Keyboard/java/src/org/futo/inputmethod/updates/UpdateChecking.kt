@@ -19,56 +19,14 @@ import org.futo.inputmethod.latin.uix.getSetting
 import org.futo.inputmethod.latin.BuildConfig
 import java.lang.Exception
 
-const val UPDATE_URL = "https://keyboard.futo.tech/keyboard_version"
-
+/**
+ * This build never contacts an update server. The keyboard has no INTERNET
+ * permission and the update check is a deliberate no-op, so update reminders in
+ * the settings UI simply never fire. Downloading an update is something the
+ * user can still do explicitly from a browser.
+ */
 suspend fun checkForUpdate(): UpdateResult? {
-    if(!BuildConfig.UPDATE_CHECKING || !BuildConfig.UPDATE_CHECKING_NETWORK) return null
-    else return null
-
-    // TODO: Move this code to a different source directory so we can enable or disable
-    // it per build flavor (e.g. so nightly can have update checking)
-    /*
-    return withContext(Dispatchers.IO) {
-        val httpClient = OkHttpClient()
-
-        val request = Request.Builder().method("GET", null).url(UPDATE_URL).build()
-
-        try {
-            val response = httpClient.newCall(request).execute()
-
-            val body = response.body
-            val result = if (body != null) {
-                val data = body.string().lines()
-                body.closeQuietly()
-
-                val latestVersion = data[0].toInt()
-                val latestVersionUrl = data[1]
-                val latestVersionString = data[2]
-                if(latestVersionUrl.startsWith("https://voiceinput.futo.org/") || latestVersionUrl.startsWith("https://keyboard.futo.org/")){
-                    Log.d("UpdateChecking", "Retrieved update for version ${latestVersionString}")
-                    UpdateResult(
-                        nextVersion = latestVersion,
-                        apkUrl = latestVersionUrl,
-                        nextVersionString = latestVersionString
-                    )
-                } else {
-                    Log.e("UpdateChecking", "Update URL contains unknown prefix: ${latestVersionUrl}")
-                    null
-                }
-            } else {
-                Log.e("UpdateChecking", "Body of result is null")
-                null
-            }
-
-            response.closeQuietly()
-
-            result
-        } catch (e: Exception) {
-            Log.e("UpdateChecking", "Checking update failed with exception")
-            e.printStackTrace()
-            null
-        }
-    }*/
+    return null
 }
 
 suspend fun checkForUpdateAndSaveToPreferences(context: Context): Boolean {

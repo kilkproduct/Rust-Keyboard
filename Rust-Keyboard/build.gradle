@@ -337,6 +337,8 @@ android {
             java.srcDirs = ['common/src', 'java/src']
             manifest.srcFile 'java/AndroidManifest.xml'
             assets.srcDirs = ['java/assets']
+            // Produced by rust/build-android.sh (libkeyboard_core.so).
+            jniLibs.srcDirs = ['java/jniLibs']
         }
 
         playstore {
@@ -383,6 +385,21 @@ android {
             path 'native/jni/CMakeLists.txt'
         }
     }
+
+    // Builds the Rust core (rust/) and copies libkeyboard_core.so into
+    // java/jniLibs. The script is a no-op when no Rust toolchain is installed,
+    // so plain `./gradlew assembleDebug` keeps working without Rust.
+    // Pass -PskipRust to skip it explicitly.
+    def rustBuildScript = file('rust/build-android.sh')
+    tasks.register('rustNativeBuild', Exec) {
+        onlyIf { rustBuildScript.exists() && !project.hasProperty('skipRust') }
+        workingDir project.rootDir
+        commandLine 'sh', rustBuildScript.absolutePath
+        doLast {
+            logger.lifecycle('Rust core: java/jniLibs populated (if a toolchain was available)')
+        }
+    }
+    tasks.named('preBuild').configure { dependsOn 'rustNativeBuild' }
 
     kotlinOptions {
         jvmTarget = '1.8'
