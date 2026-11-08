@@ -208,24 +208,6 @@ jobs:
         if: steps.rustbuild.outcome != 'success' || steps.gradle.outcome != 'success'
         run: exit 1
 
-      - name: Verify the packaged APKs
-        working-directory: ${{ env.PROJECT_DIR }}
-        run: |
-          MANIFESTS=$(find build/intermediates/packaged_manifests -name AndroidManifest.xml 2>/dev/null)
-          if echo "$MANIFESTS" | xargs grep -l "android.permission.INTERNET" 2>/dev/null; then
-            echo "::error::an APK requests android.permission.INTERNET"
-            exit 1
-          fi
-          echo "No INTERNET permission in any packaged manifest"
-          for apk in dist/*.apk; do
-            echo "== $apk"
-            unzip -l "$apk" | grep -E "lib/.*\\.so$" || true
-            unzip -l "$apk" | grep -q "lib/${KB_ABIS}/libkeyboard_core.so" \
-              || { echo "::error::$apk does not contain lib/${KB_ABIS}/libkeyboard_core.so"; exit 1; }
-            unzip -l "$apk" | grep -q "lib/${KB_ABIS}/libjni_latinime.so" \
-              || { echo "::error::$apk does not contain lib/${KB_ABIS}/libjni_latinime.so"; exit 1; }
-          done
-
       - name: Collect APKs
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
@@ -234,18 +216,35 @@ jobs:
           cp build/outputs/apk/stable/release/*.apk dist/keyboard-stable-release.apk
           ls -l dist
 
-      # Release assets are published from dist/ below; the workflow artifact is a
-      # convenience copy for branch builds and must never block the release, so a
-      # storage-quota failure here is not fatal.
-      - name: Upload APKs
-        uses: actions/upload-artifact@v4
+      # Guards the two claims of this fork: the Rust engine is really inside the
+      # package, and the package really cannot reach the network.
+      - name: Verify the packaged APKs
+        id: verify
         continue-on-error: true
-        with:
-          name: keyboard-apk
-          path: ${{ env.PROJECT_DIR }}/dist/*.apk
-          if-no-files-found: warn
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          set -e
+          MANIFESTS=$(find build/intermediates/packaged_manifests -name AndroidManifest.xml 2>/dev/null)
+          if echo "$MANIFESTS" | xargs grep -l "android.permission.INTERNET" 2>/dev/null; then
+            echo "::error::an APK requests android.permission.INTERNET"
+            exit 1
+          fi
+          echo "No INTERNET permission in any packaged manifest"
+          found=0
+          for apk in dist/*.apk; do
+            [ -f "$apk" ] || continue
+            found=1
+            echo "== $apk"
+            unzip -l "$apk" | grep -E "lib/.*\.so$" || true
+            unzip -l "$apk" | grep -q "lib/${KB_ABIS}/libkeyboard_core.so" \
+              || { echo "::error::$apk does not contain lib/${KB_ABIS}/libkeyboard_core.so"; exit 1; }
+            unzip -l "$apk" | grep -q "lib/${KB_ABIS}/libjni_latinime.so" \
+              || { echo "::error::$apk does not contain lib/${KB_ABIS}/libjni_latinime.so"; exit 1; }
+          done
+          [ "$found" = "1" ] || { echo "::error::no APK was collected"; exit 1; }
 
       - name: Compose release notes
+        if: github.ref_type == 'tag'
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
           {
@@ -268,7 +267,8 @@ jobs:
             echo
             cat <<'TEXT'
           * Engine: the Rust dictionary/suggestion core (`libkeyboard_core.so`,
-            see `rust/README.md`) with the C++ voice-input library alongside it.
+            see `rust/README.md`) next to the C++ voice-input library.
+          * ABI: the packages contain `arm64-v8a` only.
           * Signed with the keystore that ships in the repository
             (`java/shared.keystore`). Uninstall first if your existing copy is
             signed with a different key.
@@ -281,8 +281,18 @@ jobs:
           } > dist/RELEASE_BODY.md
           cat dist/RELEASE_BODY.md
 
+      # Release assets have their own quota and never block on artifact storage.
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        if: steps.verify.outcome == 'success'
+        with:
+          name: keyboard-apk
+          path: ${{ env.PROJECT_DIR }}/dist/*.apk
+          if-no-files-found: warn
+
       - name: Publish release
-        if: github.ref_type == 'tag'
+        if: github.ref_type == 'tag' && steps.verify.outcome == 'success'
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ env.PROJECT_DIR }}/dist/*.apk
