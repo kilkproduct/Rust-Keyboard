@@ -85,135 +85,133 @@ c0770fc04dc078100630c079100809c0
 6e1f41136067611f14706c656e651f4c
 23606e671f24013027731f0a0330656c
 
-   probability "its" = -1
-   probability "it's" = -1
-   probability "inserts" = -1
-   probability "the" = -1
+   probability "its" = 158
+   probability "it's" = 162
+   probability "inserts" = 95
+   probability "the" = 222
    probability "italian" = -1
 == dictionary walk: 400000 words, first: 1Weather AMather Aachenr Aachen's Aalborg Aaleng Aalesund Aalesund's Aalstnd's Aalst's's Aaltos's Aalto's's
+   "its" -> its score 1953747 kind 1342177280
+   "its" -> is score 848058 kind 268435457
+   "its" -> itself score 833101 kind 268435457
+   "its" -> it's score 819910 kind 268435457
+   "its" -> instead score 788884 kind 268435457
+   "its" -> inside score 771787 kind 268435457
+   "its" -> inspired score 761527 kind 268435457
+   "its" -> institutions score 758586 kind 268435457
+   "its" -> items score 756668 kind 268435457
    "its" -> Italian score 755999 kind 268435457
+   "its" -> instance score 754661 kind 268435457
+   "its" -> installed score 753992 kind 268435457
+   "its" -> instruments score 753006 kind 268435457
+   "its" -> institution score 749996 kind 268435457
+   "its" -> island score 749894 kind 268435457
    "its" -> Italy score 747266 kind 268435457
-   "its" -> Israel score 701330 kind 268435457
-   "its" -> Islamic score 683500 kind 268435457
-   "its" -> Israeli score 682907 kind 268435457
-   "its" -> Islam score 674301 kind 268435457
-   "its" -> iTunes score 667491 kind 268435457
-   "its" -> Italians score 658029 kind 268435457
-   "its" -> Isaac score 652070 kind 268435457
-   "its" -> Istanbul score 634936 kind 268435457
-   "its" -> Italia score 632782 kind 268435457
-   "its" -> Italy's score 625089 kind 268435457
-   "its" -> Isabella score 621125 kind 268435457
-   "its" -> Isabel score 616030 kind 268435457
-   "its" -> Israel's score 616030 kind 268435457
-   "its" -> Israelites score 594539 kind 268435457
-   "its" -> Ismail score 592386 kind 268435457
-   "its" -> Israelis score 591717 kind 268435457
-   "its" -> Italianate score 586651 kind 268435457
-   "its" -> Ithaca score 585949 kind 268435457
-   "its" -> Isaiah score 581664 kind 268435457
-   "its" -> Isis score 578005 kind 268435457
-   "its" -> Islamist score 575328 kind 268435457
-   "its" -> Islington score 573632 kind 268435457
-   "its" -> Islamabad score 569214 kind 268435457
-   "its" -> Isabelle score 565418 kind 268435457
-   "its" -> Israelite score 554409 kind 268435457
-   "its" -> Ishmael score 547037 kind 268435457
-   "its" -> Isaacs score 545699 kind 268435457
-   "its" -> Isidore score 545699 kind 268435457
-   "its" -> Isfahan score 543605 kind 268435457
-   "its" -> Istria score 542936 kind 268435457
-   "its" -> Isuzu score 539448 kind 268435457
-   "its" -> Ilse score 526450 kind 268435457
-   "its" -> Ismaili score 525288 kind 268435457
-   "its" -> Isolde score 521561 kind 268435457
-   "its" -> Islip score 511905 kind 268435457
-   "its" -> Ishtar score 507979 kind 268435457
-   "its" -> Ismael score 507979 kind 268435457
-   "its" -> Islay score 507310 kind 268435457
-== "its": 40 suggestions, apostrophe variant missing
+   "its" -> instrument score 746597 kind 268435457
+   "its" -> issue score 746349 kind 268435457
+   "its" -> issues score 745680 kind 268435457
+   "its" -> instrumental score 745259 kind 268435457
+   "its" -> insurance score 740447 kind 268435457
+   "its" -> issued score 737072 kind 268435457
+   "its" -> inspiration score 733753 kind 268435457
+   "its" -> instruction score 733084 kind 268435457
+   "its" -> installation score 727406 kind 268435457
+   "its" -> insects score 726209 kind 268435457
+   "its" -> item score 725659 kind 268435457
+   "its" -> instructions score 724871 kind 268435457
+   "its" -> insisted score 721073 kind 268435457
+   "its" -> institute score 721073 kind 268435457
+   "its" -> islands score 720731 kind 268435457
+   "its" -> inscription score 718473 kind 268435457
+   "its" -> instructor score 715850 kind 268435457
+   "its" -> instances score 714512 kind 268435457
+   "its" -> inserted score 710537 kind 268435457
+   "its" -> inspection score 707845 kind 268435457
+   "its" -> instant score 707845 kind 268435457
+   "its" -> instructed score 707845 kind 268435457
+   "its" -> insufficient score 705129 kind 268435457
+   "its" -> instituted score 704460 kind 268435457
+== "its": 40 suggestions, apostrophe variant present
+   "" -> éo score 933920 kind 8
+   "" -> éf score 932114 kind 8
+   "" -> én score 924807 kind 8
    "" -> a score 921101 kind 8
+   "" -> és score 905912 kind 8
    "" -> I score 898088 kind 8
-   "" -> 0s score 898088 kind 8
-   "" -> 0y score 894115 kind 8
-   "" -> 0t score 886047 kind 8
-   "" -> 0n score 879883 kind 8
-   "" -> 0e score 879883 kind 8
-   "" -> 0A score 856404 kind 8
-   "" -> 0e score 849746 kind 8
-   "" -> 0o score 829056 kind 8
-   "" -> 0o score 807197 kind 8
-   "" -> 0m score 736088 kind 8
-   "" -> 0hio score 726975 kind 8
-   "" -> 0yb score 714481 kind 8
-   "" -> 0d score 711294 kind 8
-   "" -> 0mail score 708080 kind 8
-   "" -> 0yypt score 701571 kind 8
-   "" -> 0yn score 698275 kind 8
-   "" -> 0䦀 score 694950 kind 8
-   "" -> 0⒐ score 691597 kind 8
-   "" -> 0yn score 688215 kind 8
-   "" -> 0ye score 660037 kind 8
-   "" -> 0yckland score 656366 kind 8
-   "" -> 0's score 645140 kind 8
-   "" -> 0yvaria score 645140 kind 8
-   "" -> 0yl score 645140 kind 8
-   "" -> 0ylan score 645140 kind 8
-   "" -> 0yji score 641324 kind 8
-   "" -> 0box score 637470 kind 8
-   "" -> 0yghan score 637470 kind 8
-   "" -> 0o score 633578 kind 8
-   "" -> 0d score 633578 kind 8
-   "" -> 0yeter score 633578 kind 8
-   "" -> 0zakins score 629646 kind 8
-   "" -> 0ye score 629646 kind 8
-   "" -> 0i score 625674 kind 8
-   "" -> 0yight score 625674 kind 8
-   "" -> 0yyle score 621661 kind 8
-   "" -> 0ya score 617606 kind 8
-   "" -> 0ye score 613507 kind 8
+   "" -> és score 898088 kind 8
+   "" -> én score 896107 kind 8
+   "" -> éy score 894115 kind 8
+   "" -> ét score 886047 kind 8
+   "" -> én score 879883 kind 8
+   "" -> ée score 879883 kind 8
+   "" -> ét score 873620 kind 8
+   "" -> ér score 873620 kind 8
+   "" -> ée score 865108 kind 8
+   "" -> ée score 849746 kind 8
+   "" -> ée score 849746 kind 8
+   "" -> éo score 829056 kind 8
+   "" -> éo score 826687 kind 8
+   "" -> éy score 819493 kind 8
+   "" -> éo score 819493 kind 8
+   "" -> ép score 819493 kind 8
+   "" -> és score 819493 kind 8
+   "" -> éf score 817065 kind 8
+   "" -> éo score 807197 kind 8
+   "" -> éx score 739079 kind 8
+   "" -> ém score 736088 kind 8
+   "" -> éhio score 726975 kind 8
+   "" -> és score 726975 kind 8
+   "" -> étb score 714481 kind 8
+   "" -> éd score 711294 kind 8
+   "" -> émail score 708080 kind 8
+   "" -> étypt score 701571 kind 8
+   "" -> é-shirts score 698275 kind 8
+   "" -> étn score 698275 kind 8
+   "" -> ém score 691597 kind 8
+   "" -> étn score 688215 kind 8
+   "" -> éh score 656366 kind 8
+   "" -> étckland score 656366 kind 8
+   "" -> é's score 645140 kind 8
 == after "the": 40 predictions
+   "hel" -> hel score 1526287 kind 1342177280
+   "hel" -> held score 853078 kind 268435457
+   "hel" -> her score 845904 kind 268435457
+   "hel" -> help score 835159 kind 268435457
+   "hel" -> helped score 819118 kind 268435457
+   "hel" -> here score 816114 kind 268435457
    "hel" -> half score 800442 kind 268435457
    "hel" -> head score 800442 kind 268435457
+   "hel" -> helping score 788073 kind 268435457
+   "hel" -> hold score 779649 kind 268435457
+   "hel" -> helps score 778373 kind 268435457
    "hel" -> hear score 775315 kind 268435457
+   "hel" -> hello score 768354 kind 268435457
+   "hel" -> helicopter score 767685 kind 268435457
+   "hel" -> hey score 764872 kind 268435457
    "hel" -> Hall score 761932 kind 268435457
    "hel" -> hall score 759643 kind 268435457
    "hel" -> heat score 757337 kind 268435457
    "hel" -> Henry score 756668 kind 268435457
    "hel" -> hill score 752672 kind 268435457
+   "hel" -> helicopters score 751344 kind 268435457
+   "hel" -> helmet score 743865 kind 268435457
+   "hel" -> hero score 743123 kind 268435457
+   "hel" -> hole score 740689 kind 268435457
+   "hel" -> hell score 736831 kind 268435457
    "hel" -> Helen score 733989 kind 268435457
    "hel" -> he's score 733266 kind 268435457
+   "hel" -> heir score 733266 kind 268435457
+   "hel" -> helpful score 727555 kind 268435457
+   "hel" -> holy score 723081 kind 268435457
    "hel" -> hull score 723081 kind 268435457
    "hel" -> Head score 720480 kind 268435457
+   "hel" -> helm score 719367 kind 268435457
+   "hel" -> helium score 718698 kind 268435457
+   "hel" -> helmets score 711309 kind 268435457
    "hel" -> Helsinki score 709577 kind 268435457
    "hel" -> Hebrew score 709183 kind 268435457
    "hel" -> halt score 704395 kind 268435457
    "hel" -> Helena score 703341 kind 268435457
    "hel" -> Holland score 700961 kind 268435457
-   "hel" -> Herbert score 695355 kind 268435457
-   "hel" -> he'd score 693182 kind 268435457
-   "hel" -> Holmes score 689644 kind 268435457
-   "hel" -> Hull score 684493 kind 268435457
-   "hel" -> heal score 684493 kind 268435457
-   "hel" -> Halifax score 680872 kind 268435457
-   "hel" -> Henderson score 680872 kind 268435457
-   "hel" -> Henri score 677891 kind 268435457
-   "hel" -> Heath score 671840 kind 268435457
-   "hel" -> Hellenic score 671582 kind 268435457
-   "hel" -> Hellenistic score 670244 kind 268435457
-   "hel" -> Heinrich score 668769 kind 268435457
-   "hel" -> Herzegovina score 665668 kind 268435457
-   "hel" -> Holly score 665668 kind 268435457
-   "hel" -> Helens score 662992 kind 268435457
-   "hel" -> Holiday score 662534 kind 268435457
-   "hel" -> Halloween score 654161 kind 268435457
-   "hel" -> Holt score 653604 kind 268435457
-   "hel" -> he'll score 653604 kind 268435457
-   "hel" -> heap score 653604 kind 268435457
-   "hel" -> Hesse score 652935 kind 268435457
-   "hel" -> Helmut score 652013 kind 268435457
-   "hel" -> heyon score 650336 kind 268435457
 == "hel" after "i": 40 suggestions
-Exception in thread "main" java.lang.AssertionError: "its" is not suggested for "its": [Italian, Italy, Israel, Islamic, Israeli, Islam, iTunes, Italians, Isaac, Istanbul, Italia, Italy's, Isabella, Isabel, Israel's, Israelites, Ismail, Israelis, Italianate, Ithaca, Isaiah, Isis, Islamist, Islington, Islamabad, Isabelle, Israelite, Ishmael, Isaacs, Isidore, Isfahan, Istria, Isuzu, Ilse, Ismaili, Isolde, Islip, Ishtar, Ismael, Islay]
-	at org.futo.inputmethod.latin.EngineSmoke.check(EngineSmoke.java:27)
-	at org.futo.inputmethod.latin.EngineSmoke.main(EngineSmoke.java:370)
+== JNI smoke test passed
