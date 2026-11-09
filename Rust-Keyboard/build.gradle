@@ -429,6 +429,55 @@ android {
             // Swipe decoding: three TFLite models nothing reads any more.
             file('java/assets/futo-swipe').listFiles()?.each { it.delete() }
 
+            // Keyboard layouts ship for every script upstream supports (~900 KB,
+            // plus 230 KB of git metadata that would be packaged as assets). An
+            // English build can only reach the Default and Special sets plus the
+            // handful of layouts that mapping.yaml lists for en, en_GB, en_IN and
+            // en_Shaw; everything else is unreachable. safeGetLayout() turns a
+            // missing layout into a bug report instead of a crash, so a stale
+            // preference cannot take the keyboard down.
+            final def layoutRoot = file('java/assets/layouts')
+            if (layoutRoot.isDirectory()) {
+                final def keepRootFiles = ['mapping.yaml', 'names.yaml', 'LICENSE'] as Set
+                final def keepDirectories = ['Default', 'Special'] as Set
+                final def keepNested = [
+                        'LatinScript/French/bepo.yaml',
+                        'ConstructedScripts/shavian.yaml',
+                        'ConstructedScripts/shavian_two_layer.yaml',
+                ] as Set
+                long layoutBytes = 0
+                layoutRoot.eachFileRecurse { candidate ->
+                    if (candidate.isFile()) { layoutBytes += candidate.length() }
+                }
+                layoutRoot.eachFileRecurse { candidate ->
+                    if (!candidate.isFile()) { return }
+                    final def relative = layoutRoot.toPath()
+                            .relativize(candidate.toPath()).toString().replace('\\', '/')
+                    final boolean keep = keepNested.contains(relative) ||
+                            (relative.contains('/') && keepDirectories.contains(relative.split('/')[0])) ||
+                            (!relative.contains('/') && keepRootFiles.contains(relative))
+                    if (!keep) { candidate.delete() }
+                }
+                final def directories = []
+                layoutRoot.eachDirRecurse { directories.add(it) }
+                directories.sort { -it.path.length() }.each { directory ->
+                    if ((directory.listFiles()?.length ?: 0) == 0) { directory.delete() }
+                }
+                long keptBytes = 0
+                layoutRoot.eachFileRecurse { candidate ->
+                    if (candidate.isFile()) { keptBytes += candidate.length() }
+                }
+                logger.lifecycle("layouts trimmed from ${layoutBytes / 1024} KB to ${keptBytes / 1024} KB")
+            }
+
+            // The same goes for the spacing/punctuation tables: one file per
+            // language, but an English build only ever reaches "default" and
+            // "default-sw600dp"; a missing candidate is caught as IOException and
+            // the default table is always the last fallback.
+            file('java/assets/spacing-and-punctuations').listFiles()?.each { entry ->
+                if (entry.isFile() && !entry.name.startsWith('default')) { entry.delete() }
+            }
+
             // Emoji descriptions ship for every language the upstream build
             // supports (~5 MB gzipped). Keep the English section only: the file
             // is a sequence of "#<language>" marker lines, each followed by one
