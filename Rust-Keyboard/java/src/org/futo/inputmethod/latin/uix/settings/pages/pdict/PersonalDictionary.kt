@@ -1,7 +1,6 @@
 package org.futo.inputmethod.latin.uix.settings.pages.pdict
 
 import android.app.Activity
-import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,13 +40,10 @@ import org.futo.inputmethod.latin.Subtypes
 import org.futo.inputmethod.latin.SubtypesSetting
 import org.futo.inputmethod.latin.localeFromString
 import org.futo.inputmethod.latin.settings.Settings
-import org.futo.inputmethod.latin.uix.IMPORT_SETTINGS_REQUEST
 import org.futo.inputmethod.latin.uix.LocalNavController
 import org.futo.inputmethod.latin.uix.PersonalWord
 import org.futo.inputmethod.latin.uix.SettingsTextEdit
 import org.futo.inputmethod.latin.uix.UserDictionaryIO
-import org.futo.inputmethod.latin.uix.findActivity
-import org.futo.inputmethod.latin.uix.getImportedUserDictFilesForLocale
 import org.futo.inputmethod.latin.uix.settings.NavigationItem
 import org.futo.inputmethod.latin.uix.settings.NavigationItemStyle
 import org.futo.inputmethod.latin.uix.settings.Route
@@ -57,31 +53,9 @@ import org.futo.inputmethod.latin.uix.settings.useDataStoreValue
 import java.util.Locale
 import kotlin.collections.get
 
-private data class ExceptionalPersonalDictionaryViewConfiguration(
-    val supported: Boolean,
-    val wordPopupDialog: @Composable (PersonalWord?, Locale?) -> Unit = {_, _ ->},
-    val transformNavWord: (PersonalWord) -> PersonalWord = { it }
-)
-
-private val ExceptionalPersonalDictionaryLanguages = mapOf(
-    "ja" to ExceptionalPersonalDictionaryViewConfiguration(
-        supported = true,
-        wordPopupDialog = { a, b -> JapaneseWordPopupDialog(a?.let { decodeJapanesePersonalWord(it) }, b) },
-        transformNavWord = { word -> decodeJapanesePersonalWord(word)?.let {
-            word.copy(word = it.output, shortcut = it.furigana)
-        } ?: word }
-    ),
-    "zh" to ExceptionalPersonalDictionaryViewConfiguration(supported = false)
-)
-
 @Composable
 @Preview
 fun WordPopupDialog(selectedWord: PersonalWord? = null, locale: Locale? = null) {
-    val exception = ExceptionalPersonalDictionaryLanguages[locale?.language]
-    if(exception != null) {
-        return exception.wordPopupDialog(selectedWord, locale)
-    }
-
     val navController = LocalNavController.current
     val word = remember { mutableStateOf(selectedWord?.word ?: "") }
     val shortcut = remember { mutableStateOf(selectedWord?.shortcut ?: "") }
@@ -223,42 +197,9 @@ fun PersonalDictionaryLanguageListForLocale(
     val words = remember(refreshCounter.intValue) {
         dict.get().filter { it.locale?.let { localeFromString(it) } == locale }
     }
-    val files = remember(refreshCounter.intValue) {
-        getImportedUserDictFilesForLocale(context, locale ?: return@remember emptyList())
-    }
     LazyColumn {
         item {
             ScreenTitle(locale?.getDisplayName(LocalConfiguration.current.locale) ?: stringResource(R.string.user_dict_settings_all_languages), showBack = true, navController = navController)
-        }
-
-        if(localeSupportsFileImport(locale) || files.isNotEmpty()) {
-            item {
-                ScreenTitle(stringResource(R.string.personal_dictionary_imported_additional_files_list_header))
-                NavigationItem(
-                    title = stringResource(R.string.personal_dictionary_import_additional_file),
-                    style = NavigationItemStyle.HomePrimary,
-                    navigate = {
-                        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                            addCategory(Intent.CATEGORY_OPENABLE)
-                            type = "text/plain"
-                        }
-                        findActivity(context)!!.startActivityForResult(intent, IMPORT_SETTINGS_REQUEST)
-                    },
-                    icon = painterResource(R.drawable.plus_circle)
-                )
-            }
-            items(files) {
-                NavigationItem(
-                    title = it.second,
-                    style = NavigationItemStyle.MiscNoArrow,
-                    navigate = {
-                        navController.navigate(Route.PersonalDictDelete(it.first.name))
-                    },
-                    icon = painterResource(R.drawable.file_text)
-                )
-            }
-
-            item { ScreenTitle(stringResource(R.string.personal_dictionary_words_list_header)) }
         }
 
         item {
@@ -272,10 +213,9 @@ fun PersonalDictionaryLanguageListForLocale(
             )
         }
         items(words) {
-            val transformed = ExceptionalPersonalDictionaryLanguages[locale?.language]?.transformNavWord(it) ?: it
             NavigationItem(
-                title = transformed.word,
-                subtitle = transformed.shortcut,
+                title = it.word,
+                subtitle = it.shortcut,
                 style = NavigationItemStyle.MiscNoArrow,
                 navigate = {
                     navController.navigate(Route.PersonalDictWord(locale?.toLanguageTag(), Json.encodeToString(it)))
@@ -315,9 +255,6 @@ fun PersonalDictionaryLanguageList() {
             }
         )
         languages.forEach {
-            val exception = ExceptionalPersonalDictionaryLanguages[it.first.language]
-            if(exception?.supported == false) return@forEach
-
             NavigationItem(
                 title = it.first.getDisplayName(LocalConfiguration.current.locale),
                 subtitle = pluralStringResource(R.plurals.personal_dictionary_language_word_count, it.second, it.second),

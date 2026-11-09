@@ -61,7 +61,6 @@ import org.futo.inputmethod.latin.uix.settings.pages.TypingSettingsMenu
 import org.futo.inputmethod.latin.uix.settings.pages.VoiceInputMenu
 import org.futo.inputmethod.latin.uix.settings.pages.addModelManagerNavigation
 import org.futo.inputmethod.latin.uix.settings.pages.buggyeditors.BuggyTextEditVariations
-import org.futo.inputmethod.latin.uix.settings.pages.pdict.ConfirmDeleteExtraDictFileDialog
 import org.futo.inputmethod.latin.uix.settings.pages.pdict.PersonalDictionaryLanguageList
 import org.futo.inputmethod.latin.uix.settings.pages.pdict.PersonalDictionaryLanguageListForLocale
 import org.futo.inputmethod.latin.uix.settings.pages.pdict.WordPopupDialogF
@@ -86,7 +85,6 @@ object Route {
     @Serializable data class AddLayout(val lang: String)
     @Serializable data class PersonalDictList(val lang: String?)
     @Serializable data class PersonalDictWord(val lang: String?, val word: String?)
-    @Serializable data class PersonalDictDelete(val dict: String)
     @Serializable data class DevLayoutEdit(val i: Int)
     @Serializable data class CustomTheme(val uri: String)
     @Serializable data class DeleteTheme(val name: String)
@@ -145,7 +143,6 @@ fun SettingsNavigator(
                     PersonalDictionaryLanguageListForLocale(nav, it, route.lang?.toLocale())
                 }
                 dialog<Route.PersonalDictWord> { WordPopupDialogF(it.word, it.lang?.toLocale()) }
-                dialog<Route.PersonalDictDelete> { ConfirmDeleteExtraDictFileDialog(it.dict) }
 
                 composable<Route.DevLayoutEdit> { DevLayoutEdit(nav, it.i) }
 
