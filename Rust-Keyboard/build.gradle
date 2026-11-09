@@ -470,6 +470,43 @@ android {
                 logger.lifecycle("layouts trimmed from ${layoutBytes / 1024} KB to ${keptBytes / 1024} KB")
             }
 
+            // Bitmaps ship in five density buckets (~1.2 MB) but the keyboard
+            // draws every one of them at the same logical size. Keep a single
+            // copy per resource name, preferring xxhdpi: Android scales whatever
+            // is present, and one bucket is both smaller in the package and
+            // cheaper to decode at runtime. Resources that only exist in one
+            // bucket - most of them - are left untouched.
+            final def densityBuckets = [
+                    ['drawable-xxhdpi', 'drawable-xxxhdpi', 'drawable-xhdpi',
+                     'drawable-hdpi', 'drawable-mdpi', 'drawable'],
+                    ['mipmap-xxhdpi', 'mipmap-xxxhdpi', 'mipmap-xhdpi',
+                     'mipmap-hdpi', 'mipmap-mdpi'],
+            ]
+            final def resRoot = file('java/res')
+            if (resRoot.isDirectory()) {
+                long droppedBitmapBytes = 0
+                densityBuckets.each { buckets ->
+                    final Map<String, File> preferred = [:]
+                    buckets.each { bucket ->
+                        final def bucketDir = new File(resRoot, bucket)
+                        if (!bucketDir.isDirectory()) { return }
+                        bucketDir.listFiles()?.each { entry ->
+                            if (!entry.isFile()) { return }
+                            final def existing = preferred.get(entry.name)
+                            if (existing == null) {
+                                preferred.put(entry.name, entry)
+                            } else {
+                                droppedBitmapBytes += entry.length()
+                                entry.delete()
+                            }
+                        }
+                    }
+                }
+                if (droppedBitmapBytes > 0) {
+                    logger.lifecycle("density buckets: dropped ${droppedBitmapBytes / 1024} KB of duplicate bitmaps")
+                }
+            }
+
             // The same goes for the spacing/punctuation tables: one file per
             // language, but an English build only ever reaches "default" and
             // "default-sw600dp"; a missing candidate is caught as IOException and

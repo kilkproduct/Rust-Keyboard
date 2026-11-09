@@ -554,6 +554,20 @@ jobs:
             done
             echo '```'
             echo
+            echo "What the stable package is made of, compressed bytes per top-level path:"
+            echo
+            echo '```'
+            stable_apk=$(ls dist/keyboard-stable-release.apk 2>/dev/null | head -1)
+            if [ -n "$stable_apk" ]; then
+              unzip -l "$stable_apk" \
+                | awk 'NF==4 && $1 ~ /^[0-9]+$/ {n=split($4, p, "/"); key=p[1]; if (n > 1) key=p[1]"/"p[2]; sum[key]+=$1} END {for (k in sum) printf "%9d %s\n", sum[k], k}' \
+                | sort -nr | head -25
+              echo
+              echo "Largest entries:"
+              unzip -l "$stable_apk" | sort -k1,1 -n -r | head -20
+            fi
+            echo '```'
+            echo
             cat <<'TEXT'
           * Engine: the Rust dictionary/suggestion core (`libkeyboard_core.so`,
             see `rust/README.md`). The C++ engine, its llama.cpp/whisper.cpp
