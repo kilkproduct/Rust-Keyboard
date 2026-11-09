@@ -35,6 +35,15 @@ engine otherwise.
 The keyboard does not talk to the network. What was removed, and how to verify
 it, is documented in [`PRIVACY.md`](PRIVACY.md).
 
+## English only
+
+This fork ships the Latin engine only. The Japanese (mozc) and Chinese (Rime)
+engines, their AARs and dictionaries, the other compiled dictionaries and the
+`translations` submodule are gone, which took the package from 128 MB to 101 MB.
+`tools/strip-non-english-resources.sh` does the same trim on the resource
+submodules at build time, because those submodules are shared. The translation
+instructions above therefore do not apply to this fork.
+
 ## Layouts
 
 If you want to contribute layouts, check out the [layouts repo](https://github.com/futo-org/futo-keyboard-layouts).
