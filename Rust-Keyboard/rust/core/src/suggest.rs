@@ -50,6 +50,8 @@ const GESTURE_MAX_POINT_LOOKAHEAD: usize = 6;
 const MAX_STATES: usize = 192;
 const MAX_TERMINALS: usize = 96;
 const MAX_EXTRA_COMPLETION_STEPS: usize = 8;
+/// Frontier size that triggers an early prune; keeps the working set small.
+const MAX_FRONTIER: usize = 512;
 
 /// Error flags accumulated along a search path.
 pub const ERROR_EDIT: u32 = 0x1;
@@ -191,9 +193,29 @@ struct Search<'a> {
     prev_terminal_ids: &'a [i32],
     weight_of_lang_model_vs_spatial: f32,
     results: &'a mut Vec<SuggestedWord>,
+    /// Reusable buffer of the children of the node being expanded. It has to
+    /// hold *every* child: a fixed 24 entry window silently dropped whole
+    /// branches (the root alone has one per letter and digit), which is how
+    /// lowercase input ended up matching only the capital 'I' words.
+    children: Vec<Node>,
 }
 
 impl<'a> Search<'a> {
+    /// Fills `self.children` with every child of `node`, keeping the buffer for
+    /// the next expansion so nothing is allocated per node.
+    fn collect_children(&mut self, node: &Node) {
+        let mut children = std::mem::take(&mut self.children);
+        children.clear();
+        let dict = self.dict;
+        dict.for_each_child(node, |child| {
+            if child.char_count > 0 {
+                children.push(*child);
+            }
+            true
+        });
+        self.children = children;
+    }
+
     /// How many edits a word may differ by. Short input gets one, because two
     /// edits on three letters reaches every short word in the dictionary.
     fn max_edits(&self) -> u8 {
@@ -350,22 +372,13 @@ impl<'a> Search<'a> {
         }
 
         let input_position = state.input_index as usize;
-        let input_state = &self.input[input_position];
-        let mut child_count = 0usize;
+        let input_state = self.input[input_position];
 
-        // Gather the children through a small local buffer to keep `self`
-        // borrows non-overlapping.
-        let mut children: [Node; 24] = [Node::empty(); 24];
-        self.dict.for_each_child(&state.node, |child| {
-            if child_count < children.len() {
-                children[child_count] = *child;
-                child_count += 1;
-            }
-            true
-        });
+        self.collect_children(&state.node);
+        let child_count = self.children.len();
 
         for index in 0..child_count {
-            let child = children[index];
+            let child = self.children[index];
             let char_count = child.char_count as usize;
             if char_count == 0 {
                 continue;
@@ -449,17 +462,10 @@ impl<'a> Search<'a> {
     }
 
     fn expand_completion(&mut self, state: &State, next: &mut Vec<State>) {
-        let mut child_count = 0usize;
-        let mut children: [Node; 24] = [Node::empty(); 24];
-        self.dict.for_each_child(&state.node, |child| {
-            if child_count < children.len() {
-                children[child_count] = *child;
-                child_count += 1;
-            }
-            true
-        });
+        self.collect_children(&state.node);
+        let child_count = self.children.len();
         for index in 0..child_count {
-            let child = children[index];
+            let child = self.children[index];
             let char_count = child.char_count as usize;
             if char_count == 0 || state.word_len as usize + char_count > MAX_WORD_LENGTH {
                 continue;
@@ -549,19 +555,12 @@ impl<'a> Search<'a> {
             return;
         }
 
-        let mut child_count = 0usize;
-        let mut children: [Node; 24] = [Node::empty(); 24];
-        self.dict.for_each_child(&state.node, |child| {
-            if child_count < children.len() {
-                children[child_count] = *child;
-                child_count += 1;
-            }
-            true
-        });
+        self.collect_children(&state.node);
+        let child_count = self.children.len();
 
         let cursor = state.input_index as usize;
         for index in 0..child_count {
-            let child = children[index];
+            let child = self.children[index];
             if child.char_count != 1 {
                 continue;
             }
@@ -755,6 +754,7 @@ pub fn get_suggestions(
         prev_terminal_ids: &prev_ids,
         weight_of_lang_model_vs_spatial: *weight_of_lang_model_vs_spatial,
         results,
+        children: Vec::with_capacity(64),
     };
 
     let mut active: Vec<State> = Vec::with_capacity(MAX_STATES);
@@ -778,6 +778,14 @@ pub fn get_suggestions(
                 search.expand_gesture(state, &mut next);
             } else {
                 search.expand(state, &mut next);
+            }
+            // Every child of every state is now considered, so prune during the
+            // step instead of letting the frontier grow to states x children.
+            if next.len() >= MAX_FRONTIER {
+                next.sort_by(|a, b| {
+                    a.cost().partial_cmp(&b.cost()).unwrap_or(std::cmp::Ordering::Equal)
+                });
+                next.truncate(MAX_STATES);
             }
         }
         if next.len() > MAX_STATES {
@@ -852,7 +860,7 @@ pub fn get_predictions(
 
     // Depth-first pass bounded by a node budget so that a huge dictionary does
     // not blow up the keystroke latency.
-    let mut budget = 4000usize;
+    let mut budget = 6000usize;
     let mut candidates: Vec<(SuggestedWord, i32)> = Vec::new();
     let mut buffer = [0i32; MAX_WORD_LENGTH];
 
@@ -898,7 +906,7 @@ fn collect_predictions(
     dict: &Dictionary,
     prev_ids: &[i32],
     buffer: &mut [i32; MAX_WORD_LENGTH],
-    length: usize,
+    _length: usize,
     budget: &mut usize,
     out: &mut Vec<(SuggestedWord, i32)>,
 ) {
@@ -910,25 +918,19 @@ fn collect_predictions(
         children_pos: 0,
         ..Node::empty()
     };
-    let mut children: [Node; 32] = [Node::empty(); 32];
-    let mut count = 0usize;
+
+    // Breadth first, so every branch of the trie gets a share of the budget.
+    // A depth first walk spends it all inside the first subtree it enters and
+    // predicts nothing but the words that happen to start with that letter.
+    let mut queue: std::collections::VecDeque<(Node, usize)> =
+        std::collections::VecDeque::with_capacity(256);
     dict.for_each_child(&root, |child| {
-        if count < children.len() {
-            children[count] = *child;
-            count += 1;
-        }
+        queue.push_back((*child, 0usize));
         true
     });
-    let _ = root;
-    let _ = length;
 
-    let mut stack: Vec<(Node, usize)> = Vec::with_capacity(64);
-    for index in 0..count {
-        stack.push((children[index], 0usize));
-    }
-
-    while let Some((node, base_length)) = stack.pop() {
-        if *budget == 0 {
+    while let Some((node, base_length)) = queue.pop_front() {
+        if *budget == 0 || out.len() >= 512 {
             return;
         }
         *budget -= 1;
@@ -952,20 +954,12 @@ fn collect_predictions(
                 out.push((suggestion, attributes.probability));
             }
         }
-        let mut child_count = 0usize;
-        let mut child_buffer: [Node; 32] = [Node::empty(); 32];
         dict.for_each_child(&node, |child| {
-            if child_count < child_buffer.len() {
-                child_buffer[child_count] = *child;
-                child_count += 1;
+            if child.char_count > 0 {
+                queue.push_back((*child, new_length));
             }
             true
         });
-        for index in 0..child_count {
-            if new_length + child_buffer[index].char_count as usize <= MAX_WORD_LENGTH {
-                stack.push((child_buffer[index], new_length));
-            }
-        }
     }
 }
 
