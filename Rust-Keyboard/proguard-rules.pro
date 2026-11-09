@@ -67,11 +67,13 @@
 -keep class org.futo.inputmethod.latin.DicTraverseSession { *; }
 -keep class org.futo.inputmethod.latin.utils.BinaryDictionaryUtils { *; }
 
+# No renaming. Shrinking and optimisation stay on (they are what removes the
+# unused engine and library code), but the names the app is built and shipped
+# with are kept, which is what this project shipped with before the size pass.
 # Repackaging every class into the default package and letting R8 widen access
-# was tried for size and reverted: it is the one optimisation in this file that
-# changes the shape of the application for code the shrinker cannot see (name
-# based lookups, serialised class names, the manifest). The megabytes it saved
-# came from assets; the ~100 KB it saves here are not worth a crash on startup.
+# was tried for size and reverted for the same reason: those bytes are not
+# worth a startup that depends on something no test here can see.
+-dontobfuscate
 
 # Strip logging calls from the release build.
 -assumenosideeffects class android.util.Log {

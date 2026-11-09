@@ -97,6 +97,20 @@ for apk in "$@"; do
     else
         echo "   every manifest class is in the dex"
     fi
+
+    # 3. The strings the app only reaches through getIdentifier() (they are
+    #    listed in res/raw/keep.xml) have to survive the resource shrinker: the
+    #    system asks for them by name when it renders the keyboard picker.
+    subtype_strings=$("$aapt2_bin" dump resources "$apk" 2>/dev/null \
+        | grep -c "string/subtype_" || true)
+    case "$subtype_strings" in
+        ''|*[!0-9]*) echo "::warning::could not read the resource table of $apk" ;;
+        0)
+            echo "::error::$apk has no subtype_* strings; the language list would be empty"
+            status=1
+            ;;
+        *) echo "   subtype strings in the package: $subtype_strings" ;;
+    esac
 done
 
 exit "$status"
