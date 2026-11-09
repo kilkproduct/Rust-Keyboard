@@ -458,28 +458,34 @@ jobs:
             exit 0
           fi
           mkdir -p ci-logs
-          { echo "run ${GITHUB_RUN_ID} at ${GITHUB_SHA}"; ls -l ${{ env.PROJECT_DIR }}/dist/*.apk 2>/dev/null || echo "no apks"; } \
-            > ci-logs/apk-size.txt
+          {
+            echo "run ${GITHUB_RUN_ID} at ${GITHUB_SHA}"
+            ls -l ${{ env.PROJECT_DIR }}/dist/*.apk 2>/dev/null || echo "no apks"
+          } > ci-logs/apk-size.txt
           # What is actually inside the package: the next pruning pass works
           # from these numbers instead of guessing.
-          apk=$(ls ${{ env.PROJECT_DIR }}/dist/keyboard-stable-release.apk 2>/dev/null | head -1)
-          if [ -n "$apk" ]; then
-            {
-              echo "run ${GITHUB_RUN_ID} at ${GITHUB_SHA}"
+          {
+            echo "run ${GITHUB_RUN_ID} at ${GITHUB_SHA}"
+            apk=$(ls ${{ env.PROJECT_DIR }}/dist/keyboard-stable-release.apk 2>/dev/null | head -1)
+            echo "apk=${apk:-none}"
+            if [ -n "$apk" ] && command -v unzip >/dev/null; then
               echo "== largest entries"
               unzip -l "$apk" | sort -k1,1 -n -r | head -45
               echo
               echo "== by top level"
-              unzip -l "$apk" | awk 'NF==4 && $1 ~ /^[0-9]+$/ {split($4, p, "/"); key=p[1]"/"p[2]; if (p[2] ~ /\./) key=p[1]; sum[key]+=$1} END {for (k in sum) printf "%10d %s\n", sum[k], k}' | sort -nr | head -30
-            } > ci-logs/apk-contents.txt
-          fi
+              unzip -l "$apk" | awk 'NF==4 && $1 ~ /^[0-9]+$/ {n=split($4, p, "/"); key=p[1]; if (n > 1) key=p[1]"/"p[2]; sum[key]+=$1} END {for (k in sum) printf "%10d %s\n", sum[k], k}' | sort -nr | head -30
+            else
+              echo "unzip unavailable or no apk"
+            fi
+          } > ci-logs/apk-contents.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f ci-logs/apk-size.txt ci-logs/apk-contents.txt
+          git add -f ci-logs
           git commit -m "CI: apk size for ${GITHUB_SHA}" || exit 0
           git fetch --quiet origin "$GITHUB_REF_NAME" \
             && git rebase --quiet "origin/$GITHUB_REF_NAME" \
-            && git push --quiet origin "HEAD:refs/heads/$GITHUB_REF_NAME" || true
+            && git push --quiet origin "HEAD:refs/heads/$GITHUB_REF_NAME" \
+            || echo "::warning::could not push the size report"
 
       # Guards the two claims of this fork: the Rust engine is really inside the
       # package, and the package really cannot reach the network.
