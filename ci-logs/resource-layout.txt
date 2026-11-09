@@ -146,13 +146,13 @@ Rust-Keyboard/java/assets/layouts/Devanagari
 
 == java/res-large files
 total 5992
--rw-r--r-- 1 runner runner 5077491 Nov  9 12:39 emoji_i18n.jsondlgz
--rw-r--r-- 1 runner runner 1054656 Nov  9 12:39 main_en.dict
+-rw-r--r-- 1 runner runner 5077491 Nov  9 12:50 emoji_i18n.jsondlgz
+-rw-r--r-- 1 runner runner 1054656 Nov  9 12:50 main_en.dict
 
 == voiceinput ml files
 Rust-Keyboard/voiceinput-shared/src/main/ml:
 total 42532
--rw-r--r-- 1 runner runner 43550795 Nov  9 12:39 tiny_en_acft_q8_0.bin.not.tflite
+-rw-r--r-- 1 runner runner 43550795 Nov  9 12:49 tiny_en_acft_q8_0.bin.not.tflite
 
 == java/assets/futo-swipe files
 Rust-Keyboard/java/assets/futo-swipe:
