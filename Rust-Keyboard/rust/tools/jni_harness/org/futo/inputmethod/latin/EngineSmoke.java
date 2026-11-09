@@ -336,7 +336,10 @@ public final class EngineSmoke {
             while (words < 400000) {
                 token = BinaryDictionary.getNextWordNative(englishDict, token, wordCodePoints,
                         wordIsBeginningOfSentence);
-                if (token < 0) {
+                // A token of zero means "the dictionary ended", exactly like
+                // AOSP's getNextWord(); iterating past it restarts from the
+                // first word.
+                if (token <= 0) {
                     break;
                 }
                 words++;
