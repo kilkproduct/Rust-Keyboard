@@ -145,18 +145,18 @@ Rust-Keyboard/java/assets/layouts/Devanagari
 
 == java/res-large files
 total 5992
--rw-r--r-- 1 runner runner 5077491 Nov  9 19:02 emoji_i18n.jsondlgz
--rw-r--r-- 1 runner runner 1054656 Nov  9 19:02 main_en.dict
+-rw-r--r-- 1 runner runner 5077491 Nov  9 20:38 emoji_i18n.jsondlgz
+-rw-r--r-- 1 runner runner 1054656 Nov  9 20:38 main_en.dict
 
 == java/res-large values (the English string tables in resources.arsc)
 total 236
--rw-r--r-- 1 runner runner 204824 Nov  9 19:02 strings-emoji-descriptions.xml
--rw-r--r-- 1 runner runner  31601 Nov  9 19:02 strings-letter-descriptions.xml
+-rw-r--r-- 1 runner runner 204824 Nov  9 20:38 strings-emoji-descriptions.xml
+-rw-r--r-- 1 runner runner  31601 Nov  9 20:38 strings-letter-descriptions.xml
 
 == voiceinput ml files
 Rust-Keyboard/voiceinput-shared/src/main/ml:
 total 42532
--rw-r--r-- 1 runner runner 43550795 Nov  9 19:02 tiny_en_acft_q8_0.bin.not.tflite
+-rw-r--r-- 1 runner runner 43550795 Nov  9 20:38 tiny_en_acft_q8_0.bin.not.tflite
 
 == java/assets/futo-swipe files
 Rust-Keyboard/java/assets/futo-swipe:
