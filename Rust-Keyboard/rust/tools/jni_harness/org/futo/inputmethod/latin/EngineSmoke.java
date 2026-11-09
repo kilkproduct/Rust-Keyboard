@@ -283,6 +283,42 @@ public final class EngineSmoke {
             check(englishProximity != 0, "could not build the letter proximity");
             DicTraverseSession.initDicTraverseSessionNative(session, englishDict, null, 0);
 
+            final int[] headerSize = new int[1];
+            final int[] headerVersion = new int[1];
+            final ArrayList<int[]> headerKeys = new ArrayList<>();
+            final ArrayList<int[]> headerValues = new ArrayList<>();
+            BinaryDictionary.getHeaderInfoNative(englishDict, headerSize, headerVersion, headerKeys,
+                    headerValues);
+            System.out.println("== english dictionary: format "
+                    + BinaryDictionary.getFormatVersionNative(englishDict) + ", header "
+                    + headerSize[0] + " bytes, version " + headerVersion[0] + ", "
+                    + headerKeys.size() + " attributes, file "
+                    + new File(englishDictPath).length() + " bytes");
+            try (java.io.FileInputStream in = new java.io.FileInputStream(englishDictPath)) {
+                final byte[] head = new byte[96];
+                final int read = in.read(head);
+                final StringBuilder hex = new StringBuilder();
+                for (int index = 0; index < read; index++) {
+                    hex.append(String.format("%02x", head[index]));
+                    if ((index + 1) % 16 == 0) {
+                        hex.append('\n');
+                    }
+                }
+                System.out.println("== first bytes:\n" + hex);
+                // The trie buffer starts right after the header.
+                in.getChannel().position(headerSize[0]);
+                final byte[] trie = new byte[64];
+                final int trieRead = in.read(trie);
+                final StringBuilder trieHex = new StringBuilder();
+                for (int index = 0; index < trieRead; index++) {
+                    trieHex.append(String.format("%02x", trie[index]));
+                    if ((index + 1) % 16 == 0) {
+                        trieHex.append('\n');
+                    }
+                }
+                System.out.println("== trie start:\n" + trieHex);
+            }
+
             // Does the engine read this dictionary at all? If a lookup fails,
             // the trie parsing is wrong and every suggestion is guesswork.
             for (String probe : new String[] {"its", "it's", "inserts", "the", "italian"}) {
