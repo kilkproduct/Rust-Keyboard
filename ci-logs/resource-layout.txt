@@ -1,0 +1,152 @@
+== sizes
+4.0K	Rust-Keyboard/libs/README.md
+5.2M	Rust-Keyboard/libs/futo-swipe-release.aar
+7.8M	Rust-Keyboard/libs/mozc-release.aar
+400K	Rust-Keyboard/libs/pocketfft-release.aar
+5.7M	Rust-Keyboard/libs/rime-release.aar
+84K	Rust-Keyboard/libs/tensorflow-lite-support-api.aar
+4.0K	Rust-Keyboard/libs/tensorflow-lite-support.aar
+4.0M	Rust-Keyboard/libs/tensorflow-lite.aar
+156K	Rust-Keyboard/libs/vad-release.aar
+82M	Rust-Keyboard/java/res-large
+1.3M	Rust-Keyboard/java/assets/layouts
+40M	Rust-Keyboard/java/assets/futo-swipe
+79M	Rust-Keyboard/voiceinput-shared/src/main/ml
+
+== java/res-large
+Rust-Keyboard/java/res-large
+Rust-Keyboard/java/res-large/values
+Rust-Keyboard/java/res-large/values/strings-emoji-descriptions.xml
+Rust-Keyboard/java/res-large/values/strings-letter-descriptions.xml
+Rust-Keyboard/java/res-large/README.md
+Rust-Keyboard/java/res-large/.git
+Rust-Keyboard/java/res-large/.git/logs
+Rust-Keyboard/java/res-large/.git/objects
+Rust-Keyboard/java/res-large/.git/HEAD
+Rust-Keyboard/java/res-large/.git/description
+Rust-Keyboard/java/res-large/.git/shallow
+Rust-Keyboard/java/res-large/.git/config
+Rust-Keyboard/java/res-large/.git/packed-refs
+Rust-Keyboard/java/res-large/.git/refs
+Rust-Keyboard/java/res-large/.git/hooks
+Rust-Keyboard/java/res-large/.git/index
+Rust-Keyboard/java/res-large/.git/info
+Rust-Keyboard/java/res-large/raw
+Rust-Keyboard/java/res-large/raw/ml4_q6_k.gguf
+Rust-Keyboard/java/res-large/raw/main_fr.dict
+Rust-Keyboard/java/res-large/raw/main_pt_br.dict
+Rust-Keyboard/java/res-large/raw/main_it.dict
+Rust-Keyboard/java/res-large/raw/main_de.dict
+Rust-Keyboard/java/res-large/raw/main_es.dict
+Rust-Keyboard/java/res-large/raw/main_ru.dict
+Rust-Keyboard/java/res-large/raw/main_en.dict
+Rust-Keyboard/java/res-large/raw/emoji_i18n.jsondlgz
+
+== java/assets/layouts directories
+Rust-Keyboard/java/assets/layouts
+Rust-Keyboard/java/assets/layouts/.github
+Rust-Keyboard/java/assets/layouts/.github/ISSUE_TEMPLATE
+Rust-Keyboard/java/assets/layouts/Newa
+Rust-Keyboard/java/assets/layouts/Default
+Rust-Keyboard/java/assets/layouts/Kannada
+Rust-Keyboard/java/assets/layouts/Armenian
+Rust-Keyboard/java/assets/layouts/Special
+Rust-Keyboard/java/assets/layouts/Sinhala
+Rust-Keyboard/java/assets/layouts/Malayalam
+Rust-Keyboard/java/assets/layouts/Hebrew
+Rust-Keyboard/java/assets/layouts/Chinese
+Rust-Keyboard/java/assets/layouts/Korean
+Rust-Keyboard/java/assets/layouts/Thai
+Rust-Keyboard/java/assets/layouts/InternationalPhoneticAlphabet
+Rust-Keyboard/java/assets/layouts/Legacy
+Rust-Keyboard/java/assets/layouts/Gurmukhi
+Rust-Keyboard/java/assets/layouts/KoashurKhat
+Rust-Keyboard/java/assets/layouts/.git
+Rust-Keyboard/java/assets/layouts/.git/logs
+Rust-Keyboard/java/assets/layouts/.git/objects
+Rust-Keyboard/java/assets/layouts/.git/refs
+Rust-Keyboard/java/assets/layouts/.git/hooks
+Rust-Keyboard/java/assets/layouts/.git/info
+Rust-Keyboard/java/assets/layouts/LatinScript
+Rust-Keyboard/java/assets/layouts/LatinScript/SmallFinnic
+Rust-Keyboard/java/assets/layouts/LatinScript/Sami
+Rust-Keyboard/java/assets/layouts/LatinScript/Americas
+Rust-Keyboard/java/assets/layouts/LatinScript/tokipona
+Rust-Keyboard/java/assets/layouts/LatinScript/Asia
+Rust-Keyboard/java/assets/layouts/LatinScript/Amazigh
+Rust-Keyboard/java/assets/layouts/LatinScript/French
+Rust-Keyboard/java/assets/layouts/Georgian
+Rust-Keyboard/java/assets/layouts/ArabicScript
+Rust-Keyboard/java/assets/layouts/Amazigh
+Rust-Keyboard/java/assets/layouts/Bengali
+Rust-Keyboard/java/assets/layouts/Tibetan
+Rust-Keyboard/java/assets/layouts/Tamil
+Rust-Keyboard/java/assets/layouts/Greek
+Rust-Keyboard/java/assets/layouts/Lao
+Rust-Keyboard/java/assets/layouts/ConstructedScripts
+Rust-Keyboard/java/assets/layouts/Telugu
+Rust-Keyboard/java/assets/layouts/Cyrillic
+Rust-Keyboard/java/assets/layouts/Cyrillic/Bulgarian
+Rust-Keyboard/java/assets/layouts/Japanese
+Rust-Keyboard/java/assets/layouts/Khmer
+Rust-Keyboard/java/assets/layouts/MyanmarScript
+Rust-Keyboard/java/assets/layouts/Devanagari
+
+== java/assets/layouts files by directory
+     28 Rust-Keyboard/java/assets/layouts/LatinScript
+     25 Rust-Keyboard/java/assets/layouts/Cyrillic
+     18 Rust-Keyboard/java/assets/layouts/Default
+     14 Rust-Keyboard/java/assets/layouts/.git/hooks
+      9 Rust-Keyboard/java/assets/layouts/ArabicScript
+      8 Rust-Keyboard/java/assets/layouts/Devanagari
+      7 Rust-Keyboard/java/assets/layouts/Special
+      6 Rust-Keyboard/java/assets/layouts/LatinScript/Sami
+      6 Rust-Keyboard/java/assets/layouts/InternationalPhoneticAlphabet
+      6 Rust-Keyboard/java/assets/layouts/Bengali
+      6 Rust-Keyboard/java/assets/layouts/.git
+      5 Rust-Keyboard/java/assets/layouts
+      4 Rust-Keyboard/java/assets/layouts/LatinScript/SmallFinnic
+      4 Rust-Keyboard/java/assets/layouts/Korean
+      4 Rust-Keyboard/java/assets/layouts/.github/ISSUE_TEMPLATE
+      3 Rust-Keyboard/java/assets/layouts/LatinScript/French
+      3 Rust-Keyboard/java/assets/layouts/LatinScript/Amazigh
+      3 Rust-Keyboard/java/assets/layouts/Japanese
+      3 Rust-Keyboard/java/assets/layouts/Cyrillic/Bulgarian
+      3 Rust-Keyboard/java/assets/layouts/Amazigh
+      3 Rust-Keyboard/java/assets/layouts/.git/objects/pack
+      2 Rust-Keyboard/java/assets/layouts/Tibetan
+      2 Rust-Keyboard/java/assets/layouts/Tamil
+      2 Rust-Keyboard/java/assets/layouts/Newa
+      2 Rust-Keyboard/java/assets/layouts/LatinScript/Asia
+      2 Rust-Keyboard/java/assets/layouts/Kannada
+      2 Rust-Keyboard/java/assets/layouts/Hebrew
+      2 Rust-Keyboard/java/assets/layouts/ConstructedScripts
+      2 Rust-Keyboard/java/assets/layouts/Chinese
+      1 Rust-Keyboard/java/assets/layouts/Thai
+      1 Rust-Keyboard/java/assets/layouts/Telugu
+      1 Rust-Keyboard/java/assets/layouts/Sinhala
+      1 Rust-Keyboard/java/assets/layouts/MyanmarScript
+      1 Rust-Keyboard/java/assets/layouts/Malayalam
+      1 Rust-Keyboard/java/assets/layouts/Legacy
+      1 Rust-Keyboard/java/assets/layouts/LatinScript/tokipona
+      1 Rust-Keyboard/java/assets/layouts/LatinScript/Americas
+      1 Rust-Keyboard/java/assets/layouts/Lao
+      1 Rust-Keyboard/java/assets/layouts/KoashurKhat
+      1 Rust-Keyboard/java/assets/layouts/Khmer
+      1 Rust-Keyboard/java/assets/layouts/Gurmukhi
+      1 Rust-Keyboard/java/assets/layouts/Greek
+      1 Rust-Keyboard/java/assets/layouts/Georgian
+      1 Rust-Keyboard/java/assets/layouts/Armenian
+      1 Rust-Keyboard/java/assets/layouts/.git/refs/remotes/origin
+      1 Rust-Keyboard/java/assets/layouts/.git/refs/heads
+      1 Rust-Keyboard/java/assets/layouts/.git/logs/refs/remotes/origin
+      1 Rust-Keyboard/java/assets/layouts/.git/logs/refs/heads
+      1 Rust-Keyboard/java/assets/layouts/.git/logs
+      1 Rust-Keyboard/java/assets/layouts/.git/info
+
+== java/assets top level
+68K	Rust-Keyboard/java/assets/spacing-and-punctuations
+196K	Rust-Keyboard/java/assets/themes
+1.3M	Rust-Keyboard/java/assets/layouts
+1.4M	Rust-Keyboard/java/assets/fonts
+40M	Rust-Keyboard/java/assets/futo-swipe
