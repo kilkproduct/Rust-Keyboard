@@ -565,7 +565,7 @@ unsafe extern "system" fn get_next_word_native(
             },
         ];
         env::set_boolean_array_region(env, out_is_beginning_of_sentence, 0, &is_beginning_of_sentence);
-        (index + 1) as JInt
+        (wanted + 1) as JInt
     })
 }
 
