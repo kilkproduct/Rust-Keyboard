@@ -19,45 +19,14 @@ import org.futo.inputmethod.latin.uix.settings.userSettingNavigationItem
 import org.futo.inputmethod.latin.uix.settings.userSettingToggleDataStore
 import org.futo.inputmethod.latin.uix.settings.userSettingToggleSharedPrefs
 
-private val visibilityCheckLMEnabled = @Composable {
-    useSharedPrefsBool(Settings.PREF_KEY_USE_TRANSFORMER_LM, true).value
-}
-
+// The on-device language model was removed: it was a multilingual model, so it
+// predicted words in other languages, and it cost ~75 MB of package and
+// hundreds of megabytes of RAM. Predictions now come from the English
+// dictionary alone.
 val PredictiveTextMenu = UserSettingsMenu(
     title = R.string.prediction_settings_title,
     navPath = "predictiveText", registerNavPath = true,
     settings = listOf(
-        userSettingToggleSharedPrefs(
-            title = R.string.prediction_settings_transformer,
-            key = Settings.PREF_KEY_USE_TRANSFORMER_LM,
-            default = { true }
-        ),
-
-        // if(transformerLmEnabled) {
-        //userSettingToggleDataStore(
-        //    title = R.string.prediction_settings_transformer_finetuning,
-        //    subtitle = R.string.prediction_settings_transformer_finetuning_subtitle,
-        //    setting = USE_TRANSFORMER_FINETUNING
-        //).copy(visibilityCheck = visibilityCheckLMEnabled),
-
-        userSettingNavigationItem(
-            title = R.string.prediction_settings_transformer_models,
-            style = NavigationItemStyle.HomeTertiary,
-            navigateTo = "models",
-            icon = R.drawable.cpu
-        ).copy(visibilityCheck = visibilityCheckLMEnabled),
-
-        userSettingNavigationItem(
-            title = R.string.prediction_settings_transformer_advanced_params,
-            style = NavigationItemStyle.HomeSecondary,
-            navigateTo = "advancedparams",
-            icon = R.drawable.code
-        ).copy(visibilityCheck = visibilityCheckLMEnabled),
-
-        userSettingDecorationOnly { Tip(stringResource(R.string.prediction_settings_transformer_alpha_notice)) }
-            .copy(visibilityCheck = visibilityCheckLMEnabled),
-        // }
-
         userSettingNavigationItem(
             title = R.string.edit_personal_dictionary,
             style = NavigationItemStyle.HomePrimary,
@@ -107,16 +76,11 @@ val PredictiveTextMenu = UserSettingsMenu(
             default = {true}
         ),
 
-        //if(!transformerLmEnabled) {
         userSettingToggleSharedPrefs(
             title = R.string.bigram_prediction,
             subtitle = R.string.bigram_prediction_summary,
             key = Settings.PREF_BIGRAM_PREDICTIONS,
             default = { booleanResource(R.bool.config_default_next_word_prediction) }
-        ).copy(visibilityCheck = {
-            // Opposite of visibilityCheckLMEnabled
-            !useSharedPrefsBool(Settings.PREF_KEY_USE_TRANSFORMER_LM, true).value
-        })
-        //}
+        )
     )
 )

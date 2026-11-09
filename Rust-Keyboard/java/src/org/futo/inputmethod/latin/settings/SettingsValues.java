@@ -402,7 +402,10 @@ public class SettingsValues {
 
     private static boolean readTransformerPredictionEnabled(final SharedPreferences prefs,
             final Resources res) {
-        return prefs.getBoolean(Settings.PREF_KEY_USE_TRANSFORMER_LM, true);
+        // The transformer language model is not part of this build: it shipped a
+        // multilingual model that predicted words in other languages and used
+        // hundreds of megabytes of RAM. Dictionary predictions cover this.
+        return false;
     }
 
     private static float readAutoCorrectionThreshold(final Resources res,

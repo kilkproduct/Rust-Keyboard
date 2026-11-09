@@ -51,7 +51,10 @@ const MAX_STATES: usize = 192;
 const MAX_TERMINALS: usize = 96;
 const MAX_EXTRA_COMPLETION_STEPS: usize = 8;
 /// Frontier size that triggers an early prune; keeps the working set small.
-const MAX_FRONTIER: usize = 512;
+/// Bound on how many partial matches the search keeps at once. Every entry is a
+/// whole `Node` (word characters included), so this is the engine's largest
+/// transient allocation; the frontier is trimmed to the best scores anyway.
+const MAX_FRONTIER: usize = 256;
 
 /// Error flags accumulated along a search path.
 pub const ERROR_EDIT: u32 = 0x1;
@@ -860,7 +863,9 @@ pub fn get_predictions(
 
     // Depth-first pass bounded by a node budget so that a huge dictionary does
     // not blow up the keystroke latency.
-    let mut budget = 6000usize;
+    // Node visits per prediction query. The dictionary is walked breadth first
+    // and the budget keeps a long query from scanning a whole subtree.
+    let mut budget = 4000usize;
     let mut candidates: Vec<(SuggestedWord, i32)> = Vec::new();
     let mut buffer = [0i32; MAX_WORD_LENGTH];
 

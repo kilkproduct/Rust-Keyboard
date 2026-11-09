@@ -23,18 +23,20 @@ else
   echo "no $res_dir, nothing to strip"
 fi
 
-# The swipe assets only need the three models SwipeDecoderDictionary names:
-# honorable_sturgeon (encoder), chosen_planarian (English language model) and
-# magic_macaw (decoder), plus scoring.json. The GIF is documentation and
-# hungry_jellyfish is an unused second language model.
+# The transformer language model: a multilingual model that predicted words in
+# other languages, ~75 MB of package and hundreds of megabytes of RAM. The
+# engine now predicts from the English dictionary alone.
+if [ -e "$res_dir/ml4_q6_k.gguf" ]; then
+  echo "stripping the transformer language model"
+  rm -f "$res_dir"/ml4_q6_k.gguf "$res_dir"/ml4_*.gguf
+fi
+
+# Swipe typing is gone: the three TFLite models (encoder, English language
+# model, decoder) and the GIF are ~30 MB of assets nothing reads any more.
 swipe_dir="$root/java/assets/futo-swipe"
 if [ -d "$swipe_dir" ]; then
-  for unused in animations hungry_jellyfish; do
-    if [ -e "$swipe_dir/$unused" ]; then
-      echo "stripping futo-swipe/$unused"
-      rm -rf "${swipe_dir:?}/$unused"
-    fi
-  done
+  echo "stripping futo-swipe entirely"
+  rm -rf "${swipe_dir:?}"/*
 else
   echo "no $swipe_dir, nothing to strip"
 fi

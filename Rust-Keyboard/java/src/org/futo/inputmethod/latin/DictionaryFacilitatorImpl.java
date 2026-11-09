@@ -103,7 +103,9 @@ public class DictionaryFacilitatorImpl implements DictionaryFacilitator {
     private static boolean sTriesAreInvalid = false;
     public static void onAnyBinaryDictionaryClosed() {
         sTriesAreInvalid = true;
-        swipeDecoderDictionary.invalidateTries();
+        if (swipeDecoderDictionary != null) {
+            swipeDecoderDictionary.invalidateTries();
+        }
     }
 
     @Override
@@ -368,9 +370,10 @@ public class DictionaryFacilitatorImpl implements DictionaryFacilitator {
             @Nullable final DictionaryInitializationListener listener) {
 
         mPrevKeyboard = null;
-        if(DictionaryFacilitatorImpl.swipeDecoderDictionary == null) {
-            DictionaryFacilitatorImpl.swipeDecoderDictionary = new SwipeDecoderDictionary(context, Locale.ENGLISH);
-        }
+        // Swipe decoding is not part of this build: it needed three TFLite
+        // models (~30 MB of assets and roughly a hundred megabytes of RAM) and
+        // its assets are no longer packaged, so the decoder stays null. Every
+        // caller already null-checks it.
 
         final HashMap<Locale, ArrayList<String>> existingDictionariesToCleanup = new HashMap<>();
         // TODO: Make subDictTypesToUse configurable by resource or a static final list.

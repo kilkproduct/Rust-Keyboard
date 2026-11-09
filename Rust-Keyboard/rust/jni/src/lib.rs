@@ -121,7 +121,10 @@ struct Scratch {
 }
 
 /// How many words of the walk `getNextWordNative` keeps resident at a time.
-const NEXT_WORD_WINDOW: usize = 1024;
+/// Words kept in the dictionary-iteration cache. The iterator is only used by
+/// maintenance tooling, so a small window is enough and it keeps the cache from
+/// holding hundreds of kilobytes.
+const NEXT_WORD_WINDOW: usize = 256;
 
 impl Scratch {
     fn new() -> Scratch {

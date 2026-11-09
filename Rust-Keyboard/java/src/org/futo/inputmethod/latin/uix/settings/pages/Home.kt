@@ -59,12 +59,7 @@ val HomeScreenLite = UserSettingsMenu(
 
         },
 
-        userSettingNavigationItem(
-            title = R.string.language_settings_title,
-            style = NavigationItemStyle.HomePrimary,
-            navigateTo = "languages",
-            icon = R.drawable.globe
-        ),
+        // Language switching is gone: this build is English only.
 
         userSettingNavigationItem(
             title = R.string.settings_keyboard_typing_title,
