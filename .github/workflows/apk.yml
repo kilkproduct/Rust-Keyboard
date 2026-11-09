@@ -195,7 +195,13 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f ci-logs/jni-smoke.log
           git commit -m "CI: JNI smoke test output for ${GITHUB_SHA}" || exit 0
-          git push || true
+          # Other jobs commit logs to the same branch, so rebase before pushing;
+          # a lost race here is exactly how a diagnostic log goes missing.
+          for attempt in 1 2 3 4; do
+            git pull --rebase --autostash --quiet && git push --quiet && exit 0
+            sleep $((attempt * 5))
+          done
+          echo "::warning::could not push the smoke test log"
 
   apk:
     name: Build APK
