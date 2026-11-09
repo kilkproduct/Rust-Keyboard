@@ -265,7 +265,7 @@ warning: Environment variable `ANDROID_NDK_HOME = "/usr/local/lib/android/sdk/nd
     [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_get_object_class`[0m
 
 [1m[33mwarning[0m: `kb-jni` (lib) generated 34 warnings
-[1m[92m    Finished[0m `release` profile [optimized] target(s) in 2.70s
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 3.21s
      Copying libraries to /home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/jniLibs
 rust: libkeyboard_core.so written to java/jniLibs
 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
@@ -278,11 +278,14 @@ crashreporting.properties not found, crash reporting will be disabled
 BRANCH_NAME env variable not set – falling back to git branch.
 BRANCH_NAME env variable not set – falling back to git branch.
 BRANCH_NAME env variable not set – falling back to git branch.
-versionCode = 58
-versionName = 0.1.0-rust.58
+versionCode = 63
+versionName = 0.1.0-rust.63
 
 > Task :rustNativeBuild SKIPPED
+
 > Task :stripUnusedResources
+emoji_i18n trimmed to 6 language(s)
+
 > Task :updateLocales
 > Task :preBuild
 > Task :preUnstableReleaseBuild
@@ -353,29 +356,55 @@ versionName = 0.1.0-rust.58
 > Task :processStableReleaseResources UP-TO-DATE
 > Task :compileUnstableReleaseKotlin
 > Task :compileStableReleaseKotlin
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/UixManager.kt:674:74 Unresolved reference 'SystemVoiceInputAction'.
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/actions/Registry.kt:29:29 Unresolved reference 'SystemVoiceInputAction'.
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/actions/Registry.kt:72:29 Unresolved reference 'SystemVoiceInputAction'.
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/actions/Registry.kt:72:53 Unresolved reference 'SystemVoiceInputAction'.
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/actions/Registry.kt:260:58 Unresolved reference 'SystemVoiceInputAction'.
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Languages.kt:376:24 Unresolved reference 'BuiltInVoiceInputFallbacks'.
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Languages.kt:657:54 Unresolved reference 'tryFindingVoiceInputModelForLocale'.
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Languages.kt:660:22 Cannot infer type for this parameter. Please specify it explicitly.
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Languages.kt:660:26 Cannot infer type for this parameter. Please specify it explicitly.
-
-> Task :compileUnstableReleaseKotlin FAILED
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/UixManager.kt:674:74 Unresolved reference 'SystemVoiceInputAction'.
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/actions/Registry.kt:29:29 Unresolved reference 'SystemVoiceInputAction'.
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/actions/Registry.kt:72:29 Unresolved reference 'SystemVoiceInputAction'.
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/actions/Registry.kt:72:53 Unresolved reference 'SystemVoiceInputAction'.
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/actions/Registry.kt:260:58 Unresolved reference 'SystemVoiceInputAction'.
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Languages.kt:376:24 Unresolved reference 'BuiltInVoiceInputFallbacks'.
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Languages.kt:657:54 Unresolved reference 'tryFindingVoiceInputModelForLocale'.
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Languages.kt:660:22 Cannot infer type for this parameter. Please specify it explicitly.
-e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Languages.kt:660:26 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/ActionBar.kt:114:35 Unresolved reference 'DisplayTop4Setting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/ActionBar.kt:484:62 Unresolved reference 'DisplayTop4Setting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/actions/MemDebugAction.kt:33:35 Unresolved reference 'LegacySwipeSetting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/DevSettings.kt:46:35 Unresolved reference 'SwipeLanguageModelSetting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/DevSettings.kt:47:35 Unresolved reference 'SwipeSpecialDecoderSetting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/DevSettings.kt:314:23 Unresolved reference 'SwipeSpecialDecoderSetting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/DevSettings.kt:319:23 Unresolved reference 'SwipeLanguageModelSetting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:32:35 Unresolved reference 'DisplayTop4Setting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:33:35 Unresolved reference 'LegacySwipeSetting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:260:27 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:260:27 Not enough information to infer type argument for 'T'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:260:40 Unresolved reference 'DisplayTop4Setting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:289:29 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:289:29 Not enough information to infer type argument for 'T'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:289:47 Unresolved reference 'LegacySwipeSetting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:290:33 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:290:33 Not enough information to infer type argument for 'T'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:290:44 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:290:44 Not enough information to infer type argument for 'T'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:293:31 Unresolved reference 'value'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:295:35 Unresolved reference 'value'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:304:31 Unresolved reference 'LegacySwipeSetting'.
 
 > Task :compileStableReleaseKotlin FAILED
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/gradle-1794228213963.json
+
+> Task :compileUnstableReleaseKotlin FAILED
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/ActionBar.kt:114:35 Unresolved reference 'DisplayTop4Setting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/ActionBar.kt:484:62 Unresolved reference 'DisplayTop4Setting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/actions/MemDebugAction.kt:33:35 Unresolved reference 'LegacySwipeSetting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/DevSettings.kt:46:35 Unresolved reference 'SwipeLanguageModelSetting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/DevSettings.kt:47:35 Unresolved reference 'SwipeSpecialDecoderSetting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/DevSettings.kt:314:23 Unresolved reference 'SwipeSpecialDecoderSetting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/DevSettings.kt:319:23 Unresolved reference 'SwipeLanguageModelSetting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:32:35 Unresolved reference 'DisplayTop4Setting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:33:35 Unresolved reference 'LegacySwipeSetting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:260:27 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:260:27 Not enough information to infer type argument for 'T'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:260:40 Unresolved reference 'DisplayTop4Setting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:289:29 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:289:29 Not enough information to infer type argument for 'T'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:289:47 Unresolved reference 'LegacySwipeSetting'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:290:33 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:290:33 Not enough information to infer type argument for 'T'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:290:44 Cannot infer type for this parameter. Please specify it explicitly.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:290:44 Not enough information to infer type argument for 'T'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:293:31 Unresolved reference 'value'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:295:35 Unresolved reference 'value'.
+e: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/src/org/futo/inputmethod/latin/uix/settings/pages/Swipe.kt:304:31 Unresolved reference 'LegacySwipeSetting'.
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/gradle-1794234122976.json
 
 [Incubating] Problems report is available at: file:///home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/build/reports/problems/problems-report.html
 
@@ -868,6 +897,6 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD FAILED in 48s
+BUILD FAILED in 50s
 63 actionable tasks: 4 executed, 59 up-to-date
 rustbuild=success gradle=failure
