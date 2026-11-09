@@ -205,6 +205,9 @@ android {
         testApplicationId 'org.futo.inputmethod.latin.tests'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = false
+        // Only English resources ship: AppCompat, Material and Compose each
+        // carry ~80 locales of their own resources.
+        resourceConfigurations += ["en"]
 
         // One ABI. Every Android phone this keyboard runs on is arm64, and the
         // native engine used to be built for four architectures.
@@ -262,9 +265,6 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
-            // Only English resources ship: AppCompat, Material and Compose each
-            // carry ~80 locales of their own resources.
-            resourceConfigurations += ["en"]
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig releaseSigning
         }
