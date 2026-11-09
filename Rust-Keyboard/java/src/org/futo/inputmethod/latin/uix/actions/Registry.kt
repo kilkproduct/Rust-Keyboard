@@ -14,7 +14,6 @@ import org.futo.inputmethod.latin.uix.PreferenceUtils
 import org.futo.inputmethod.latin.uix.SettingsKey
 import org.futo.inputmethod.latin.uix.USE_SYSTEM_VOICE_INPUT
 import org.futo.inputmethod.latin.uix.actions.clipboard.ClipboardHistoryAction
-import org.futo.inputmethod.latin.uix.actions.fonttyper.FontTyperAction
 import org.futo.inputmethod.latin.uix.getSetting
 import org.futo.inputmethod.latin.uix.setSettingBlocking
 
@@ -42,7 +41,8 @@ val AllActionsMap = mapOf(
     "down" to ArrowDownAction,
     "left" to ArrowLeftAction,
     "right" to ArrowRightAction,
-    "font_typer" to FontTyperAction,
+    // "font_typer" (Word Styles) was removed. It was the last entry, so no
+    // other action changed index and stored layouts keep working.
 )
 
 val ActionToId = AllActionsMap.entries.associate { it.value to it.key }

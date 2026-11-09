@@ -102,16 +102,17 @@ jobs:
       - name: Fetch the English dictionary
         run: |
           cd ${{ env.PROJECT_DIR }}
-          url=$(git config -f .gitmodules --get-regexp '^submodule\..*\.path$' \
-            | grep 'java/res-large' | head -1 | sed 's/^submodule\.\(.*\)\.path$/\1/')
-          if [ -z "$url" ]; then
-            echo "::warning::java/res-large is not a submodule any more"
-            exit 0
-          fi
-          source=$(git config -f .gitmodules --get "submodule.$url.url")
-          rm -rf java/res-large
-          git clone --depth 1 "$source" java/res-large || {
-            echo "::warning::could not clone $source"; rm -rf java/res-large; }
+          git config -f .gitmodules --get-regexp '^submodule\..*\.path$' \
+            | while read -r key path; do
+                [ "$path" = "java/res-large" ] || continue
+                name="${key#submodule.}"
+                name="${name%.path}"
+                source=$(git config -f .gitmodules --get "submodule.$name.url")
+                echo "== cloning $source -> $path"
+                rm -rf "$path"
+                GIT_LFS_SKIP_SMUDGE=0 git clone --depth 1 "$source" "$path" \
+                  || { echo "::warning::could not clone $source"; rm -rf "$path"; }
+              done
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -180,7 +181,7 @@ jobs:
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish the smoke test log
-        if: always()
+        if: always() && github.ref_type != 'tag'
         run: |
           mkdir -p ci-logs
           cp "$RUNNER_TEMP/jni-smoke.log" ci-logs/jni-smoke.log 2>/dev/null || true
@@ -194,7 +195,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f ci-logs/jni-smoke.log
           git commit -m "CI: JNI smoke test output for ${GITHUB_SHA}" || exit 0
-          git push
+          git push || true
 
   apk:
     name: Build APK
