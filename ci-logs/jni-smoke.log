@@ -132,47 +132,48 @@ c0770fc04dc078100630c079100809c0
    "its" -> insufficient score 705129 kind 268435457
    "its" -> instituted score 704460 kind 268435457
 == "its": 40 suggestions, apostrophe variant present
-   "" -> éo score 933920 kind 8
-   "" -> éf score 932114 kind 8
-   "" -> én score 924807 kind 8
+   "" -> to score 933920 kind 8
+   "" -> of score 932114 kind 8
+   "" -> in score 924807 kind 8
    "" -> a score 921101 kind 8
-   "" -> és score 905912 kind 8
+   "" -> is score 905912 kind 8
    "" -> I score 898088 kind 8
-   "" -> és score 898088 kind 8
-   "" -> én score 896107 kind 8
-   "" -> éy score 894115 kind 8
-   "" -> ét score 886047 kind 8
-   "" -> én score 879883 kind 8
-   "" -> ée score 879883 kind 8
-   "" -> ét score 873620 kind 8
-   "" -> ér score 873620 kind 8
-   "" -> ée score 865108 kind 8
-   "" -> ée score 849746 kind 8
-   "" -> ée score 849746 kind 8
-   "" -> éo score 829056 kind 8
-   "" -> éo score 826687 kind 8
-   "" -> éy score 819493 kind 8
-   "" -> éo score 819493 kind 8
-   "" -> ép score 819493 kind 8
-   "" -> és score 819493 kind 8
-   "" -> éf score 817065 kind 8
-   "" -> éo score 807197 kind 8
-   "" -> éx score 739079 kind 8
-   "" -> ém score 736088 kind 8
-   "" -> éhio score 726975 kind 8
-   "" -> és score 726975 kind 8
-   "" -> étb score 714481 kind 8
-   "" -> éd score 711294 kind 8
-   "" -> émail score 708080 kind 8
-   "" -> étypt score 701571 kind 8
-   "" -> é-shirts score 698275 kind 8
-   "" -> étn score 698275 kind 8
-   "" -> ém score 691597 kind 8
-   "" -> étn score 688215 kind 8
-   "" -> éh score 656366 kind 8
-   "" -> étckland score 656366 kind 8
-   "" -> é's score 645140 kind 8
+   "" -> as score 898088 kind 8
+   "" -> on score 896107 kind 8
+   "" -> by score 894115 kind 8
+   "" -> at score 886047 kind 8
+   "" -> an score 879883 kind 8
+   "" -> he score 879883 kind 8
+   "" -> it score 873620 kind 8
+   "" -> or score 873620 kind 8
+   "" -> we score 865108 kind 8
+   "" -> be score 849746 kind 8
+   "" -> me score 849746 kind 8
+   "" -> go score 829056 kind 8
+   "" -> so score 826687 kind 8
+   "" -> my score 819493 kind 8
+   "" -> no score 819493 kind 8
+   "" -> up score 819493 kind 8
+   "" -> us score 819493 kind 8
+   "" -> if score 817065 kind 8
+   "" -> do score 807197 kind 8
+   "" -> ex score 739079 kind 8
+   "" -> am score 736088 kind 8
+   "" -> Ohio score 726975 kind 8
+   "" -> vs score 726975 kind 8
+   "" -> Bob score 714481 kind 8
+   "" -> ad score 711294 kind 8
+   "" -> gmail score 708080 kind 8
+   "" -> Egypt score 701571 kind 8
+   "" -> t-shirts score 698275 kind 8
+   "" -> Ben score 698275 kind 8
+   "" -> pm score 691597 kind 8
+   "" -> Dan score 688215 kind 8
+   "" -> oh score 656366 kind 8
+   "" -> Auckland score 656366 kind 8
+   "" -> M's score 645140 kind 8
 == after "the": 40 predictions
+== predictions that are not dictionary words: 0
    "hel" -> hel score 1526287 kind 1342177280
    "hel" -> held score 853078 kind 268435457
    "hel" -> her score 845904 kind 268435457
