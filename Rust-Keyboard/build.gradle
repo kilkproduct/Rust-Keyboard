@@ -475,16 +475,8 @@ dependencies {
 
     implementation "com.charleskorn.kaml:kaml:0.61.0"
 
-    // For MOZC
-    implementation 'com.google.protobuf:protobuf-javalite:3.8.0'
-    implementation 'com.google.guava:guava:33.4.8-android'
-    implementation(name:'mozc-release', ext:'aar')
-    // End for MOZC
-
-    // For RIME
-    implementation files('libs/rime-release.aar')
-    // End for RIME
-
+    // The Japanese (mozc) and Chinese (Rime) engines were removed: this build is
+    // English only, and their dictionaries were most of the package size.
     implementation files('libs/futo-swipe-release.aar')
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")

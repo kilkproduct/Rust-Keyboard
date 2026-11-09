@@ -2,8 +2,6 @@ package org.futo.inputmethod.engine
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import org.futo.inputmethod.engine.general.ChineseIMESettings
-import org.futo.inputmethod.engine.general.JapaneseIMESettings
 import org.futo.inputmethod.latin.R
 import org.futo.inputmethod.latin.Subtypes
 import org.futo.inputmethod.latin.SubtypesSetting
@@ -12,20 +10,9 @@ import org.futo.inputmethod.latin.uix.settings.UserSettingsMenu
 import org.futo.inputmethod.latin.uix.settings.useDataStoreValue
 import org.futo.inputmethod.latin.uix.settings.userSettingNavigationItem
 
-@Composable
-private fun isVisible(language: String): Boolean {
-    val subtypeSet = useDataStoreValue(SubtypesSetting)
-    return remember(subtypeSet) {
-        subtypeSet.any {
-            Subtypes.getLocale(Subtypes.convertToSubtype(it).locale).language == language
-        }
-    }
-}
-
-val SettingsByLanguage = mapOf(
-    "zh" to ChineseIMESettings.menu.copy(visibilityCheck = { isVisible("zh") }),
-    "ja" to JapaneseIMESettings.menu.copy(visibilityCheck = { isVisible("ja") })
-)
+/// Per language settings menus. The keyboard is English only, so there are
+/// none; the map is kept because the navigation code iterates it.
+val SettingsByLanguage: Map<String, UserSettingsMenu> = emptyMap()
 
 @Composable
 private fun anyVisible(): Boolean {

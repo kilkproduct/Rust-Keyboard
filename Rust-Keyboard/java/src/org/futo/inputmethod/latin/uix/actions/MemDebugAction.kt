@@ -27,9 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import org.futo.inputmethod.engine.general.ChineseIME
 import org.futo.inputmethod.engine.general.GeneralIME
-import org.futo.inputmethod.engine.general.JapaneseIME
 import org.futo.inputmethod.latin.ATLCompat
 import org.futo.inputmethod.latin.LatinIME
 import org.futo.inputmethod.latin.LegacySwipeSetting
@@ -377,14 +375,7 @@ val MemoryDebugAction = Action(
                                 Text(it, style = DebugLabel)
                             }
                         }
-
-                        is ChineseIME -> {
-                            Text("ChineseIME\n${ime.debugInfo}", style = DebugLabel)
-                        }
-
-                        is JapaneseIME -> {
-                            Text("JapaneseIME [no debug info yet]", style = DebugLabel)
-                        }
+                        else -> Unit
                     }
                     Spacer(modifier = Modifier.height(8.dp))
 
