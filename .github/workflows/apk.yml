@@ -271,6 +271,9 @@ jobs:
             echo "== java/res-large files"
             ls -lS ${{ env.PROJECT_DIR }}/java/res-large/raw 2>/dev/null
             echo
+            echo "== java/res-large values (the English string tables in resources.arsc)"
+            ls -lS ${{ env.PROJECT_DIR }}/java/res-large/values 2>/dev/null
+            echo
             echo "== voiceinput ml files"
             ls -lSR ${{ env.PROJECT_DIR }}/voiceinput-shared/src/main/ml 2>/dev/null | head -60
             echo
