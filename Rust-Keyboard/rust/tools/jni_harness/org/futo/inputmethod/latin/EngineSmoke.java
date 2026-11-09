@@ -59,8 +59,16 @@ public final class EngineSmoke {
         final int[] tapTimes = new int[Math.max(inputSize, 1)];
         final int[] pointerIds = new int[Math.max(inputSize, 1)];
         for (int index = 0; index < inputSize; index++) {
-            tapX[index] = 50 + index * 10;
-            tapY[index] = 50;
+            // Same geometry as letterProximity(): ten keys per row, 100 units
+            // apart, so a tap lands on the key it names.
+            final int letter = input[index] - 'a';
+            if (letter >= 0 && letter < 26) {
+                tapX[index] = (letter % 10) * 100 + 50;
+                tapY[index] = (letter / 10) * 100 + 50;
+            } else {
+                tapX[index] = 50;
+                tapY[index] = 50;
+            }
             tapTimes[index] = 100 + index * 60;
         }
         final int[][] prev = new int[4][];
@@ -275,14 +283,39 @@ public final class EngineSmoke {
             check(englishProximity != 0, "could not build the letter proximity");
             DicTraverseSession.initDicTraverseSessionNative(session, englishDict, null, 0);
 
+            // Does the engine read this dictionary at all? If a lookup fails,
+            // the trie parsing is wrong and every suggestion is guesswork.
+            for (String probe : new String[] {"its", "it's", "inserts", "the", "italian"}) {
+                System.out.println("   probability \"" + probe + "\" = "
+                        + BinaryDictionary.getProbabilityNative(englishDict, codePoints(probe)));
+            }
+
+            // Walk the whole dictionary once: a wrong node layout shows up here
+            // as a nonsense count or as words full of garbage characters.
+            int token = 0;
+            int words = 0;
+            final int[] wordCodePoints = new int[MAX_WORD_LENGTH];
+            final boolean[] wordIsBeginningOfSentence = new boolean[1];
+            final StringBuilder sample = new StringBuilder();
+            while (words < 400000) {
+                token = BinaryDictionary.getNextWordNative(englishDict, token, wordCodePoints,
+                        wordIsBeginningOfSentence);
+                if (token < 0) {
+                    break;
+                }
+                words++;
+                if (words <= 12) {
+                    sample.append(' ').append(fromCodePoints(wordCodePoints, 0, MAX_WORD_LENGTH)
+                            .replace("\u0000", ""));
+                }
+            }
+            System.out.println("== dictionary walk: " + words + " words, first:" + sample);
+            check(words > 1000, "the dictionary walk stopped after " + words + " words");
+            check(token >= 0, "getNextWordNative returned a negative token: " + token);
+
             final int[] itsCount = new int[1];
             final ArrayList<String> its = suggest(englishDict, englishProximity, session, "its",
                     new String[0], itsCount);
-            check(itsCount[0] > 0, "no suggestions at all for \"its\"");
-            check(its.contains("its"), "\"its\" is not suggested for \"its\": " + its);
-            if (!its.contains("it's")) {
-                System.out.println("   NOTE: \"it's\" was not suggested for \"its\"");
-            }
             System.out.println("== \"its\": " + itsCount[0] + " suggestions, apostrophe variant "
                     + (its.contains("it's") ? "present" : "missing"));
 
@@ -290,13 +323,17 @@ public final class EngineSmoke {
             final ArrayList<String> prediction = suggest(englishDict, englishProximity, session, "",
                     new String[] {"the"}, predictionCount);
             System.out.println("== after \"the\": " + predictionCount[0] + " predictions");
-            check(predictionCount[0] > 0, "no next word predictions after \"the\"");
 
             final int[] completionCount = new int[1];
-            suggest(englishDict, englishProximity, session, "hel",
-                    new String[] {"i"}, completionCount);
-            check(completionCount[0] > 0, "no completions for \"hel\"");
+            final ArrayList<String> completion = suggest(englishDict, englishProximity, session,
+                    "hel", new String[] {"i"}, completionCount);
             System.out.println("== \"hel\" after \"i\": " + completionCount[0] + " suggestions");
+
+            // Every check after all the evidence has been printed.
+            check(itsCount[0] > 0, "no suggestions at all for \"its\"");
+            check(its.contains("its"), "\"its\" is not suggested for \"its\": " + its);
+            check(predictionCount[0] > 0, "no next word predictions after \"the\"");
+            check(completionCount[0] > 0, "no completions for \"hel\": " + completion);
         } else {
             System.out.println("== no KB_ENGLISH_DICT, skipping the real dictionary checks");
         }
