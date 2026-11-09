@@ -509,8 +509,18 @@ jobs:
             unzip -l "$apk" | grep -E "lib/.*\.so$" || true
             unzip -l "$apk" | grep -q "lib/${KB_ABIS}/libkeyboard_core.so" \
               || { echo "::error::$apk does not contain lib/${KB_ABIS}/libkeyboard_core.so"; exit 1; }
-            unzip -l "$apk" | grep -q "lib/${KB_ABIS}/libjni_latinime.so" \
-              || { echo "::error::$apk does not contain lib/${KB_ABIS}/libjni_latinime.so"; exit 1; }
+            # The C++ engine and its llama/whisper payload are gone.
+            if unzip -l "$apk" | grep -q "libjni_latinime.so"; then
+              echo "::error::$apk still contains the C++ engine"; exit 1
+            fi
+            if unzip -l "$apk" | grep -qE "lib/(armeabi-v7a|x86|x86_64)/"; then
+              echo "::error::$apk contains a non-arm64 ABI"; exit 1
+            fi
+            if unzip -l "$apk" | grep -qE "ml4_.*\.gguf|assets/futo-swipe/"; then
+              echo "::error::$apk still carries the language model or swipe assets"; exit 1
+            fi
+            # The body of the package, for the next pruning pass.
+            unzip -l "$apk" | sort -k1,1 -n -r | head -25
           done
           [ "$found" = "1" ] || { echo "::error::no APK was collected"; exit 1; }
 
@@ -538,7 +548,8 @@ jobs:
             echo
             cat <<'TEXT'
           * Engine: the Rust dictionary/suggestion core (`libkeyboard_core.so`,
-            see `rust/README.md`) next to the C++ voice-input library.
+            see `rust/README.md`). The C++ engine, its llama.cpp/whisper.cpp
+            payload and the bundled voice models are not in this build.
           * English only: the Japanese (mozc) and Chinese (Rime) engines, their
             dictionaries, the other compiled dictionaries and the translation
             submodule are not in this package.
