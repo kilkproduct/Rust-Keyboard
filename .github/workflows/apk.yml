@@ -536,6 +536,12 @@ jobs:
             if unzip -l "$apk" | grep -qE "assets/dict/main_en\.dict$|res/raw/main_en"; then
               echo "::error::$apk carries the dictionary uncompressed"; exit 1
             fi
+            # ... and it has to decompress back to a full English dictionary.
+            dict_bytes=$(unzip -p "$apk" assets/dict/main_en.dict.gzip 2>/dev/null | gunzip -c 2>/dev/null | wc -c)
+            if [ "${dict_bytes:-0}" -lt 1000000 ]; then
+              echo "::error::the packaged dictionary decompresses to ${dict_bytes:-0} bytes"; exit 1
+            fi
+            echo "packaged dictionary: $dict_bytes bytes once unpacked"
             # The body of the package, for the next pruning pass.
             unzip -l "$apk" | sort -k1,1 -n -r | head -25
           done
@@ -574,6 +580,17 @@ jobs:
               echo
               echo "Largest entries (compressed, raw):"
               unzip -v "$stable_apk" | awk 'NF>=8 && $1 ~ /^[0-9]+$/ {printf "%9d (raw %9d) %s\n", $3, $1, $8}' | sort -nr | head -20
+              echo
+              echo "Resource entries per type in resources.arsc:"
+              echo
+              aapt2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 2>/dev/null | sort | tail -1)
+              if [ -n "$aapt2" ]; then
+                "$aapt2" dump resources "$stable_apk" 2>/dev/null \
+                  | awk '$1=="resource" {split($2, a, "/"); c[a[1]]++; n++} END {for (t in c) printf "%7d %s\n", c[t], t; printf "%7d total\n", n}' \
+                  | sort -nr | head -20
+              else
+                echo "aapt2 not found"
+              fi
             fi
             echo '```'
             echo
