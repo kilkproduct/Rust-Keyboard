@@ -211,6 +211,9 @@ jobs:
             fi
           done
 
+      - name: Strip non-English resources
+        run: bash ${{ env.PROJECT_DIR }}/tools/strip-non-english-resources.sh
+
       # The keyboard is English only. What remains of the submodules is what the
       # English build needs, so record it: the next pruning pass works from this
       # listing instead of guessing at paths inside the submodules.
@@ -259,6 +262,14 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          # The Gradle distribution and the Kotlin compiler both come from hosts
+          # that have timed out on this runner; the cache removes the download
+          # from most runs and the retry below covers the rest.
+          cache-read-only: false
+
       - name: Install Android NDK and CMake
         run: |
           SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
@@ -305,10 +316,19 @@ jobs:
         run: |
           chmod +x ./gradlew
           set -o pipefail
-          ./gradlew --no-daemon --console=plain --stacktrace \
-            -PabiFilter="${KB_ABIS}" \
-            -PskipRust \
-            assembleUnstableRelease assembleStableRelease 2>&1 | tee "$RUNNER_TEMP/gradle.log"
+          gradle_args=(-PabiFilter="${KB_ABIS}" -PskipRust assembleUnstableRelease assembleStableRelease)
+          for attempt in 1 2 3; do
+            if ./gradlew --no-daemon --console=plain --stacktrace "${gradle_args[@]}" 2>&1 \
+                | tee "$RUNNER_TEMP/gradle.log"; then
+              exit 0
+            fi
+            if [ "$attempt" = 3 ]; then
+              exit 1
+            fi
+            echo "::warning::gradle failed on attempt $attempt, dropping any partial download and retrying"
+            rm -rf "$HOME/.gradle/wrapper/dists"/*/*/*.part "$HOME/.gradle/wrapper/dists"/*/*/*.lck || true
+            sleep 20
+          done
 
       - name: Report build output
         if: always()
