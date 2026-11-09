@@ -37,9 +37,15 @@ public final class EngineSmoke {
     }
 
     private static String fromCodePoints(int[] codePoints, int offset, int length) {
+        // The native side null terminates, so stop at the first zero: anything
+        // past it is left over from a longer word written earlier.
         final StringBuilder builder = new StringBuilder(length);
         for (int index = 0; index < length; index++) {
-            builder.append((char) codePoints[offset + index]);
+            final int codePoint = codePoints[offset + index];
+            if (codePoint == 0) {
+                break;
+            }
+            builder.append((char) codePoint);
         }
         return builder.toString();
     }
@@ -344,8 +350,7 @@ public final class EngineSmoke {
                 }
                 words++;
                 if (words <= 12) {
-                    sample.append(' ').append(fromCodePoints(wordCodePoints, 0, MAX_WORD_LENGTH)
-                            .replace("\u0000", ""));
+                    sample.append(' ').append(fromCodePoints(wordCodePoints, 0, MAX_WORD_LENGTH));
                 }
             }
             System.out.println("== dictionary walk: " + words + " words, first:" + sample);
