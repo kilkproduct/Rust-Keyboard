@@ -24,7 +24,6 @@
    "its" -> Islam score 674301 kind 268435457
    "its" -> iTunes score 667491 kind 268435457
    "its" -> Italians score 658029 kind 268435457
-   "its" -> i灮erts score 654608 kind 268435457
    "its" -> Isaac score 652070 kind 268435457
    "its" -> Istanbul score 634936 kind 268435457
    "its" -> Italia score 632782 kind 268435457
@@ -56,6 +55,7 @@
    "its" -> Islip score 511905 kind 268435457
    "its" -> Ishtar score 507979 kind 268435457
    "its" -> Ismael score 507979 kind 268435457
+   "its" -> Islay score 507310 kind 268435457
 == "its": 40 suggestions, apostrophe variant missing
    "" -> a score 921101 kind 8
    "" -> I score 898088 kind 8
@@ -75,8 +75,8 @@
    "" -> 0mail score 708080 kind 8
    "" -> 0yypt score 701571 kind 8
    "" -> 0yn score 698275 kind 8
-   "" -> 00 score 694950 kind 8
    "" -> 0䦀 score 694950 kind 8
+   "" -> 0⒐ score 691597 kind 8
    "" -> 0yn score 688215 kind 8
    "" -> 0ye score 660037 kind 8
    "" -> 0yckland score 656366 kind 8
@@ -139,6 +139,6 @@
    "hel" -> Helmut score 652013 kind 268435457
    "hel" -> heyon score 650336 kind 268435457
 == "hel" after "i": 40 suggestions
-Exception in thread "main" java.lang.AssertionError: "its" is not suggested for "its": [Italian, Italy, Israel, Islamic, Israeli, Islam, iTunes, Italians, i灮erts, Isaac, Istanbul, Italia, Italy's, Isabella, Isabel, Israel's, Israelites, Ismail, Israelis, Italianate, Ithaca, Isaiah, Isis, Islamist, Islington, Islamabad, Isabelle, Israelite, Ishmael, Isaacs, Isidore, Isfahan, Istria, Isuzu, Ilse, Ismaili, Isolde, Islip, Ishtar, Ismael]
+Exception in thread "main" java.lang.AssertionError: "its" is not suggested for "its": [Italian, Italy, Israel, Islamic, Israeli, Islam, iTunes, Italians, Isaac, Istanbul, Italia, Italy's, Isabella, Isabel, Israel's, Israelites, Ismail, Israelis, Italianate, Ithaca, Isaiah, Isis, Islamist, Islington, Islamabad, Isabelle, Israelite, Ishmael, Isaacs, Isidore, Isfahan, Istria, Isuzu, Ilse, Ismaili, Isolde, Islip, Ishtar, Ismael, Islay]
 	at org.futo.inputmethod.latin.EngineSmoke.check(EngineSmoke.java:27)
 	at org.futo.inputmethod.latin.EngineSmoke.main(EngineSmoke.java:334)
