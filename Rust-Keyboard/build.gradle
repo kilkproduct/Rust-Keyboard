@@ -526,6 +526,18 @@ android {
                 bundledDict.delete()
             }
 
+            // 205 KB of English emoji descriptions that nothing reads: an emoji
+            // key uses the glyph itself as its content description, and neither a
+            // resource nor a class refers to emoji_desc_*. The resource shrinker
+            // cannot prove that, because the accessibility code calls
+            // Resources.getIdentifier(), which makes it keep everything.
+            final def emojiDescriptions = file('java/res-large/values/strings-emoji-descriptions.xml')
+            if (emojiDescriptions.isFile()) {
+                final long removedBytes = emojiDescriptions.length()
+                emojiDescriptions.delete()
+                logger.lifecycle("dropped the emoji description strings (${removedBytes / 1024} KB)")
+            }
+
             // The same goes for the spacing/punctuation tables: one file per
             // language, but an English build only ever reaches "default" and
             // "default-sw600dp"; a missing candidate is caught as IOException and
