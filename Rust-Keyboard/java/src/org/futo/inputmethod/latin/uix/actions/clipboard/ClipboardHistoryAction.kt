@@ -103,7 +103,6 @@ import org.futo.inputmethod.latin.uix.actions.BugInfo
 import org.futo.inputmethod.latin.uix.actions.BugViewerAction
 import org.futo.inputmethod.latin.uix.actions.BugViewerState
 import org.futo.inputmethod.latin.uix.actions.PasteAction
-import org.futo.inputmethod.latin.uix.actions.fonttyper.SuperheroRenderer
 import org.futo.inputmethod.latin.uix.actions.throwIfDebug
 import org.futo.inputmethod.latin.uix.getSetting
 import org.futo.inputmethod.latin.uix.getSettingBlocking
@@ -417,26 +416,8 @@ fun ClipboardEntryViewPreview() {
             )
         }
 
-        item {
-            ClipboardEntryView(
-                modifier = Modifier,
-                clipboardEntry = ClipboardEntry(0L, false, null, null, listOf("image/png"), "[test]", 0.0f),
-                onPin = {}, onPaste = {}, onRemove = {},
-                bitmapOverride = SuperheroRenderer.render(LocalContext.current, "my clipboard image")?.asImageBitmap()
-            )
-        }
-
         items(sampleText.size / 2) {
             ClipboardEntryView(modifier = Modifier, clipboardEntry = ClipboardEntry(0L, it % 2 == 0, sampleText[it], null, listOf()), onPin = {}, onPaste = {}, onRemove = {})
-        }
-
-        item {
-            ClipboardEntryView(
-                modifier = Modifier,
-                clipboardEntry = ClipboardEntry(0L, false, null, null, listOf("image/png"), "[test]", 0.0f),
-                onPin = {}, onPaste = {}, onRemove = {},
-                bitmapOverride = SuperheroRenderer.render(LocalContext.current, "hey")?.asImageBitmap()
-            )
         }
 
         items(sampleText.size / 2) {

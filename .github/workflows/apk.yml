@@ -559,12 +559,12 @@ jobs:
             echo '```'
             stable_apk=$(ls dist/keyboard-stable-release.apk 2>/dev/null | head -1)
             if [ -n "$stable_apk" ]; then
-              unzip -l "$stable_apk" \
-                | awk 'NF==4 && $1 ~ /^[0-9]+$/ {n=split($4, p, "/"); key=p[1]; if (n > 1) key=p[1]"/"p[2]; sum[key]+=$1} END {for (k in sum) printf "%9d %s\n", sum[k], k}' \
+              unzip -v "$stable_apk" \
+                | awk 'NF>=8 && $1 ~ /^[0-9]+$/ {n=split($NF, p, "/"); key=p[1]; if (n > 1) key=p[1]"/"p[2]; sum[key]+=$3; raw[key]+=$1} END {for (k in sum) printf "%9d  (raw %9d)  %s\n", sum[k], raw[k], k}' \
                 | sort -nr | head -25
               echo
-              echo "Largest entries:"
-              unzip -l "$stable_apk" | sort -k1,1 -n -r | head -20
+              echo "Largest entries (compressed, raw):"
+              unzip -v "$stable_apk" | awk 'NF>=8 && $1 ~ /^[0-9]+$/ {printf "%9d (raw %9d) %s\n", $3, $1, $8}' | sort -nr | head -20
             fi
             echo '```'
             echo
