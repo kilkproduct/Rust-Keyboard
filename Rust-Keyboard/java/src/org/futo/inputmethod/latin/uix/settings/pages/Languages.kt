@@ -373,7 +373,8 @@ fun ConfirmResourceActionDialog(
     locale: Locale
 ) {
     val hasBuiltInFallback = if (resourceKind == FileKind.VoiceInput) {
-        ResourceHelper.BuiltInVoiceInputFallbacks[locale.language] != null
+        // No bundled voice model in this build.
+        false
     } else if (resourceKind == FileKind.Dictionary) {
         Dictionaries.getDictionaryIfExists(LocalContext.current, locale, Dictionaries.DictionaryKind.Any) != null
     } else {
@@ -654,10 +655,7 @@ fun LanguagesScreen(navController: NavHostController = rememberNavController()) 
 
             val name = Subtypes.getName(subtypes.first())
 
-            val voiceInputModelName = ResourceHelper.tryFindingVoiceInputModelForLocale(
-                context,
-                locale
-            )?.name?.let { stringResource(it) }
+            val voiceInputModelName: String? = null
             val dictionaryName = runBlocking {
                 ResourceHelper.findKeyForLocaleAndKind(
                     context,
