@@ -507,6 +507,23 @@ android {
                 }
             }
 
+            // The English dictionary is mmapped straight out of the package
+            // today, which only works if aapt stores it uncompressed - a full
+            // megabyte of a six megabyte package. Ship it gzipped in the assets
+            // instead: Dictionaries.kt unpacks it into the app's files directory
+            // on first use (background thread) and hands the engine that path.
+            final def bundledDict = file('java/res-large/raw/main_en.dict')
+            if (bundledDict.isFile()) {
+                final def dictArchive = file('java/assets/dict/main_en.dict.gz')
+                dictArchive.parentFile.mkdirs()
+                new java.util.zip.GZIPOutputStream(new java.io.FileOutputStream(dictArchive)).withStream { sink ->
+                    bundledDict.withInputStream { source -> source.transferTo(sink) }
+                }
+                logger.lifecycle("bundled dictionary: ${bundledDict.length() / 1024} KB -> " +
+                        "${dictArchive.length() / 1024} KB gzipped")
+                bundledDict.delete()
+            }
+
             // The same goes for the spacing/punctuation tables: one file per
             // language, but an English build only ever reaches "default" and
             // "default-sw600dp"; a missing candidate is caught as IOException and
