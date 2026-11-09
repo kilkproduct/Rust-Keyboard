@@ -273,6 +273,11 @@ pub fn resolve_moved_node(
     layout: Layout,
     table: Option<&[i32]>,
 ) -> Option<Node> {
+    // Where the next sibling starts is a property of the *original* node: the
+    // moved node is still laid out in place, only its content lives at the
+    // destination. Returning the destination's tail made the trie walk jump
+    // into the middle of the next word ("Aachenr", "Aalstnd's's", ...).
+    let sibling_pos = node.sibling_pos;
     let mut current = node;
     let mut hops = 0;
     while current.is_moved {
@@ -282,6 +287,7 @@ pub fn resolve_moved_node(
         }
         current = read_node(data, current.parent_pos as usize, layout, table)?;
     }
+    current.sibling_pos = sibling_pos;
     Some(current)
 }
 
