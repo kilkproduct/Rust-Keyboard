@@ -7,17 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.datastore.preferences.core.Preferences
 //import androidx.work.Configuration
-import org.acra.ACRA
-import org.acra.config.dialog
-//import org.acra.config.httpSender
-//import org.acra.sender.HttpSender
-import org.acra.config.mailSender
-import org.acra.data.StringFormat
-import org.acra.ktx.initAcra
 import androidx.core.content.edit
-import org.acra.builder.ReportBuilder
-import org.acra.config.CoreConfigurationBuilder
-import org.acra.data.CrashReportDataFactory
 import org.futo.inputmethod.latin.settings.Settings
 import org.futo.inputmethod.latin.uix.isDirectBootUnlocked
 import org.futo.inputmethod.latin.uix.settings.LocalDataStoreCache
@@ -58,14 +48,11 @@ class CrashLoggingApplication : Application() /*, Configuration.Provider*/ {
     }
 
     companion object {
+        // ACRA is not part of this build.
         var acraInitialized = false
 
         fun logPreferences(preferences: Preferences) {
-            if(acraInitialized) {
-                preferences.asMap().forEach {
-                    ACRA.errorReporter.putCustomData(it.key.name, it.value.toString())
-                }
-            }
+            // No crash reporter to attach this to.
         }
 
         @Composable fun CopyLogsOption() {
@@ -76,15 +63,17 @@ class CrashLoggingApplication : Application() /*, Configuration.Provider*/ {
                 subtitle = "May contain sensitive data",
                 style = NavigationItemStyle.MiscNoArrow,
                 navigate = {
-                    val json = CrashReportDataFactory(context, CoreConfigurationBuilder().build())
-                        .createCrashData(ReportBuilder().message("Copy logs").customData(
-                            data!!.currPreferences.asMap().map {
-                                it.key.name to it.value.toString()
-                            }.toMap() + mapOf("Settings" to Settings.getInstance().current.dump())
-                        ))
-                        .toJSON()
-
-                    context.copyToClipboard(json)
+                    // ACRA used to build this report; it is written by hand now so
+                    // the dialog and the mail sender are not needed.
+                    val text = buildString {
+                        append("Settings\n")
+                        append(Settings.getInstance().current.dump())
+                        append("\n\nPreferences\n")
+                        data!!.currPreferences.asMap().forEach { (key, value) ->
+                            append(key.name).append(" = ").append(value.toString()).append('\n')
+                        }
+                    }
+                    context.copyToClipboard(text)
                 },
             )
         }

@@ -279,6 +279,14 @@ jobs:
             echo
             echo "== java/assets/layouts mapping"
             head -40 ${{ env.PROJECT_DIR }}/java/assets/layouts/mapping.yaml 2>/dev/null
+            echo
+            # Which layouts the English subtype can actually reach: the pruning
+            # pass needs this list, and it lives in a submodule.
+            echo "== layouts reachable for en"
+            grep -A 16 '^  en:' ${{ env.PROJECT_DIR }}/java/assets/layouts/mapping.yaml 2>/dev/null | head -20
+            echo
+            echo "== java/assets/layouts by directory"
+            du -sh ${{ env.PROJECT_DIR }}/java/assets/layouts/* 2>/dev/null | sort -h | tail -25
           } > ci-logs/resource-layout.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

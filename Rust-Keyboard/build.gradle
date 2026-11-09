@@ -207,6 +207,8 @@ android {
         vectorDrawables.useSupportLibrary = false
         // Only English resources ship: AppCompat, Material and Compose each
         // carry ~80 locales of their own resources.
+        // English only. Density buckets are deliberately not filtered: a drawable
+        // that exists in a single bucket would disappear with it.
         resourceConfigurations += ["en"]
 
         // One ABI. Every Android phone this keyboard runs on is arm64, and the
@@ -385,6 +387,9 @@ android {
     }
 
     packagingOptions {
+        resources {
+            excludes += ['META-INF/**', 'kotlin/**', 'DebugProbesKt.bin', '**/*.kotlin_builtins']
+        }
         jniLibs {
             // Keep the libraries compressed inside the APK: extracting them on
             // install stored a second copy on the device.
@@ -463,6 +468,10 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    dependenciesInfo {
+        // The build id is only used by Play; it is dead weight in a sideloaded APK.
+        includeInApk = false
+    }
     buildFeatures {
         compose true
         viewBinding true
@@ -493,7 +502,6 @@ dependencies {
     implementation 'androidx.compose.material3:material3'
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-compose:2.10.0-alpha02'
 
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
@@ -502,10 +510,6 @@ dependencies {
     implementation 'androidx.autofill:autofill:1.1.0'
     implementation 'androidx.window:window:1.3.0'
 
-    stableImplementation 'ch.acra:acra-mail:5.11.1'
-    stableImplementation 'ch.acra:acra-dialog:5.11.1'
-    unstableImplementation 'ch.acra:acra-mail:5.11.1'
-    unstableImplementation 'ch.acra:acra-dialog:5.11.1'
 
     implementation 'sh.calvin.reorderable:reorderable:3.0.0'
 
@@ -526,6 +530,8 @@ dependencies {
     // swipe decoder library is gone too: swipe typing is not part of this build,
     // and it was the only thing pulling in its JNI and libc++.
 
+    // No crash reporter: ACRA (mail and dialog) used to ship here, but crash
+    // reporting needs crashreporting.properties, which this fork never has.
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 
     debugImplementation 'androidx.compose.ui:ui-tooling'

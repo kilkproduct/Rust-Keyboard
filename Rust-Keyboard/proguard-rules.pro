@@ -56,3 +56,17 @@
 
 # JSR 305 annotations are for embedding nullability information.
 -dontwarn javax.annotation.**
+
+# Size: move every class into the default package and let R8 widen access so it
+# can inline and merge freely.
+-repackageclasses ''
+-allowaccessmodification
+
+# Strip logging calls from the release build.
+-assumenosideeffects class android.util.Log {
+    public static *** d(...);
+    public static *** v(...);
+    public static *** i(...);
+    public static *** w(...);
+    public static *** e(...);
+}
