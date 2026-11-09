@@ -673,7 +673,13 @@ unsafe extern "system" fn get_suggestions_native(
             return;
         }
     }
-    let code_points = read_int_array(env, input_code_points);
+    // The Java side hands over a `MAX_WORD_LENGTH` sized array that is padded
+    // with `NOT_A_CODE`; only the first `input_size` entries are input. Using
+    // the array length here made the search walk 48 keys on every keystroke and
+    // return nothing but the typed word.
+    let mut code_points = read_int_array(env, input_code_points);
+    let used = (input_size.max(0) as usize).min(code_points.len());
+    code_points.truncate(used);
     let options_array = read_int_array(env, suggest_options);
     let options = SuggestOptions::from_array(&options_array);
     let previous_words = read_prev_words(env, prev_word_arrays, prev_word_count.max(0) as usize);

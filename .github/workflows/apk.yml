@@ -97,6 +97,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # The suggestion checks need a real dictionary, not just the words the
+      # test writes itself.
+      - name: Fetch the English dictionary
+        run: |
+          cd ${{ env.PROJECT_DIR }}
+          url=$(git config -f .gitmodules --get-regexp '^submodule\..*\.path$' \
+            | grep 'java/res-large' | head -1 | sed 's/^submodule\.\(.*\)\.path$/\1/')
+          if [ -z "$url" ]; then
+            echo "::warning::java/res-large is not a submodule any more"
+            exit 0
+          fi
+          source=$(git config -f .gitmodules --get "submodule.$url.url")
+          rm -rf java/res-large
+          git clone --depth 1 "$source" java/res-large || {
+            echo "::warning::could not clone $source"; rm -rf java/res-large; }
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
@@ -136,6 +152,8 @@ jobs:
 
       - name: Run the smoke test
         working-directory: ${{ env.PROJECT_DIR }}/rust
+        env:
+          KB_ENGLISH_DICT: ${{ github.workspace }}/${{ env.PROJECT_DIR }}/java/res-large/raw/main_en.dict
         run: |
           set -o pipefail
           java -Xcheck:jni -cp "$RUNNER_TEMP/classes" \
@@ -161,8 +179,8 @@ jobs:
           tail -c 40000 "$RUNNER_TEMP/jni-smoke.log" >> "$GITHUB_STEP_SUMMARY" || true
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Publish the smoke test log when it fails
-        if: failure()
+      - name: Publish the smoke test log
+        if: always()
         run: |
           mkdir -p ci-logs
           cp "$RUNNER_TEMP/jni-smoke.log" ci-logs/jni-smoke.log 2>/dev/null || true

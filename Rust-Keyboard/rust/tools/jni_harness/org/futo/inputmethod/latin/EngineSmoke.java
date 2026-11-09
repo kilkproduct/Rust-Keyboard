@@ -44,6 +44,86 @@ public final class EngineSmoke {
         return builder.toString();
     }
 
+
+    /** Runs one suggestion query the way LatinIME does and returns the words. */
+    private static ArrayList<String> suggest(long dict, long proximity, long session,
+            String typed, String[] prevWords, int[] outCountHolder) {
+        final int[] input = new int[MAX_WORD_LENGTH];
+        java.util.Arrays.fill(input, -1);
+        final int inputSize = typed.length();
+        for (int index = 0; index < inputSize; index++) {
+            input[index] = typed.charAt(index);
+        }
+        final int[] tapX = new int[Math.max(inputSize, 1)];
+        final int[] tapY = new int[Math.max(inputSize, 1)];
+        final int[] tapTimes = new int[Math.max(inputSize, 1)];
+        final int[] pointerIds = new int[Math.max(inputSize, 1)];
+        for (int index = 0; index < inputSize; index++) {
+            tapX[index] = 50 + index * 10;
+            tapY[index] = 50;
+            tapTimes[index] = 100 + index * 60;
+        }
+        final int[][] prev = new int[4][];
+        final boolean[] prevIsBeginningOfSentence = new boolean[4];
+        for (int index = 0; index < prevWords.length && index < 4; index++) {
+            prev[index] = codePoints(prevWords[index]);
+        }
+
+        final int[] outputCount = new int[1];
+        final int[] outputCodePoints = new int[MAX_WORD_LENGTH * MAX_RESULTS];
+        final int[] outputScores = new int[MAX_RESULTS];
+        final int[] outputIndices = new int[MAX_RESULTS];
+        final int[] outputTypes = new int[MAX_RESULTS];
+        final int[] outputAutoCommit = new int[1];
+        final float[] weight = {1.0f};
+        final int[] suggestOptions = {0, 0, 0, 0, 1000};
+
+        BinaryDictionary.getSuggestionsNative(dict, proximity, session, tapX, tapY, tapTimes,
+                pointerIds, input, inputSize, suggestOptions, prev, prevIsBeginningOfSentence,
+                prevWords.length, outputCount, outputCodePoints, outputScores, outputIndices,
+                outputTypes, outputAutoCommit, weight);
+
+        outCountHolder[0] = outputCount[0];
+        final ArrayList<String> words = new ArrayList<>();
+        for (int index = 0; index < outputCount[0]; index++) {
+            int length = 0;
+            while (length < MAX_WORD_LENGTH
+                    && outputCodePoints[index * MAX_WORD_LENGTH + length] != 0) {
+                length++;
+            }
+            final String word = fromCodePoints(outputCodePoints, index * MAX_WORD_LENGTH, length);
+            words.add(word);
+            System.out.println("   \"" + typed + "\" -> " + word + " score "
+                    + outputScores[index] + " kind " + outputTypes[index]);
+        }
+        return words;
+    }
+
+    /** A proximity map for all lower case letters, laid out like a phone row. */
+    private static long letterProximity() {
+        final int keyCount = 26;
+        final int[] keyCodes = new int[keyCount];
+        final int[] keyX = new int[keyCount];
+        final int[] keyY = new int[keyCount];
+        final int[] keyWidths = new int[keyCount];
+        final int[] keyHeights = new int[keyCount];
+        final float[] sweetX = new float[keyCount];
+        final float[] sweetY = new float[keyCount];
+        final float[] sweetRadius = new float[keyCount];
+        for (int index = 0; index < keyCount; index++) {
+            keyCodes[index] = 'a' + index;
+            keyX[index] = (index % 10) * 100;
+            keyY[index] = (index / 10) * 100;
+            keyWidths[index] = 100;
+            keyHeights[index] = 100;
+            sweetX[index] = keyX[index] + 50;
+            sweetY[index] = keyY[index] + 50;
+            sweetRadius[index] = 90.0f;
+        }
+        return ProximityInfo.create(1000, 300, keyCount, 3, 100, 100, new int[0], keyCount,
+                keyX, keyY, keyWidths, keyHeights, keyCodes, sweetX, sweetY, sweetRadius);
+    }
+
     public static void main(String[] args) throws Exception {
         System.loadLibrary("keyboard_core");
         System.out.println("== libkeyboard_core loaded");
@@ -168,10 +248,69 @@ public final class EngineSmoke {
         System.out.println("== " + outputCount[0] + " suggestions returned, first is \""
                 + first.trim() + "\"");
 
+
+        // 5b. The same query in the shape the app really uses: LatinIME passes a
+        //     MAX_WORD_LENGTH array padded with NOT_A_CODE and a separate
+        //     inputSize. Reading the array length instead of inputSize searches
+        //     for 48 keys, which is what made the strip show only what was typed.
+        final int[] deviceCount = new int[1];
+        final ArrayList<String> deviceResults = suggest(dict, proximity, session, "hel",
+                new String[0], deviceCount);
+        check(deviceCount[0] > 0, "no suggestions when the input array is padded like the app");
+        check(!deviceResults.isEmpty() && deviceResults.get(0).startsWith("hel"),
+                "unexpected first suggestion with a padded input array: " + deviceResults);
+        System.out.println("== padded input array: " + deviceCount[0] + " suggestions");
+
+        // 5c. The real English dictionary, if the caller points at one. This is
+        //     the case the settings page and the strip depend on: a word that
+        //     should offer an apostrophe variant, and a next word prediction.
+        final String englishDictPath = System.getenv("KB_ENGLISH_DICT");
+        long englishDict = 0;
+        long englishProximity = 0;
+        if (englishDictPath != null && new File(englishDictPath).isFile()) {
+            englishDict = BinaryDictionary.openNative(englishDictPath, 0,
+                    new File(englishDictPath).length(), false);
+            check(englishDict != 0, "could not open " + englishDictPath);
+            englishProximity = letterProximity();
+            check(englishProximity != 0, "could not build the letter proximity");
+            DicTraverseSession.initDicTraverseSessionNative(session, englishDict, null, 0);
+
+            final int[] itsCount = new int[1];
+            final ArrayList<String> its = suggest(englishDict, englishProximity, session, "its",
+                    new String[0], itsCount);
+            check(itsCount[0] > 0, "no suggestions at all for \"its\"");
+            check(its.contains("its"), "\"its\" is not suggested for \"its\": " + its);
+            if (!its.contains("it's")) {
+                System.out.println("   NOTE: \"it's\" was not suggested for \"its\"");
+            }
+            System.out.println("== \"its\": " + itsCount[0] + " suggestions, apostrophe variant "
+                    + (its.contains("it's") ? "present" : "missing"));
+
+            final int[] predictionCount = new int[1];
+            final ArrayList<String> prediction = suggest(englishDict, englishProximity, session, "",
+                    new String[] {"the"}, predictionCount);
+            System.out.println("== after \"the\": " + predictionCount[0] + " predictions");
+            check(predictionCount[0] > 0, "no next word predictions after \"the\"");
+
+            final int[] completionCount = new int[1];
+            suggest(englishDict, englishProximity, session, "hel",
+                    new String[] {"i"}, completionCount);
+            check(completionCount[0] > 0, "no completions for \"hel\"");
+            System.out.println("== \"hel\" after \"i\": " + completionCount[0] + " suggestions");
+        } else {
+            System.out.println("== no KB_ENGLISH_DICT, skipping the real dictionary checks");
+        }
+
         // 6. Cleaning up must not corrupt the heap either.
         DicTraverseSession.releaseDicTraverseSessionNative(session);
         ProximityInfo.release(proximity);
         BinaryDictionary.closeNative(dict);
+        if (englishDict != 0) {
+            BinaryDictionary.closeNative(englishDict);
+        }
+        if (englishProximity != 0) {
+            ProximityInfo.release(englishProximity);
+        }
 
         final File[] leftovers = directory.listFiles();
         if (leftovers != null) {

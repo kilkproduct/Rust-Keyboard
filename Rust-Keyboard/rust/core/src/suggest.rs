@@ -682,11 +682,13 @@ fn build_input_states(
         };
         let mut proximity_chars = [0i32; MAX_PROXIMITY_CHARS_SIZE];
         let proximity_len = proximity.proximity_chars_at(x, y, &mut proximity_chars);
+        // A non positive code point means no key was reported for this input
+        // (gesture points between keys, or the `NOT_A_CODE` padding the Java
+        // side leaves in the array). Fall back to the most likely key of the
+        // cell instead of searching for a character that cannot exist.
         let primary = match input_code_points.get(index) {
-            Some(value) => *value,
-            // No key was reported for this point (this happens for gesture
-            // points between keys): use the most likely key of the cell.
-            None => {
+            Some(value) if *value > 0 => *value,
+            _ => {
                 if proximity_len > 0 {
                     proximity_chars[0]
                 } else {
