@@ -341,10 +341,9 @@ android {
 
     sourceSets {
         main {
+            // English only: the translated string sets are not merged in.
             res.srcDirs = [
                     'java/res',
-                    translationsWithoutEngValues('translations/core'),
-                    translationsWithoutEngValues('translations/core-ign'),
                     'java/res-large'
             ]
             java.srcDirs = ['common/src', 'java/src']
@@ -368,7 +367,7 @@ android {
         unstable {
             java.srcDirs = ['common/src', 'java/src', 'java/stable/java']
             manifest.srcFile 'java/stable/AndroidManifest.xml'
-            res.srcDirs = ['java/unstable/res', translationsWithoutEngValues('translations/devbuild')]
+            res.srcDirs = ['java/unstable/res']
         }
 
         androidTest {
@@ -413,6 +412,21 @@ android {
         }
     }
     tasks.named('preBuild').configure { dependsOn 'rustNativeBuild' }
+
+    // English only, small package: drop what the shared submodules carry for
+    // features this build does not have. This runs inside Gradle, right before
+    // packaging, so it cannot be skipped by a stale checkout.
+    tasks.register('stripUnusedResources') {
+        doLast {
+            // The transformer language model: a multilingual model (it predicted
+            // words in other languages) worth ~30 MB of package and hundreds of
+            // megabytes of RAM.
+            fileTree(dir: 'java/res-large/raw', include: ['*.gguf', 'ml4_*']).each { it.delete() }
+            // Swipe decoding: three TFLite models nothing reads any more.
+            file('java/assets/futo-swipe').listFiles()?.each { it.delete() }
+        }
+    }
+    tasks.named('preBuild').configure { dependsOn 'stripUnusedResources' }
 
     kotlinOptions {
         jvmTarget = '1.8'
