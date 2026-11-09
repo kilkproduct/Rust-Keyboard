@@ -10,6 +10,21 @@
    "hel" -> hello score 925770 kind 1
    "hel" -> help score 893578 kind 1
 == padded input array: 2 suggestions
+== english dictionary: format 202, header 97 bytes, version 202, 5 attributes, file 1054656 bytes
+== first bytes:
+9bc13afe00ca00000000006164617465
+1f313736363138333833331f64696374
+696f6e6172791f6d61696e3a656e1f64
+65736372697074696f6e1f456e676c69
+7368206d6f6469666965641f6c6f6361
+6c651f656e1f76657273696f6e1f3534
+
+== trie start:
+373031576561746865721f1980410110
+8042451a80439c7c8044f758c0450129
+0ec046014ce8c04701736fc04801a843
+d049c401dce1c04a01f0d4c04b02098a
+
    probability "its" = -1
    probability "it's" = -1
    probability "inserts" = -1
@@ -141,4 +156,4 @@
 == "hel" after "i": 40 suggestions
 Exception in thread "main" java.lang.AssertionError: "its" is not suggested for "its": [Italian, Italy, Israel, Islamic, Israeli, Islam, iTunes, Italians, Isaac, Istanbul, Italia, Italy's, Isabella, Isabel, Israel's, Israelites, Ismail, Israelis, Italianate, Ithaca, Isaiah, Isis, Islamist, Islington, Islamabad, Isabelle, Israelite, Ishmael, Isaacs, Isidore, Isfahan, Istria, Isuzu, Ilse, Ismaili, Isolde, Islip, Ishtar, Ismael, Islay]
 	at org.futo.inputmethod.latin.EngineSmoke.check(EngineSmoke.java:27)
-	at org.futo.inputmethod.latin.EngineSmoke.main(EngineSmoke.java:334)
+	at org.futo.inputmethod.latin.EngineSmoke.main(EngineSmoke.java:370)
