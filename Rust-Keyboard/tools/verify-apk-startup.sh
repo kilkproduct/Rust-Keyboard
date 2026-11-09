@@ -74,6 +74,7 @@ for apk in "$@"; do
     classes=$(echo "$manifest" \
         | sed -n 's/.*android:name[^=]*="\([^"]*\)".*/\1/p' \
         | grep -E '^[.a-zA-Z][a-zA-Z0-9_.$]*$' \
+        | grep -v '_' \
         | grep -E '[.][A-Z]|^[.]' \
         | grep -vE '^(android[.]|androidx[.]|com[.]google[.]|kotlin[.]|dalvik[.])' \
         | grep -vE '[.](permission|action|category|scheme|authorities)[.]' \
