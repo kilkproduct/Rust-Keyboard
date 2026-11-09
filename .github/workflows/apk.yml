@@ -195,10 +195,14 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f ci-logs/jni-smoke.log
           git commit -m "CI: JNI smoke test output for ${GITHUB_SHA}" || exit 0
-          # Other jobs commit logs to the same branch, so rebase before pushing;
-          # a lost race here is exactly how a diagnostic log goes missing.
+          # The job runs on a detached HEAD, so there is no branch to pull; fetch
+          # and push the log commit by explicit ref. Other jobs commit logs to
+          # the same branch, hence the rebase and the retries.
           for attempt in 1 2 3 4; do
-            git pull --rebase --autostash --quiet && git push --quiet && exit 0
+            git fetch --quiet origin "$GITHUB_REF_NAME" \
+              && git rebase --quiet "origin/$GITHUB_REF_NAME" \
+              && git push --quiet origin "HEAD:refs/heads/$GITHUB_REF_NAME" && exit 0
+            git rebase --abort 2>/dev/null || true
             sleep $((attempt * 5))
           done
           echo "::warning::could not push the smoke test log"
