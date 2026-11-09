@@ -52,12 +52,7 @@
 -keep class org.futo.inputmethod.latin.makedict.ProbabilityInfo
 -keep class org.futo.inputmethod.keyboard.KeyboardLayout { *; }
 
--dontobfuscate
 -optimizations !code/allocation/variable
 
 # JSR 305 annotations are for embedding nullability information.
 -dontwarn javax.annotation.**
-
-
-# Keep swipe
--keep class org.futo.ml.inference.** { *; }

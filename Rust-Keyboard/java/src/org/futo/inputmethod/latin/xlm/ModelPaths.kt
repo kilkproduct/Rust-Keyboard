@@ -56,7 +56,13 @@ class ModelInfoLoader(
 ) {
     fun loadDetails(): ModelInfo? {
         JniUtils.loadNativeLibrary()
-        return loadNative(path.absolutePath)
+        return try {
+            loadNative(path.absolutePath)
+        } catch (missing: UnsatisfiedLinkError) {
+            // Model inspection lived in the C++ library, which is no longer
+            // built: this build has no language model at all.
+            null
+        }
     }
 
     external fun loadNative(path: String): ModelInfo?

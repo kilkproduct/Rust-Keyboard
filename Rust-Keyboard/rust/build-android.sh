@@ -23,7 +23,7 @@ if ! command -v cargo >/dev/null 2>&1; then
     exit 0
 fi
 
-ALL_ABIS="${KB_ABIS:-arm64-v8a armeabi-v7a x86 x86_64}"
+ALL_ABIS="${KB_ABIS:-arm64-v8a}"
 
 if command -v cargo-ndk >/dev/null 2>&1 || cargo ndk --version >/dev/null 2>&1; then
     FLAGS=""

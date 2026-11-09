@@ -206,18 +206,14 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = false
 
-        // Optional ABI filter so that CI (and anyone in a hurry) can build a
-        // single-ABI APK without waiting for the C++ engine to compile four
-        // times:
-        //   ./gradlew assembleStableDebug -PabiFilter=arm64-v8a
-        final def abiFilter = project.findProperty('abiFilter')
-        if (abiFilter) {
-            final def abis = abiFilter.toString().split(',').collect { it.trim() }.findAll { it }
-            ndk {
-                abiFilters.addAll(abis)
-            }
-            project.logger.lifecycle("Restricting native ABIs to ${abis}")
+        // One ABI. Every Android phone this keyboard runs on is arm64, and the
+        // native engine used to be built for four architectures.
+        final def abiFilter = project.findProperty('abiFilter') ?: 'arm64-v8a'
+        final def abis = abiFilter.toString().split(',').collect { it.trim() }.findAll { it }
+        ndk {
+            abiFilters.addAll(abis)
         }
+        project.logger.lifecycle("Restricting native ABIs to ${abis}")
     }
 
     bundle {
@@ -265,7 +261,10 @@ android {
         }
         release {
             minifyEnabled true
-            shrinkResources false
+            shrinkResources true
+            // Only English resources ship: AppCompat, Material and Compose each
+            // carry ~80 locales of their own resources.
+            resourceConfigurations += ["en"]
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig releaseSigning
         }
@@ -387,16 +386,16 @@ android {
 
     packagingOptions {
         jniLibs {
-            useLegacyPackaging true
+            // Keep the libraries compressed inside the APK: extracting them on
+            // install stored a second copy on the device.
+            useLegacyPackaging false
         }
     }
 
-    ndkVersion '28.2.13676358'
-    externalNativeBuild {
-        cmake {
-            path 'native/jni/CMakeLists.txt'
-        }
-    }
+    // The C++ engine is gone: the Rust core registers every native the app uses
+    // (dictionary, proximity info, traverse session), so building llama.cpp,
+    // whisper.cpp, sentencepiece and protobuf-lite here only cost package size
+    // and build time. `native/` stays in the tree for reference.
 
     // Builds the Rust core (rust/) and copies libkeyboard_core.so into
     // java/jniLibs. The script is a no-op when no Rust toolchain is installed,
@@ -434,13 +433,15 @@ android {
     buildFeatures {
         compose true
         viewBinding true
-        mlModelBinding true
+        mlModelBinding false
         buildConfig true
     }
 
     packagingOptions {
         jniLibs {
-            useLegacyPackaging = true
+            // Keep the libraries compressed inside the APK: extracting them on
+            // install stored a second copy on the device.
+            useLegacyPackaging = false
         }
     }
 }
@@ -484,8 +485,6 @@ dependencies {
     //def work_version = "2.9.0"
     //implementation "androidx.work:work-runtime-ktx:$work_version"
     //implementation "androidx.work:work-runtime:$work_version"
-
-    implementation project(":voiceinput-shared")
 
     implementation "com.charleskorn.kaml:kaml:0.61.0"
 
