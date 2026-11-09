@@ -514,7 +514,9 @@ android {
             // on first use (background thread) and hands the engine that path.
             final def bundledDict = file('java/res-large/raw/main_en.dict')
             if (bundledDict.isFile()) {
-                final def dictArchive = file('java/assets/dict/main_en.dict.gz')
+                // .gz assets are unpacked by aapt2 and lose their suffix, so the
+                // archive keeps a name packaging leaves alone.
+                final def dictArchive = file('java/assets/dict/main_en.dict.gzip')
                 dictArchive.parentFile.mkdirs()
                 new java.util.zip.GZIPOutputStream(new java.io.FileOutputStream(dictArchive)).withStream { sink ->
                     bundledDict.withInputStream { source -> source.transferTo(sink) }

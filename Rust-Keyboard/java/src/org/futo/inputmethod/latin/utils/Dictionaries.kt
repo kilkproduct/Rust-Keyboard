@@ -7,8 +7,10 @@ import android.util.Log
 import org.futo.inputmethod.latin.AssetFileAddress
 import org.futo.inputmethod.latin.BundleHelper
 import org.futo.inputmethod.latin.R
+import java.io.BufferedInputStream
 import java.io.File
 import java.io.IOException
+import java.io.InputStream
 import java.util.Locale
 import java.util.zip.GZIPInputStream
 
@@ -32,9 +34,33 @@ object Dictionaries {
     // the app's own files directory on first use: keeping it mmap-able inside
     // the package meant aapt stored a megabyte uncompressed. Bump the version
     // when the bundled dictionary changes so installed copies are refreshed.
-    private const val BUNDLED_DICT_ASSET = "dict/main_en.dict.gz"
+    // aapt2 unpacks assets whose name ends in .gz and drops the suffix, so the
+    // archive is called .gzip to survive packaging. The loader below accepts any
+    // of the names and either encoding, because packaging details like that are
+    // not worth a broken dictionary.
     private const val BUNDLED_DICT_NAME = "main_en.dict"
-    private const val BUNDLED_DICT_VERSION = "1"
+    private val BUNDLED_DICT_ASSETS = listOf(
+            "dict/main_en.dict.gzip",
+            "dict/main_en.dict.gz",
+            "dict/main_en.dict")
+    private const val BUNDLED_DICT_VERSION = "2"
+
+    private fun openBundledDictionaryAsset(context: Context): InputStream? {
+        for (name in BUNDLED_DICT_ASSETS) {
+            try {
+                val stream = BufferedInputStream(context.assets.open(name))
+                stream.mark(2)
+                val first = stream.read()
+                val second = stream.read()
+                stream.reset()
+                return if (first == 0x1f && second == 0x8b) GZIPInputStream(stream) else stream
+            } catch (e: IOException) {
+                // try the next name
+            }
+        }
+        Log.e("Dictionaries", "the bundled dictionary asset is missing")
+        return null
+    }
 
     @Volatile
     private var extractedDictionary: File? = null
@@ -52,12 +78,14 @@ object Dictionaries {
             try {
                 dir.mkdirs()
                 val temporary = File(dir, "$BUNDLED_DICT_NAME.tmp")
-                context.assets.open(BUNDLED_DICT_ASSET).use { asset ->
-                    GZIPInputStream(asset).use { gunzipped ->
-                        temporary.outputStream().use { sink -> gunzipped.copyTo(sink) }
-                    }
+                val source = openBundledDictionaryAsset(context) ?: return null
+                source.use { asset ->
+                    temporary.outputStream().use { sink -> asset.copyTo(sink) }
                 }
-                if (temporary.length() <= 0L) {
+                // A truncated or empty unpack must not be handed to the engine:
+                // it would silently suggest nothing at all.
+                if (temporary.length() < 100_000L) {
+                    Log.e("Dictionaries", "unpacked dictionary is too small: ${temporary.length()} bytes")
                     temporary.delete()
                     return null
                 }

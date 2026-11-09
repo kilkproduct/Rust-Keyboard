@@ -527,6 +527,15 @@ jobs:
             if unzip -l "$apk" | grep -qE "ml4_.*\.gguf|assets/futo-swipe/"; then
               echo "::error::$apk still carries the language model or swipe assets"; exit 1
             fi
+            # The dictionary has to be inside the package as the compressed
+            # asset Dictionaries.kt unpacks; a raw res/raw/main_en.dict means the
+            # build step did not run and the engine would find no words at all.
+            if ! unzip -l "$apk" | grep -q "assets/dict/main_en.dict.gzip"; then
+              echo "::error::$apk does not carry the bundled dictionary asset"; exit 1
+            fi
+            if unzip -l "$apk" | grep -qE "assets/dict/main_en\.dict$|res/raw/main_en"; then
+              echo "::error::$apk carries the dictionary uncompressed"; exit 1
+            fi
             # The body of the package, for the next pruning pass.
             unzip -l "$apk" | sort -k1,1 -n -r | head -25
           done
