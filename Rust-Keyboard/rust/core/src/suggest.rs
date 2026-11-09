@@ -148,6 +148,8 @@ struct State {
     word: [i32; MAX_WORD_LENGTH],
     word_len: u8,
     errors: u32,
+    /// How many edits (insert/substitute/omit) this path has paid for.
+    edit_count: u8,
     terminal_value: i32,
     is_root: bool,
 }
@@ -165,6 +167,7 @@ impl State {
             word: [0; MAX_WORD_LENGTH],
             word_len: 0,
             errors: 0,
+            edit_count: 0,
             terminal_value: NOT_A_PROBABILITY,
             is_root: true,
         }
@@ -191,15 +194,44 @@ struct Search<'a> {
 }
 
 impl<'a> Search<'a> {
+    /// How many edits a word may differ by. Short input gets one, because two
+    /// edits on three letters reaches every short word in the dictionary.
+    fn max_edits(&self) -> u8 {
+        if self.input.len() <= 4 {
+            1
+        } else {
+            2
+        }
+    }
+
     fn allows_error_corrections(&self, state: &State) -> bool {
         if self.options.is_gesture {
             // Gestures have no "typed" characters to compare against.
+            return false;
+        }
+        if state.edit_count >= self.max_edits() {
             return false;
         }
         if state.is_root {
             return true;
         }
         state.spatial * DISTANCE_WEIGHT_LENGTH < 0.9f32
+    }
+
+    /// A correction that changes the first letter is not a correction, it is a
+    /// different word; offering those is what made the list look random.
+    fn keeps_first_letter(&self, state: &State) -> bool {
+        if state.errors & ERROR_EDIT == 0 {
+            return true;
+        }
+        let typed = match self.input.first() {
+            Some(value) => charutils::to_lower(value.primary),
+            None => return true,
+        };
+        if state.word_len == 0 {
+            return false;
+        }
+        charutils::to_lower(state.word[0]) == typed
     }
 
     fn record_terminal(&mut self, state: &State) {
@@ -248,6 +280,9 @@ impl<'a> Search<'a> {
         let is_blacklisted = attributes.is_blacklisted;
 
         if is_not_a_word || is_blacklisted {
+            return;
+        }
+        if !self.options.is_gesture && !self.keeps_first_letter(state) {
             return;
         }
         let exact = state.errors == 0;
@@ -408,6 +443,7 @@ impl<'a> Search<'a> {
             insertion.input_index = state.input_index + 1;
             insertion.spatial += INSERTION_COST;
             insertion.errors |= ERROR_EDIT;
+            insertion.edit_count = state.edit_count.saturating_add(1);
             next.push(insertion);
         }
     }
@@ -477,6 +513,9 @@ impl<'a> Search<'a> {
         new_state.node = child;
         new_state.spatial += cost;
         new_state.errors |= errors;
+        if errors & ERROR_EDIT != 0 {
+            new_state.edit_count = new_state.edit_count.saturating_add(1);
+        }
         new_state.terminal_value = terminal_value_of(child, self.dict.is_v4());
         new_state.is_root = false;
         new_state.input_index = state.input_index.saturating_add(consumed as u16);
@@ -1082,10 +1121,17 @@ mod tests {
             top.starts_with("hel"),
             "first suggestion for \"hel\" was {top:?}"
         );
+        assert!(
+            results[..3.min(results.len())]
+                .iter()
+                .all(|word| word.starts_with("hel")),
+            "the best suggestions for \"hel\" were not completions: {results:?}"
+        );
         for word in &results {
+            // One edit away is a legitimate correction, "world" is not.
             assert!(
-                word.starts_with("hel"),
-                "\"hel\" suggested {word:?}, which does not share its prefix"
+                word.starts_with('h'),
+                "\"hel\" suggested {word:?}, which does not even start with the typed letter"
             );
         }
         assert!(results.contains(&"hello".to_string()));
