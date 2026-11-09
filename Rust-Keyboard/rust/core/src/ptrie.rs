@@ -190,9 +190,12 @@ pub fn read_node(
             }
 
             if flags & FLAG_HAS_SHORTCUT_TARGETS != 0 {
-                // A 2-byte size prefixes the whole shortcut list.
+                // The 2-byte field holds the size of the whole shortcut list
+                // *including* the field itself, so only the part past it has to
+                // be skipped. Skipping the whole value ran two bytes into the
+                // next node and turned the rest of the array into noise.
                 let list_size = bytes::read_u16(data, &mut read) as usize;
-                read = read.saturating_add(list_size);
+                read = read.saturating_add(list_size.saturating_sub(2));
             }
             if flags & FLAG_HAS_BIGRAMS != 0 {
                 read = skip_bigrams(data, read);
