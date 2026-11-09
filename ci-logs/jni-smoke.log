@@ -16,6 +16,7 @@
    "its" -> Islamic score 469063 kind 268435457
    "its" -> Israeli score 468470 kind 268435457
    "its" -> Islam score 459865 kind 268435457
+   "its" -> iTunes score 453054 kind 268435457
    "its" -> Isaac score 437634 kind 268435457
    "its" -> Istanbul score 420499 kind 268435457
    "its" -> Isabella score 406689 kind 268435457
@@ -36,6 +37,7 @@
    "its" -> Isabelle score 350982 kind 268435457
    "its" -> Israelite score 339973 kind 268435457
    "its" -> Italianate score 334641 kind 268435457
+   "its" -> i灮erts score 332954 kind 268435457
    "its" -> Ishmael score 332601 kind 268435457
    "its" -> Isaacs score 331263 kind 268435457
    "its" -> Isidore score 331263 kind 268435457
@@ -48,8 +50,6 @@
    "its" -> Ishtar score 293543 kind 268435457
    "its" -> Ismael score 293543 kind 268435457
    "its" -> Islay score 292874 kind 268435457
-   "its" -> Isaac's score 292205 kind 268435457
-   "its" -> Isaak score 283472 kind 268435457
-Exception in thread "main" java.lang.AssertionError: "its" is not suggested for "its": [Italian, Italy, Israel, Islamic, Israeli, Islam, Isaac, Istanbul, Isabella, Italians, Isabel, Israel's, Italia, Israelites, Ismail, Israelis, Italy's, Ithaca, Isaiah, Isis, Islamist, Islington, Islamabad, Isabelle, Israelite, Italianate, Ishmael, Isaacs, Isidore, Isfahan, Istria, Isuzu, Ismaili, Isolde, Islip, Ishtar, Ismael, Islay, Isaac's, Isaak]
+Exception in thread "main" java.lang.AssertionError: "its" is not suggested for "its": [Italian, Italy, Israel, Islamic, Israeli, Islam, iTunes, Isaac, Istanbul, Isabella, Italians, Isabel, Israel's, Italia, Israelites, Ismail, Israelis, Italy's, Ithaca, Isaiah, Isis, Islamist, Islington, Islamabad, Isabelle, Israelite, Italianate, i灮erts, Ishmael, Isaacs, Isidore, Isfahan, Istria, Isuzu, Ismaili, Isolde, Islip, Ishtar, Ismael, Islay]
 	at org.futo.inputmethod.latin.EngineSmoke.check(EngineSmoke.java:27)
 	at org.futo.inputmethod.latin.EngineSmoke.main(EngineSmoke.java:282)
