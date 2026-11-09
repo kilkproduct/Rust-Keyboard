@@ -257,7 +257,7 @@ warning: Environment variable `ANDROID_NDK_HOME = "/usr/local/lib/android/sdk/nd
     [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^[0m [1m[33mhelp: convert the identifier to snake case: `f_get_object_class`[0m
 
 [1m[33mwarning[0m: `kb-jni` (lib) generated 34 warnings
-[1m[92m    Finished[0m `release` profile [optimized] target(s) in 3.33s
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 3.35s
      Copying libraries to /home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/java/jniLibs
 rust: libkeyboard_core.so written to java/jniLibs
 Downloading https://services.gradle.org/distributions/gradle-8.14.3-bin.zip
