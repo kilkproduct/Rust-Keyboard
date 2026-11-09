@@ -32,7 +32,6 @@ import org.futo.inputmethod.latin.ATLCompat
 import org.futo.inputmethod.latin.LatinIME
 import org.futo.inputmethod.latin.LegacySwipeSetting
 import org.futo.inputmethod.latin.R
-import org.futo.inputmethod.latin.SwipeDecoderDictionary
 import org.futo.inputmethod.latin.settings.Settings
 import org.futo.inputmethod.latin.uix.Action
 import org.futo.inputmethod.latin.uix.ActionWindow
@@ -290,22 +289,6 @@ val MemoryDebugAction = Action(
 
                 val foldingState = LocalFoldingState.current
 
-                val codenameFor: (String) -> String = { pteAsset ->
-                    if(pteAsset.isBlank()) {
-                        ""
-                    } else {
-                        val metadataAsset = SwipeDecoderDictionary.metadataFor(pteAsset)
-                        val file = File(
-                            SwipeDecoderDictionary.getFilePath(
-                                manager.getContext(),
-                                metadataAsset
-                            )
-                        )
-                        val content = file.readText()
-
-                        SwipeDecoderDictionary.parseMetadataToGetCodename(content)
-                    }
-                }
                 ScrollableList {
                     if(BugViewerState.bugs.isNotEmpty()) {
                         Button(onClick = {
@@ -314,29 +297,6 @@ val MemoryDebugAction = Action(
                             Text("View ${BugViewerState.bugs.size} errors")
                         }
                     }
-
-                    Text("Swipe Info", style = DebugTitle)
-                    SwipeDecoderDictionary.appliedLayoutInfo.let { layout ->
-                        if(useDataStoreValue(LegacySwipeSetting) == true) {
-                            Text("using legacy mode...", style = DebugLabel)
-                        } else {
-                            val scoring = SwipeDecoderDictionary.appliedScoring.value
-                            Text("universal model = ${SwipeDecoderDictionary.SWIPE_MODEL} (${remember(SwipeDecoderDictionary.SWIPE_MODEL) { codenameFor(SwipeDecoderDictionary.SWIPE_MODEL)} })", style = DebugLabel)
-                            Text("special decoder = ${SwipeDecoderDictionary.appliedLayoutInfo.decoder.ifBlank { "<none>" }} (${remember(SwipeDecoderDictionary.appliedLayoutInfo.decoder) { codenameFor(SwipeDecoderDictionary.appliedLayoutInfo.decoder)} })", style = DebugLabel)
-                            Text("context lm      = ${SwipeDecoderDictionary.appliedLayoutInfo.lm.ifBlank { "<none>" }} (${remember(SwipeDecoderDictionary.appliedLayoutInfo.lm) { codenameFor(SwipeDecoderDictionary.appliedLayoutInfo.lm)} })", style = DebugLabel)
-                            Text("scoring         γ=${scoring.gamma} λ=${scoring.lambda} β=${scoring.beta} α=${scoring.alpha}", style = DebugLabel)
-                            Text("", style = DebugLabel)
-                            Text("layout letters  = ${layout.letters}", style = DebugLabel)
-                            Text("layout scale    = ${layout.sx}, ${layout.sy}", style = DebugLabel)
-                            Text("layout offset   = ${layout.ox}, ${layout.oy}", style = DebugLabel)
-                            Text("", style = DebugLabel)
-                            Text("dictionary count   = ${SwipeDecoderDictionary.appliedTries?.size}", style = DebugLabel)
-                            Text("dictionary weights = ${SwipeDecoderDictionary.appliedTrieWeights.joinToString(", ")}", style = DebugLabel)
-                        }
-
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
 
                     Text("Editor Info", style = DebugTitle)
                     latinIme.currentInputEditorInfo?.let { info ->

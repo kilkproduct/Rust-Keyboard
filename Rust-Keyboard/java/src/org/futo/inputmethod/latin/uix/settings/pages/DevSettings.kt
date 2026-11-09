@@ -43,7 +43,6 @@ import org.futo.inputmethod.engine.general.UseExpandableSuggestionsForGeneralIME
 import org.futo.inputmethod.latin.BuildConfig
 import org.futo.inputmethod.latin.CrashLoggingApplication
 import org.futo.inputmethod.latin.R
-import org.futo.inputmethod.latin.SwipeDecoderDictionary
 import org.futo.inputmethod.latin.SwipeLanguageModelSetting
 import org.futo.inputmethod.latin.SwipeSpecialDecoderSetting
 import org.futo.inputmethod.latin.TextInputAlternativeIC
@@ -319,15 +318,6 @@ fun DeveloperScreen(navController: NavHostController = rememberNavController()) 
             subtitle = "default = yes",
             setting = SwipeLanguageModelSetting
         )
-        NavigationItem(
-            title = "Activate swipe debug logging for 5 minutes",
-            subtitle = "Swipes and text will be logged to logcat",
-            style = NavigationItemStyle.MiscNoArrow,
-            navigate = {
-                SwipeDecoderDictionary.debugLogUntil = System.currentTimeMillis() + 5L * 60L * 1000L
-            }
-        )
-
         ScreenTitle(title = "Payment stuff")
 
         SettingToggleDataStore(title = "Is paid", setting = IS_ALREADY_PAID)

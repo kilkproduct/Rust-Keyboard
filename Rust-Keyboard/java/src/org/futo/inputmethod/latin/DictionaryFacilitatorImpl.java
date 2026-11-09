@@ -95,7 +95,6 @@ public class DictionaryFacilitatorImpl implements DictionaryFacilitator {
             new Class[] { Context.class, Locale.class, File.class, String.class, String.class };
 
 
-    public static SwipeDecoderDictionary swipeDecoderDictionary = null;
 
     private LruCache<String, Boolean> mValidSpellingWordReadCache;
     private LruCache<String, Boolean> mValidSpellingWordWriteCache;
@@ -103,9 +102,6 @@ public class DictionaryFacilitatorImpl implements DictionaryFacilitator {
     private static boolean sTriesAreInvalid = false;
     public static void onAnyBinaryDictionaryClosed() {
         sTriesAreInvalid = true;
-        if (swipeDecoderDictionary != null) {
-            swipeDecoderDictionary.invalidateTries();
-        }
     }
 
     @Override
@@ -880,29 +876,6 @@ public class DictionaryFacilitatorImpl implements DictionaryFacilitator {
             }
         }
 
-        if(DictionaryFacilitatorImpl.swipeDecoderDictionary != null) {
-            SwipeDecoderDictionary.updateKeyboard(keyboard);
-            updateSwipeLayoutAndDictsIfNeeded(Settings.getInstance().getCurrent(), keyboard);
-
-            if(SwipeDecoderDictionary.canBeUsed()) {
-                final ArrayList<SuggestedWordInfo> dictionarySuggestions =
-                        DictionaryFacilitatorImpl.swipeDecoderDictionary.getSuggestions(composedData, ngramContext,
-                            inputStyle == SuggestedWords.INPUT_STYLE_TAIL_BATCH, getTrieWeights());
-
-                if (dictionarySuggestions != null) {
-                    suggestionResults.addAll(dictionarySuggestions);
-                    if (null != suggestionResults.mRawSuggestions) {
-                        suggestionResults.mRawSuggestions.addAll(dictionarySuggestions);
-                    }
-
-                    if(!dictionarySuggestions.isEmpty())
-                        addEmojiSuggestionsForSwipe(suggestionResults, dictionarySuggestions.get(0));
-
-                    return suggestionResults;
-                }
-            }
-        }
-
         for(DictionaryGroup dictionaryGroup : mDictionaryGroups) {
             for (final String dictType : ALL_DICTIONARY_TYPES) {
                 final Dictionary dictionary = dictionaryGroup.getDict(dictType);
@@ -1103,57 +1076,7 @@ public class DictionaryFacilitatorImpl implements DictionaryFacilitator {
 
     @Override
     public void updateSwipeLayoutAndDictsIfNeeded(SettingsValues values, Keyboard keyboard) {
-        if(swipeDecoderDictionary == null) return;
-
-        // TODO: This could be more optimized by avoiding unnecessary recreations when
-        //  isMultiLine is changed, or something else trivial has changed. Maybe also cache the
-        //  resulting LayoutInfos
-        boolean needsToRecreate = keyboard != mPrevKeyboard;
-        if(sTriesAreInvalid) {
-            needsToRecreate = true;
-        }
-
-        boolean allowBadWords = areBadWordsAllowed();
-        if(mPrevBadWordsAllowed != allowBadWords) {
-            needsToRecreate = true;
-        }
-
-        if(!needsToRecreate) return;
-
-        if(!hasAtLeastOneInitializedMainDictionary()) return;
-        if(keyboard == null) return;
-        KeyboardLayout layout = keyboard.getKeyboardLayout();
-        if(layout == null) return;
-
-        mPrevKeyboard = keyboard;
-        final LayoutInfoForModel info = LayoutInfoForModel.buildLayoutInfo(swipeDecoderDictionary.getContext(), keyboard, values);
-        // Log.d("DictionaryFacilitatorImpl", "Keyboard updated... New info: " + info);
-
-        if(info != null) {
-            // Make sure to update tries
-            ArrayList<Long> trieArray = new ArrayList<>();
-
-            mTrieCorrespondingGroups = new ArrayList<>();
-
-            for(DictionaryGroup group : mDictionaryGroups) {
-                int prevLength = trieArray.size();
-                ArrayList<Dictionary> dicts = new ArrayList<Dictionary>();
-                dicts.add(group.getDict(Dictionary.TYPE_MAIN));
-                dicts.add(group.getDict(Dictionary.TYPE_USER));
-                dicts.add(group.getDict(Dictionary.TYPE_USER_HISTORY));
-
-                addDictionaryTries(dicts, info.getLetters(), trieArray, allowBadWords);
-                int newLength = trieArray.size();
-
-                for(int i=0; i<(newLength - prevLength); i++) {
-                    mTrieCorrespondingGroups.add(group);
-                }
-            }
-
-            mPrevBadWordsAllowed = allowBadWords;
-            swipeDecoderDictionary.updateKeyboard(new SwipeDecoderDictionary.PendingLayoutInfo(info, trieArray));
-            sTriesAreInvalid = trieArray.isEmpty();
-        }
+        // Swipe decoding is not part of this build: no decoder, nothing to update.
     }
 
     @Override

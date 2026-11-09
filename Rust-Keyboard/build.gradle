@@ -423,6 +423,39 @@ android {
             fileTree(dir: 'java/res-large/raw', include: ['*.gguf', 'ml4_*']).each { it.delete() }
             // Swipe decoding: three TFLite models nothing reads any more.
             file('java/assets/futo-swipe').listFiles()?.each { it.delete() }
+
+            // Emoji descriptions ship for every language the upstream build
+            // supports (~5 MB gzipped). Keep the English section only: the file
+            // is a sequence of "#<language>" marker lines, each followed by one
+            // line of JSON.
+            final def emojiI18n = file('java/res-large/raw/emoji_i18n.jsondlgz')
+            if (emojiI18n.isFile()) {
+                final def lines = new java.util.zip.GZIPInputStream(
+                        new java.io.FileInputStream(emojiI18n)).getText('UTF-8').readLines()
+                final def kept = []
+                int index = 0
+                while (index < lines.size()) {
+                    final def line = lines[index]
+                    if (line.startsWith('#')) {
+                        final def language = line.substring(1).trim()
+                        final def payload = (index + 1 < lines.size()) ? lines[index + 1] : ''
+                        if (language == 'en' || language.startsWith('en_')) {
+                            kept.add(line)
+                            kept.add(payload)
+                        }
+                        index += 2
+                    } else {
+                        index += 1
+                    }
+                }
+                if (!kept.isEmpty()) {
+                    final def sink = new java.util.zip.GZIPOutputStream(
+                            new java.io.FileOutputStream(emojiI18n))
+                    sink.write((kept.join('\n') + '\n').getBytes('UTF-8'))
+                    sink.close()
+                    logger.lifecycle("emoji_i18n trimmed to ${kept.size() / 2} language(s)")
+                }
+            }
         }
     }
     tasks.named('preBuild').configure { dependsOn 'stripUnusedResources' }
@@ -489,8 +522,9 @@ dependencies {
     implementation "com.charleskorn.kaml:kaml:0.61.0"
 
     // The Japanese (mozc) and Chinese (Rime) engines were removed: this build is
-    // English only, and their dictionaries were most of the package size.
-    implementation files('libs/futo-swipe-release.aar')
+    // English only, and their dictionaries were most of the package size. The
+    // swipe decoder library is gone too: swipe typing is not part of this build,
+    // and it was the only thing pulling in its JNI and libc++.
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 
