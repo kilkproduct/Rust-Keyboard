@@ -112,8 +112,16 @@ struct Scratch {
     code_points: Vec<i32>,
     prev_words: Vec<Vec<i32>>,
     results: Vec<SuggestedWord>,
+    /// Window of the dictionary word walk used by `getNextWordNative`.
+    /// Only a small window is held, never the whole dictionary: an English
+    /// dictionary would otherwise cost several megabytes per process.
     next_word_cache: Vec<(Vec<i32>, i32)>,
+    /// Token of the first word in `next_word_cache`.
+    next_word_start: usize,
 }
+
+/// How many words of the walk `getNextWordNative` keeps resident at a time.
+const NEXT_WORD_WINDOW: usize = 1024;
 
 impl Scratch {
     fn new() -> Scratch {
@@ -122,7 +130,8 @@ impl Scratch {
             code_points: Vec::with_capacity(64),
             prev_words: Vec::with_capacity(4),
             results: Vec::with_capacity(MAX_RESULTS),
-            next_word_cache: Vec::new(),
+            next_word_cache: Vec::with_capacity(NEXT_WORD_WINDOW),
+            next_word_start: 0,
         }
     }
 }
@@ -513,22 +522,40 @@ unsafe extern "system" fn get_next_word_native(
             Ok(value) => value,
             Err(_) => return 0,
         };
-        if token <= 0 {
+        let wanted = if token <= 0 {
             scratch.next_word_cache.clear();
-            let cache = &mut scratch.next_word_cache;
+            scratch.next_word_start = 0;
+            0usize
+        } else {
+            token as usize
+        };
+        let start = scratch.next_word_start;
+        let cached = scratch.next_word_cache.len();
+        if wanted < start || wanted - start >= cached {
+            // Walk to the requested token again, but only keep a window of it.
+            scratch.next_word_cache.clear();
+            scratch.next_word_start = wanted;
+            let mut collected: Vec<(Vec<i32>, i32)> = Vec::with_capacity(NEXT_WORD_WINDOW);
+            let mut index = 0usize;
             dictionary.dict.for_each_word(|word, _terminal, _probability| {
-                if cache.len() >= 200_000 {
+                if index < wanted {
+                    index += 1;
+                    return true;
+                }
+                if collected.len() >= NEXT_WORD_WINDOW {
                     return false;
                 }
-                cache.push((word.to_vec(), 0));
+                collected.push((word.to_vec(), 0));
+                index += 1;
                 true
             });
+            scratch.next_word_cache = collected;
         }
-        let index = token as usize;
-        if index >= scratch.next_word_cache.len() {
+        let offset = wanted - scratch.next_word_start;
+        if offset >= scratch.next_word_cache.len() {
             return 0;
         }
-        let word = scratch.next_word_cache[index].0.clone();
+        let word = scratch.next_word_cache[offset].0.clone();
         write_code_points(env, out_code_points, 0, kb_core::MAX_WORD_LENGTH, &word);
         let is_beginning_of_sentence: [JBoolean; 1] = [
             if !word.is_empty() && word[0] == kb_core::CODE_POINT_BEGINNING_OF_SENTENCE {
