@@ -30,7 +30,10 @@ pub const DICT_OFFSET_ZERO_OFFSET: i32 = 0x7F_FFFF;
 pub const DICT_OFFSET_INVALID: i32 = 0;
 
 /// Largest character group we accept in a single node.
-pub const MAX_CHARS_IN_NODE: usize = 12;
+/// Longest character group a single node may hold. Version 4 dictionaries merge
+/// a whole word into one node, so this has to be able to hold any word; it
+/// matches `MAX_WORD_LENGTH`.
+pub const MAX_CHARS_IN_NODE: usize = 24;
 /// Largest number of bigrams we are willing to walk past when skipping a node.
 const MAX_BIGRAMS_PER_NODE: usize = 10000;
 
@@ -224,7 +227,7 @@ fn read_chars(
     out: &mut [i32; MAX_CHARS_IN_NODE],
 ) -> usize {
     if flags & FLAG_HAS_MULTIPLE_CHARS != 0 {
-        bytes::read_string(data, table, MAX_WORD_LENGTH, out, read)
+        bytes::read_string(data, table, MAX_CHARS_IN_NODE, out, read)
     } else {
         let cp = bytes::read_code_point(data, table, read);
         if cp == crate::NOT_A_CODE_POINT {

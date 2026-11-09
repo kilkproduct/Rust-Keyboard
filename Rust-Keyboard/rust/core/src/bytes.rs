@@ -112,16 +112,23 @@ pub fn read_string(
     out: &mut [i32],
     pos: &mut usize,
 ) -> usize {
+    // Stop on the terminator only. Stopping early when the output is full left
+    // the reader inside the string, so the node's terminal id and child offset
+    // were parsed from characters and the whole trie after that point was
+    // nonsense (words came back as "Aachenr", "Aalstnd's's", ...).
+    let limit = max_len.min(out.len());
     let mut len = 0usize;
     loop {
         let cp = read_code_point(data, table, pos);
-        if cp == super::NOT_A_CODE_POINT || len >= max_len || len >= out.len() {
+        if cp == super::NOT_A_CODE_POINT {
             break;
         }
-        out[len] = cp;
+        if len < limit {
+            out[len] = cp;
+        }
         len += 1;
     }
-    len
+    len.min(limit)
 }
 
 /// Same as [`read_string`] but discards the content; returns the length.
