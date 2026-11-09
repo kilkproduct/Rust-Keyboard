@@ -305,6 +305,46 @@ jobs:
           set -o pipefail
           sh ./rust/build-android.sh 2>&1 | tee "$RUNNER_TEMP/rust-build.log"
 
+      # Maven Central redirects this jar to github.com/JetBrains/kotlin/releases,
+      # which has answered 504 on these runners and failed the build before
+      # compiling anything. Fetch it into the local Maven repository instead, and
+      # settings.gradle puts ~/.m2 first when KB_MAVEN_LOCAL_PREFETCH is set.
+      - name: Pre-fetch the Kotlin compiler
+        run: |
+          set -uo pipefail
+          version=2.1.0
+          remote=org/jetbrains/kotlin/kotlin-compiler-embeddable/$version
+          dest="$HOME/.m2/repository/$remote"
+          mkdir -p "$dest"
+          got_jar=0
+          got_pom=0
+          for mirror in \
+            https://maven-central.storage-download.googleapis.com/maven2 \
+            https://repo1.maven.org/maven2 \
+            https://repo.maven.apache.org/maven2; do
+            if [ "$got_jar" = 0 ] && curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 \
+                -o "$dest/kotlin-compiler-embeddable-$version.jar" \
+                "$mirror/$remote/kotlin-compiler-embeddable-$version.jar"; then
+              echo "fetched the compiler jar from $mirror"
+              got_jar=1
+            fi
+            if [ "$got_pom" = 0 ] && curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 \
+                -o "$dest/kotlin-compiler-embeddable-$version.pom" \
+                "$mirror/$remote/kotlin-compiler-embeddable-$version.pom"; then
+              got_pom=1
+            fi
+            if [ "$got_jar" = 1 ] && [ "$got_pom" = 1 ]; then
+              break
+            fi
+          done
+          # A jar in ~/.m2 without its pom makes Gradle treat the module as
+          # artifact only, so only keep a complete pair; otherwise stay out of
+          # the way and let Gradle resolve from the network.
+          if [ "$got_jar" = 0 ] || [ "$got_pom" = 0 ]; then
+            echo "::warning::could not pre-fetch the Kotlin compiler, Gradle will try on its own"
+            rm -rf "$dest"
+          fi
+
       - name: Build the APKs
         id: gradle
         if: steps.rustbuild.outcome == 'success'
@@ -313,10 +353,16 @@ jobs:
         env:
           VERSION_CODE: ${{ github.run_number }}
           VERSION_NAME: ${{ github.ref_type == 'tag' && github.ref_name || format('0.1.0-rust.{0}', github.run_number) }}
+          KB_MAVEN_LOCAL_PREFETCH: '1'
         run: |
           chmod +x ./gradlew
           set -o pipefail
-          gradle_args=(-PabiFilter="${KB_ABIS}" -PskipRust assembleUnstableRelease assembleStableRelease)
+          gradle_args=(
+            -PabiFilter="${KB_ABIS}" -PskipRust
+            -Dorg.gradle.internal.http.connectionTimeout=60000
+            -Dorg.gradle.internal.http.socketTimeout=180000
+            assembleUnstableRelease assembleStableRelease
+          )
           for attempt in 1 2 3; do
             if ./gradlew --no-daemon --console=plain --stacktrace "${gradle_args[@]}" 2>&1 \
                 | tee "$RUNNER_TEMP/gradle.log"; then
