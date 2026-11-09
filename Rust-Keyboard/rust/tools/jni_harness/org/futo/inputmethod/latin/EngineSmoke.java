@@ -283,16 +283,16 @@ public final class EngineSmoke {
             check(englishProximity != 0, "could not build the letter proximity");
             DicTraverseSession.initDicTraverseSessionNative(session, englishDict, null, 0);
 
-            final int[] headerSize = new int[1];
-            final int[] headerVersion = new int[1];
-            final ArrayList<int[]> headerKeys = new ArrayList<>();
-            final ArrayList<int[]> headerValues = new ArrayList<>();
-            BinaryDictionary.getHeaderInfoNative(englishDict, headerSize, headerVersion, headerKeys,
-                    headerValues);
+            final int[] englishHeaderSize = new int[1];
+            final int[] englishFormatVersion = new int[1];
+            final ArrayList<int[]> englishHeaderKeys = new ArrayList<>();
+            final ArrayList<int[]> englishHeaderValues = new ArrayList<>();
+            BinaryDictionary.getHeaderInfoNative(englishDict, englishHeaderSize, englishFormatVersion,
+                    englishHeaderKeys, englishHeaderValues);
             System.out.println("== english dictionary: format "
                     + BinaryDictionary.getFormatVersionNative(englishDict) + ", header "
-                    + headerSize[0] + " bytes, version " + headerVersion[0] + ", "
-                    + headerKeys.size() + " attributes, file "
+                    + englishHeaderSize[0] + " bytes, version " + englishFormatVersion[0] + ", "
+                    + englishHeaderKeys.size() + " attributes, file "
                     + new File(englishDictPath).length() + " bytes");
             try (java.io.FileInputStream in = new java.io.FileInputStream(englishDictPath)) {
                 final byte[] head = new byte[96];
@@ -306,7 +306,7 @@ public final class EngineSmoke {
                 }
                 System.out.println("== first bytes:\n" + hex);
                 // The trie buffer starts right after the header.
-                in.getChannel().position(headerSize[0]);
+                in.getChannel().position(englishHeaderSize[0]);
                 final byte[] trie = new byte[64];
                 final int trieRead = in.read(trie);
                 final StringBuilder trieHex = new StringBuilder();
