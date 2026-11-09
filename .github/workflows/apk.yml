@@ -218,6 +218,7 @@ jobs:
       # English build needs, so record it: the next pruning pass works from this
       # listing instead of guessing at paths inside the submodules.
       - name: Record the resource layout
+        if: github.ref_type != 'tag'
         run: |
           mkdir -p ci-logs
           {
@@ -379,7 +380,7 @@ jobs:
       - name: Report build output
         if: always()
         run: |
-          for log in "$RUNNER_TEMP/rust-build.log"; do
+          for log in "$RUNNER_TEMP/rust-build.log" "$RUNNER_TEMP/gradle.log"; do
             [ -f "$log" ] || continue
             echo "### $(basename "$log")" >> "$GITHUB_STEP_SUMMARY"
             echo '```' >> "$GITHUB_STEP_SUMMARY"
@@ -390,6 +391,10 @@ jobs:
       - name: Publish the build output
         if: ${{ always() && (steps.rustbuild.outcome != 'success' || steps.gradle.outcome != 'success') }}
         run: |
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            echo "tag run: the logs are in the run summary, nothing to push"
+            exit 0
+          fi
           mkdir -p ci-logs
           cat "$RUNNER_TEMP/rust-build.log" "$RUNNER_TEMP/gradle.log" > ci-logs/apk.log 2>/dev/null || true
           echo "rustbuild=${{ steps.rustbuild.outcome }} gradle=${{ steps.gradle.outcome }}" >> ci-logs/apk.log
@@ -416,6 +421,13 @@ jobs:
       - name: Record the packaged size
         if: always()
         run: |
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            echo "| APK | size |" >> "$GITHUB_STEP_SUMMARY"
+            for apk in ${{ env.PROJECT_DIR }}/dist/*.apk; do
+              echo "| \`$(basename "$apk")\` | $(du -h "$apk" | cut -f1) |" >> "$GITHUB_STEP_SUMMARY"
+            done
+            exit 0
+          fi
           mkdir -p ci-logs
           { echo "run ${GITHUB_RUN_ID} at ${GITHUB_SHA}"; ls -l ${{ env.PROJECT_DIR }}/dist/*.apk 2>/dev/null || echo "no apks"; } \
             > ci-logs/apk-size.txt
