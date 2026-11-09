@@ -57,10 +57,21 @@
 # JSR 305 annotations are for embedding nullability information.
 -dontwarn javax.annotation.**
 
-# Size: move every class into the default package and let R8 widen access so it
-# can inline and merge freely.
--repackageclasses ''
--allowaccessmodification
+# Keep the four classes the native library registers methods on. They declare
+# their methods `native`, which the rules above already keep, but the names are
+# also looked up by the engine itself (`JNI_OnLoad` calls FindClass with the
+# fully qualified name), so they are pinned here instead of relying on the
+# side effect of a keep rule.
+-keep class org.futo.inputmethod.latin.BinaryDictionary { *; }
+-keep class org.futo.inputmethod.keyboard.ProximityInfo { *; }
+-keep class org.futo.inputmethod.latin.DicTraverseSession { *; }
+-keep class org.futo.inputmethod.latin.utils.BinaryDictionaryUtils { *; }
+
+# Repackaging every class into the default package and letting R8 widen access
+# was tried for size and reverted: it is the one optimisation in this file that
+# changes the shape of the application for code the shrinker cannot see (name
+# based lookups, serialised class names, the manifest). The megabytes it saved
+# came from assets; the ~100 KB it saves here are not worth a crash on startup.
 
 # Strip logging calls from the release build.
 -assumenosideeffects class android.util.Log {

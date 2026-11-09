@@ -65,45 +65,62 @@ object Dictionaries {
     @Volatile
     private var extractedDictionary: File? = null
 
-    private fun getBundledDictionaryFile(context: Context): File? {
-        extractedDictionary?.let { if (it.isFile) return it }
-
-        val dir = File(context.filesDir, "bundled-dict")
-        val target = File(dir, BUNDLED_DICT_NAME)
-        val stamp = File(dir, "$BUNDLED_DICT_NAME.version")
-
-        val upToDate = target.isFile && target.length() > 0L && stamp.isFile &&
-                (stamp.readText().trim() == BUNDLED_DICT_VERSION)
-        if (!upToDate) {
-            try {
-                dir.mkdirs()
-                val temporary = File(dir, "$BUNDLED_DICT_NAME.tmp")
-                val source = openBundledDictionaryAsset(context) ?: return null
-                source.use { asset ->
-                    temporary.outputStream().use { sink -> asset.copyTo(sink) }
-                }
-                // A truncated or empty unpack must not be handed to the engine:
-                // it would silently suggest nothing at all.
-                if (temporary.length() < 100_000L) {
-                    Log.e("Dictionaries", "unpacked dictionary is too small: ${temporary.length()} bytes")
-                    temporary.delete()
-                    return null
-                }
-                if (target.isFile) target.delete()
-                if (!temporary.renameTo(target)) {
-                    temporary.delete()
-                    return null
-                }
-                stamp.writeText(BUNDLED_DICT_VERSION)
-                Log.i("Dictionaries", "unpacked the bundled dictionary: ${target.length()} bytes")
-            } catch (e: IOException) {
-                Log.e("Dictionaries", "could not unpack the bundled dictionary", e)
-                return null
-            }
+    private fun bundledDictionaryIsUpToDate(target: File, stamp: File): Boolean {
+        return try {
+            target.isFile && target.length() > 0L && stamp.isFile &&
+                    (stamp.readText().trim() == BUNDLED_DICT_VERSION)
+        } catch (e: Exception) {
+            false
         }
+    }
 
-        extractedDictionary = target
-        return target
+    // Never throws: any failure here (a locked device where the files directory
+    // is not available yet, a full disk, a missing asset) has to degrade into
+    // "no bundled dictionary" and let the caller fall back, because this runs on
+    // the dictionary thread of the IME process and an escaping exception takes
+    // the keyboard down with it.
+    private fun getBundledDictionaryFile(context: Context): File? {
+        try {
+            extractedDictionary?.let { if (it.isFile) return it }
+
+            val dir = File(context.filesDir, "bundled-dict")
+            val target = File(dir, BUNDLED_DICT_NAME)
+            val stamp = File(dir, "$BUNDLED_DICT_NAME.version")
+
+            if (!bundledDictionaryIsUpToDate(target, stamp)) {
+                try {
+                    dir.mkdirs()
+                    val temporary = File(dir, "$BUNDLED_DICT_NAME.tmp")
+                    val source = openBundledDictionaryAsset(context) ?: return null
+                    source.use { asset ->
+                        temporary.outputStream().use { sink -> asset.copyTo(sink) }
+                    }
+                    // A truncated or empty unpack must not be handed to the engine:
+                    // it would silently suggest nothing at all.
+                    if (temporary.length() < 100_000L) {
+                        Log.e("Dictionaries", "unpacked dictionary is too small: ${temporary.length()} bytes")
+                        temporary.delete()
+                        return null
+                    }
+                    if (target.isFile) target.delete()
+                    if (!temporary.renameTo(target)) {
+                        temporary.delete()
+                        return null
+                    }
+                    stamp.writeText(BUNDLED_DICT_VERSION)
+                    Log.i("Dictionaries", "unpacked the bundled dictionary: ${target.length()} bytes")
+                } catch (e: Exception) {
+                    Log.e("Dictionaries", "could not unpack the bundled dictionary", e)
+                    return null
+                }
+            }
+
+            extractedDictionary = target
+            return target
+        } catch (e: Exception) {
+            Log.e("Dictionaries", "the bundled dictionary is not reachable", e)
+            return null
+        }
     }
 
     fun getDictionaryIfExists(context: Context, locale: Locale?, kind: DictionaryKind): AssetFileAddress? {

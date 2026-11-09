@@ -545,6 +545,9 @@ jobs:
               echo "::error::the packaged dictionary decompresses to ${dict_bytes:-0} bytes"; exit 1
             fi
             echo "packaged dictionary: $dict_bytes bytes once unpacked"
+            # Assets and manifest classes a package needs in order to start at
+            # all; see tools/verify-apk-startup.sh.
+            sh tools/verify-apk-startup.sh "$apk" || exit 1
             # The body of the package, for the next pruning pass.
             unzip -l "$apk" | sort -k1,1 -n -r | head -25
           done

@@ -867,16 +867,8 @@ pub fn get_predictions(
     // and the budget keeps a long query from scanning a whole subtree.
     let mut budget = 4000usize;
     let mut candidates: Vec<(SuggestedWord, i32)> = Vec::new();
-    let mut buffer = [0i32; MAX_WORD_LENGTH];
 
-    collect_predictions(
-        dict,
-        &prev_ids,
-        &mut buffer,
-        0,
-        &mut budget,
-        &mut candidates,
-    );
+    collect_predictions(dict, &prev_ids, &mut budget, &mut candidates);
 
     if let Some(user_dict) = dict.user.as_ref() {
         for record in user_dict.words() {
@@ -910,8 +902,6 @@ pub fn get_predictions(
 fn collect_predictions(
     dict: &Dictionary,
     prev_ids: &[i32],
-    buffer: &mut [i32; MAX_WORD_LENGTH],
-    _length: usize,
     budget: &mut usize,
     out: &mut Vec<(SuggestedWord, i32)>,
 ) {
@@ -927,41 +917,56 @@ fn collect_predictions(
     // Breadth first, so every branch of the trie gets a share of the budget.
     // A depth first walk spends it all inside the first subtree it enters and
     // predicts nothing but the words that happen to start with that letter.
-    let mut queue: std::collections::VecDeque<(Node, usize)> =
+    //
+    // Each entry carries its own word prefix. A single shared buffer cannot be
+    // used here: the prefix of a node that is still waiting in the queue gets
+    // overwritten by whatever node was walked in between, which is how the
+    // predictions came back as the last first letter of the root array followed
+    // by the rest of another word ("éypt" for "Egypt", "émail" for "email").
+    let mut queue: std::collections::VecDeque<(Node, Vec<i32>)> =
         std::collections::VecDeque::with_capacity(256);
     dict.for_each_child(&root, |child| {
-        queue.push_back((*child, 0usize));
+        if child.char_count > 0 {
+            let mut word = Vec::with_capacity(MAX_WORD_LENGTH);
+            for index in 0..child.char_count as usize {
+                word.push(child.char_at(index));
+            }
+            queue.push_back((*child, word));
+        }
         true
     });
 
-    while let Some((node, base_length)) = queue.pop_front() {
+    while let Some((node, word)) = queue.pop_front() {
         if *budget == 0 || out.len() >= 512 {
             return;
         }
         *budget -= 1;
-        let char_count = node.char_count as usize;
-        let new_length = base_length + char_count;
-        if new_length > MAX_WORD_LENGTH || char_count == 0 {
+
+        if word.is_empty() || word.len() > MAX_WORD_LENGTH {
             continue;
-        }
-        for index in 0..char_count {
-            buffer[base_length + index] = node.char_at(index);
         }
         if node.is_terminal() {
             let terminal = terminal_value_of(node, dict.is_v4());
             let attributes = dict.word_attributes(prev_ids, terminal);
             if attributes.is_valid() && !attributes.is_not_a_word && !attributes.is_blacklisted {
                 let mut suggestion = SuggestedWord::empty();
-                for index in 0..new_length {
-                    suggestion.code_points[index] = buffer[index];
+                for (index, code_point) in word.iter().enumerate() {
+                    suggestion.code_points[index] = *code_point;
                 }
-                suggestion.length = new_length as u8;
+                suggestion.length = word.len() as u8;
                 out.push((suggestion, attributes.probability));
             }
         }
+
+        // `word` is the prefix of every child, so it is copied once per child
+        // instead of being rebuilt in a shared buffer.
         dict.for_each_child(&node, |child| {
-            if child.char_count > 0 {
-                queue.push_back((*child, new_length));
+            if child.char_count > 0 && word.len() + child.char_count as usize <= MAX_WORD_LENGTH {
+                let mut child_word = word.clone();
+                for index in 0..child.char_count as usize {
+                    child_word.push(child.char_at(index));
+                }
+                queue.push_back((*child, child_word));
             }
             true
         });

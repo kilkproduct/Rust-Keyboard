@@ -76,7 +76,23 @@ object LayoutManager {
         ensureInitialized()
         if(name.startsWith("custom")) return CustomLayout.getCustomLayout(context, name)
 
-        return layoutsById?.get(name)?.get(context) ?: throw IllegalArgumentException("Failed to find keyboard layout $name. Available layouts: ${layoutsById?.keys}")
+        layoutsById?.get(name)?.get(context)?.let { return it }
+
+        // A layout this build does not ship is not worth taking the keyboard
+        // down for: a stale preference, an imported theme or a subtype for a
+        // language whose layouts were dropped all end up here. Show the error
+        // layout, then the default one, and only give up if neither exists.
+        for (fallback in arrayOf("error", "qwerty")) {
+            if (fallback == name) continue
+            val layout = layoutsById?.get(fallback) ?: continue
+            try {
+                Log.e("LayoutManager", "layout $name is missing, falling back to $fallback")
+                return layout.get(context)
+            } catch (e: Exception) {
+                Log.e("LayoutManager", "fallback layout $fallback could not be loaded either", e)
+            }
+        }
+        throw IllegalArgumentException("Failed to find keyboard layout $name. Available layouts: ${layoutsById?.keys}")
     }
 
     fun getLayoutOrNull(context: Context, name: String): Keyboard? {

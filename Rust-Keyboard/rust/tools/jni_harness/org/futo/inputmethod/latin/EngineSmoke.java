@@ -339,6 +339,12 @@ public final class EngineSmoke {
             final int[] wordCodePoints = new int[MAX_WORD_LENGTH];
             final boolean[] wordIsBeginningOfSentence = new boolean[1];
             final StringBuilder sample = new StringBuilder();
+            // Every word the dictionary contains. A suggestion that is not in
+            // here is not a word of this dictionary, which is exactly how the
+            // "éf"/"éo" predictions looked: the first letter of the prediction
+            // came from a stale buffer, so the rest of the word did not match
+            // anything the trie stores.
+            final java.util.HashSet<String> dictionaryWords = new java.util.HashSet<>();
             while (words < 400000) {
                 token = BinaryDictionary.getNextWordNative(englishDict, token, wordCodePoints,
                         wordIsBeginningOfSentence);
@@ -349,8 +355,10 @@ public final class EngineSmoke {
                     break;
                 }
                 words++;
+                final String walked = fromCodePoints(wordCodePoints, 0, MAX_WORD_LENGTH).trim();
+                dictionaryWords.add(walked);
                 if (words <= 12) {
-                    sample.append(' ').append(fromCodePoints(wordCodePoints, 0, MAX_WORD_LENGTH));
+                    sample.append(' ').append(walked);
                 }
             }
             System.out.println("== dictionary walk: " + words + " words, first:" + sample);
@@ -368,6 +376,24 @@ public final class EngineSmoke {
                     new String[] {"the"}, predictionCount);
             System.out.println("== after \"the\": " + predictionCount[0] + " predictions");
 
+            // 5d. Predictions are built by walking the whole trie, so the prefix
+            //     of every candidate has to be carried along explicitly. When it
+            //     was read out of one shared buffer instead, every prediction
+            //     came back as "the last first letter the walk visited" followed
+            //     by the tail of a real word ("éypt", "émail", "é-shirts"): none
+            //     of those is a word of the dictionary, so checking membership
+            //     catches the whole class of bug.
+            int notInDictionary = 0;
+            for (String word : prediction) {
+                if (!dictionaryWords.contains(word)) {
+                    if (notInDictionary < 10) {
+                        System.out.println("   prediction that is not a dictionary word: \"" + word + "\"");
+                    }
+                    notInDictionary++;
+                }
+            }
+            System.out.println("== predictions that are not dictionary words: " + notInDictionary);
+
             final int[] completionCount = new int[1];
             final ArrayList<String> completion = suggest(englishDict, englishProximity, session,
                     "hel", new String[] {"i"}, completionCount);
@@ -377,6 +403,8 @@ public final class EngineSmoke {
             check(itsCount[0] > 0, "no suggestions at all for \"its\"");
             check(its.contains("its"), "\"its\" is not suggested for \"its\": " + its);
             check(predictionCount[0] > 0, "no next word predictions after \"the\"");
+            check(notInDictionary == 0, notInDictionary
+                    + " predictions are not words of the dictionary: " + prediction);
             check(completionCount[0] > 0, "no completions for \"hel\": " + completion);
         } else {
             System.out.println("== no KB_ENGLISH_DICT, skipping the real dictionary checks");

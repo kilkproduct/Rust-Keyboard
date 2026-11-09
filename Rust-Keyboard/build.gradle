@@ -388,7 +388,17 @@ android {
 
     packagingOptions {
         resources {
-            excludes += ['META-INF/**', 'kotlin/**', 'DebugProbesKt.bin', '**/*.kotlin_builtins']
+            // Only the entries that are pure packaging metadata are dropped.
+            // `META-INF/**` used to be excluded wholesale, which also removed
+            // `META-INF/services/*`: any library that looks an implementation up
+            // through ServiceLoader then fails at runtime, and the failure lands
+            // on whichever process touches it first.
+            excludes += [
+                    'META-INF/MANIFEST.MF',
+                    'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA',
+                    'META-INF/*.version', 'META-INF/*.kotlin_module',
+                    'kotlin/**', 'DebugProbesKt.bin', '**/*.kotlin_builtins',
+            ]
         }
         jniLibs {
             // Keep the libraries compressed inside the APK: extracting them on
