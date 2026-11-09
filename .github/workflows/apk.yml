@@ -471,8 +471,7 @@ jobs:
           mkdir -p ci-logs
           # The startup check runs again here only so that its output lands in
           # ci-logs, where it can be read; the verify step is what enforces it.
-          sh ${{ env.PROJECT_DIR }}/tools/verify-apk-startup.sh ${{ env.PROJECT_DIR }}/dist/*.apk \
-            > ci-logs/verify-apk.txt 2>&1 || true
+          sh ${{ env.PROJECT_DIR }}/tools/verify-apk-startup.sh ${{ env.PROJECT_DIR }}/dist/*.apk > ci-logs/verify-apk.txt 2>&1 || true
           {
             echo "run ${GITHUB_RUN_ID} at ${GITHUB_SHA}"
             ls -l ${{ env.PROJECT_DIR }}/dist/*.apk 2>/dev/null || echo "no apks"
