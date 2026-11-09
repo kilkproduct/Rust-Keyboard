@@ -147,40 +147,40 @@ Rust-Keyboard/java/assets/layouts/Devanagari
 
 == java/res-large files
 total 35940
--rw-r--r-- 1 runner runner 30662880 Nov  9 06:26 ml4_q6_k.gguf
--rw-r--r-- 1 runner runner  5077491 Nov  9 06:26 emoji_i18n.jsondlgz
--rw-r--r-- 1 runner runner  1054656 Nov  9 06:26 main_en.dict
+-rw-r--r-- 1 runner runner 30662880 Nov  9 06:47 ml4_q6_k.gguf
+-rw-r--r-- 1 runner runner  5077491 Nov  9 06:47 emoji_i18n.jsondlgz
+-rw-r--r-- 1 runner runner  1054656 Nov  9 06:47 main_en.dict
 
 == voiceinput ml files
 Rust-Keyboard/voiceinput-shared/src/main/ml:
 total 42532
--rw-r--r-- 1 runner runner 43550795 Nov  9 06:26 tiny_en_acft_q8_0.bin.not.tflite
+-rw-r--r-- 1 runner runner 43550795 Nov  9 06:46 tiny_en_acft_q8_0.bin.not.tflite
 
 == java/assets/futo-swipe files
 Rust-Keyboard/java/assets/futo-swipe:
 total 32
--rw-r--r-- 1 runner runner 8146 Nov  9 06:26 README.md
--rw-r--r-- 1 runner runner 5826 Nov  9 06:26 LICENSE.md
-drwxr-xr-x 2 runner runner 4096 Nov  9 06:26 chosen_planarian
-drwxr-xr-x 2 runner runner 4096 Nov  9 06:26 honorable_sturgeon
-drwxr-xr-x 2 runner runner 4096 Nov  9 06:26 magic_macaw
--rw-r--r-- 1 runner runner 1563 Nov  9 06:26 scoring.json
+-rw-r--r-- 1 runner runner 8146 Nov  9 06:47 README.md
+-rw-r--r-- 1 runner runner 5826 Nov  9 06:47 LICENSE.md
+drwxr-xr-x 2 runner runner 4096 Nov  9 06:47 chosen_planarian
+drwxr-xr-x 2 runner runner 4096 Nov  9 06:47 honorable_sturgeon
+drwxr-xr-x 2 runner runner 4096 Nov  9 06:47 magic_macaw
+-rw-r--r-- 1 runner runner 1563 Nov  9 06:47 scoring.json
 
 Rust-Keyboard/java/assets/futo-swipe/chosen_planarian:
 total 6388
--rw-r--r-- 1 runner runner 6247616 Nov  9 06:26 context_lm.pte
--rw-r--r-- 1 runner runner  284965 Nov  9 06:26 vocab.txt
--rw-r--r-- 1 runner runner      59 Nov  9 06:26 metadata.json
+-rw-r--r-- 1 runner runner 6247616 Nov  9 06:47 context_lm.pte
+-rw-r--r-- 1 runner runner  284965 Nov  9 06:47 vocab.txt
+-rw-r--r-- 1 runner runner      59 Nov  9 06:47 metadata.json
 
 Rust-Keyboard/java/assets/futo-swipe/honorable_sturgeon:
 total 2592
--rw-r--r-- 1 runner runner 2649856 Nov  9 06:26 model_fp32.pte
--rw-r--r-- 1 runner runner    2110 Nov  9 06:26 metadata.json
+-rw-r--r-- 1 runner runner 2649856 Nov  9 06:47 model_fp32.pte
+-rw-r--r-- 1 runner runner    2110 Nov  9 06:47 metadata.json
 
 Rust-Keyboard/java/assets/futo-swipe/magic_macaw:
 total 1224
--rw-r--r-- 1 runner runner 1247468 Nov  9 06:26 model_fp32.pte
--rw-r--r-- 1 runner runner    1683 Nov  9 06:26 metadata.json
+-rw-r--r-- 1 runner runner 1247468 Nov  9 06:47 model_fp32.pte
+-rw-r--r-- 1 runner runner    1683 Nov  9 06:47 metadata.json
 
 == java/assets/layouts mapping
 languages:
