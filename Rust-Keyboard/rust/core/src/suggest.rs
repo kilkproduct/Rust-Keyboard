@@ -374,7 +374,8 @@ impl<'a> Search<'a> {
                     cost += 0.01f32;
                 }
 
-                let new_state = self.make_child_state(state, child, cost, matched_errors);
+                let new_state =
+                    self.make_child_state(state, child, cost, matched_errors, char_count);
                 next.push(new_state);
                 continue;
             }
@@ -391,14 +392,13 @@ impl<'a> Search<'a> {
                         input_state.x,
                         input_state.y,
                     );
-                let mut substituted =
-                    self.make_child_state(state, child, substitution_cost, ERROR_EDIT);
-                substituted.input_index = state.input_index + 1;
+                let substituted =
+                    self.make_child_state(state, child, substitution_cost, ERROR_EDIT, 1);
                 next.push(substituted);
             }
 
             // 3. Omission: a dictionary character the user did not type.
-            let omitted = self.make_child_state(state, child, OMISSION_COST, ERROR_EDIT);
+            let omitted = self.make_child_state(state, child, OMISSION_COST, ERROR_EDIT, 0);
             next.push(omitted);
         }
 
@@ -433,7 +433,8 @@ impl<'a> Search<'a> {
             } else {
                 COST_COMPLETION
             };
-            let new_state = self.make_child_state(state, child, completion_cost, ERROR_COMPLETION);
+            let new_state =
+                self.make_child_state(state, child, completion_cost, ERROR_COMPLETION, 0);
             next.push(new_state);
         }
     }
@@ -458,13 +459,19 @@ impl<'a> Search<'a> {
     }
 
     /// Builds the successor state for `child`, appending its characters and
-    /// recording it immediately when it is a word.
+    /// recording it when it completes a word for the consumed input.
+    ///
+    /// `consumed` is how many of the typed characters this child accounts for.
+    /// Advancing the input index is what keeps the search on the typed path: a
+    /// state that does not consume its characters matches the same key again and
+    /// again and wanders through unrelated branches of the trie.
     fn make_child_state(
         &mut self,
         state: &State,
         child: Node,
         cost: f32,
         errors: u32,
+        consumed: usize,
     ) -> State {
         let mut new_state = *state;
         new_state.node = child;
@@ -472,8 +479,13 @@ impl<'a> Search<'a> {
         new_state.errors |= errors;
         new_state.terminal_value = terminal_value_of(child, self.dict.is_v4());
         new_state.is_root = false;
+        new_state.input_index = state.input_index.saturating_add(consumed as u16);
         self.push_word(&mut new_state, &child);
-        if child.is_terminal() {
+        let input_consumed = new_state.input_index as usize >= self.input.len();
+        // A gesture has no typed characters to consume, so any terminal the path
+        // reaches is a candidate. For typing, a word that ends before the typed
+        // input does is only a prefix of it, not a suggestion.
+        if child.is_terminal() && (self.options.is_gesture || input_consumed) {
             self.record_terminal(&new_state);
         }
         new_state
@@ -545,8 +557,8 @@ impl<'a> Search<'a> {
                 .distance_for_code_point(child.char_at(0), point.x, point.y)
                 + (skipped as f32) * GESTURE_SKIP_COST;
             let errors = if skipped > 0 { ERROR_PROXIMITY } else { 0 };
-            let mut new_state = self.make_child_state(state, child, cost, errors);
-            new_state.input_index = (matched_position + 1) as u16;
+            let new_state =
+                self.make_child_state(state, child, cost, errors, matched_position + 1 - cursor);
             next.push(new_state);
         }
     }
@@ -945,5 +957,153 @@ mod tests {
             add_result(&mut results, &[0x61 + index as i32], index as i32, 0, 1, 0);
         }
         assert_eq!(results.len(), MAX_RESULTS);
+    }
+
+    // --- end to end behaviour on a real (in memory) trie --------------------
+
+    use crate::dict::{from_v2_trie_for_test, test_trie};
+    use crate::proximity::ProximityInfo;
+
+    const KEY_WIDTH: i32 = 100;
+
+    fn letters() -> Vec<i32> {
+        ('a'..='z').map(|c| c as i32).collect()
+    }
+
+    /// A single row of 26 keys, one hundred units wide.
+    fn row_proximity() -> ProximityInfo {
+        let count = letters().len();
+        let key_x: Vec<i32> = (0..count as i32).map(|index| index * KEY_WIDTH).collect();
+        let key_y = vec![0; count];
+        let key_widths = vec![KEY_WIDTH; count];
+        let key_heights = vec![100; count];
+        let sweet_x: Vec<f32> = (0..count as i32)
+            .map(|index| index as f32 * KEY_WIDTH as f32 + KEY_WIDTH as f32 / 2.0)
+            .collect();
+        let sweet_y = vec![50.0f32; count];
+        let sweet_radius = vec![50.0f32; count];
+        ProximityInfo::new(
+            count as i32 * KEY_WIDTH,
+            100,
+            count as i32,
+            1,
+            KEY_WIDTH,
+            100,
+            Vec::new(),
+            count,
+            key_x,
+            key_y,
+            key_widths,
+            key_heights,
+            letters(),
+            sweet_x,
+            sweet_y,
+            sweet_radius,
+        )
+    }
+
+    fn taps(typed: &str) -> Vec<(i32, i32, i32, i32)> {
+        typed
+            .chars()
+            .enumerate()
+            .map(|(index, ch)| {
+                let column = (ch as i32) - ('a' as i32);
+                (
+                    column * KEY_WIDTH + KEY_WIDTH / 2,
+                    50,
+                    index as i32 * 50,
+                    0,
+                )
+            })
+            .collect()
+    }
+
+    fn dictionary() -> (crate::dict::Dictionary, Vec<String>) {
+        let words: Vec<(&str, u8)> = vec![
+            ("hello", 200),
+            ("help", 190),
+            ("helm", 150),
+            ("helmet", 120),
+            ("hero", 100),
+            ("world", 90),
+            ("held", 80),
+        ];
+        let trie = test_trie::build(&words);
+        let names = words.iter().map(|(word, _)| word.to_string()).collect();
+        (from_v2_trie_for_test(trie), names)
+    }
+
+    fn run(dict: &crate::dict::Dictionary, typed: &str) -> Vec<String> {
+        let proximity = row_proximity();
+        let code_points: Vec<i32> = typed.chars().map(|c| c as i32).collect();
+        let mut weight = 1.0f32;
+        let mut results = Vec::new();
+        get_suggestions(
+            dict,
+            &proximity,
+            &taps(typed),
+            &code_points,
+            &[],
+            &SuggestOptions::defaults(),
+            &mut weight,
+            &mut results,
+        );
+        results
+            .iter()
+            .map(|word| {
+                word.code_points[..word.length as usize]
+                    .iter()
+                    .map(|cp| char::from_u32(*cp as u32).unwrap_or('?'))
+                    .collect::<String>()
+            })
+            .collect()
+    }
+
+    #[test]
+    fn every_suggestion_is_a_dictionary_word() {
+        let (dict, names) = dictionary();
+        for typed in ["h", "he", "hel", "hell", "hello", "hellp", "helo", "hlep"] {
+            for suggestion in run(&dict, typed) {
+                assert!(
+                    names.contains(&suggestion),
+                    "typed {typed:?} produced {suggestion:?}, which is not in the dictionary"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn suggestions_stay_on_the_typed_prefix() {
+        let (dict, _names) = dictionary();
+        let results = run(&dict, "hel");
+        assert!(!results.is_empty(), "no suggestions for \"hel\"");
+        let top = &results[0];
+        assert!(
+            top.starts_with("hel"),
+            "first suggestion for \"hel\" was {top:?}"
+        );
+        for word in &results {
+            assert!(
+                word.starts_with("hel"),
+                "\"hel\" suggested {word:?}, which does not share its prefix"
+            );
+        }
+        assert!(results.contains(&"hello".to_string()));
+    }
+
+    #[test]
+    fn typos_are_corrected_to_the_expected_word() {
+        let (dict, _names) = dictionary();
+        let results = run(&dict, "hellp");
+        assert!(
+            results.contains(&"hello".to_string()),
+            "\"hellp\" did not correct to hello: {results:?}"
+        );
+    }
+
+    #[test]
+    fn unrelated_input_does_not_produce_words() {
+        let (dict, _names) = dictionary();
+        assert!(run(&dict, "qz").is_empty(), "\"qz\" produced suggestions");
     }
 }

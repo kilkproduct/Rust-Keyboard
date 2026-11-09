@@ -674,6 +674,129 @@ fn count_to_probability(count: i32) -> i32 {
     scaled.min(255)
 }
 
+/// Builds a version 2.02 trie in memory: a chain of PtNode arrays with
+/// inline probabilities, which is the minimal shape the search reads.
+#[cfg(test)]
+pub mod test_trie {
+    struct TNode {
+        ch: i32,
+        probability: Option<u8>,
+        children: Vec<usize>,
+    }
+
+    pub fn build(words: &[(&str, u8)]) -> Vec<u8> {
+        let mut arena: Vec<TNode> = vec![TNode {
+            ch: 0,
+            probability: None,
+            children: Vec::new(),
+        }];
+        for (word, probability) in words {
+            let mut current = 0usize;
+            let chars: Vec<i32> = word.chars().map(|c| c as i32).collect();
+            for (index, ch) in chars.iter().enumerate() {
+                let existing = arena[current]
+                    .children
+                    .iter()
+                    .copied()
+                    .find(|id| arena[*id].ch == *ch);
+                let next = match existing {
+                    Some(id) => id,
+                    None => {
+                        arena.push(TNode {
+                            ch: *ch,
+                            probability: None,
+                            children: Vec::new(),
+                        });
+                        let id = arena.len() - 1;
+                        arena[current].children.push(id);
+                        id
+                    }
+                };
+                if index + 1 == chars.len() {
+                    arena[next].probability = Some(*probability);
+                }
+                current = next;
+            }
+        }
+        let root_children = arena[0].children.clone();
+        let mut out: Vec<u8> = Vec::new();
+        emit_array(&arena, &root_children, &mut out);
+        out
+    }
+
+    fn push_char(out: &mut Vec<u8>, code_point: i32) {
+        if code_point >= 0x20 && code_point <= 0xFF {
+            out.push(code_point as u8);
+        } else {
+            out.push(((code_point >> 16) & 0xFF) as u8);
+            out.push(((code_point >> 8) & 0xFF) as u8);
+            out.push((code_point & 0xFF) as u8);
+        }
+    }
+
+    fn emit_array(arena: &[TNode], nodes: &[usize], out: &mut Vec<u8>) {
+        assert!(nodes.len() < 0x80, "one byte array sizes only in this helper");
+        out.push(nodes.len() as u8);
+        let mut child_slots: Vec<(usize, usize)> = Vec::new();
+        for id in nodes {
+            let node = &arena[*id];
+            let has_children = !node.children.is_empty();
+            let mut flags = 0u8;
+            if node.probability.is_some() {
+                flags |= 0x10;
+            }
+            if has_children {
+                flags |= 0x40; // one byte children offset
+            }
+            out.push(flags);
+            push_char(out, node.ch);
+            if let Some(probability) = node.probability {
+                out.push(probability);
+            }
+            if has_children {
+                child_slots.push((out.len(), *id));
+                out.push(0); // patched below
+            }
+        }
+        // Forward link: zero, i.e. no following array.
+        out.extend_from_slice(&[0, 0, 0]);
+        for (field_pos, id) in child_slots {
+            let start = out.len();
+            let offset = start - field_pos;
+            assert!(offset < 0xFF, "one byte offsets only in this helper");
+            out[field_pos] = offset as u8;
+            let children = arena[id].children.clone();
+            emit_array(arena, &children, out);
+        }
+    }
+}
+
+/// A dictionary that serves the given version 2 trie from memory.
+#[cfg(test)]
+pub fn from_v2_trie_for_test(trie: Vec<u8>) -> Dictionary {
+    let length = trie.len();
+    Dictionary {
+        body: DataSource::from_vec(trie),
+        header: Header {
+            number: 202,
+            version: DictVersion::V202,
+            flags: 0,
+            size: 0,
+            attributes: Vec::new(),
+        },
+        trie: Buf::new(0, length),
+        terminal_table: Buf::empty(),
+        language_model: Buf::empty(),
+        layout: Layout::V2Static,
+        code_point_table: None,
+        is_v4: false,
+        has_historical_info: false,
+        user: None,
+        corrupted: false,
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -728,5 +851,18 @@ mod tests {
         assert_eq!(dict.get_max_probability_of_exact_matches(&[0x61]), NOT_A_PROBABILITY);
 
         let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn test_trie_round_trips_through_find_word() {
+        let trie = test_trie::build(&[("hello", 200), ("help", 180), ("helm", 120)]);
+        let dict = from_v2_trie_for_test(trie);
+        let hello: Vec<i32> = "hello".chars().map(|c| c as i32).collect();
+        let (probability, _node) = dict.find_word(&hello);
+        assert_eq!(probability, 200);
+        let missing: Vec<i32> = "helper".chars().map(|c| c as i32).collect();
+        let (probability, _node) = dict.find_word(&missing);
+        assert_eq!(probability, crate::NOT_A_TERMINAL_ID);
+        assert_eq!(dict.get_probability(&hello), 200);
     }
 }

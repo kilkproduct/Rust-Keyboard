@@ -148,9 +148,11 @@ pub fn read_node(
 
     match layout {
         Layout::V4 => {
-            let offset_pos = read;
+            // The parent (or, for a moved node, the destination) offset is
+            // relative to the first byte of the node itself, not to the field.
+            let head_pos = pos;
             let parent_offset = bytes::read_sint24(data, &mut read);
-            node.parent_pos = resolve_offset(parent_offset, offset_pos);
+            node.parent_pos = resolve_offset(parent_offset, head_pos);
             node.is_moved = (flags & FLAG_CHILDREN_TYPE_MASK) == FLAG_IS_MOVED;
 
             node.char_count = read_chars(data, flags, table, &mut read, &mut node.chars) as u8;
