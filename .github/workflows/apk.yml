@@ -477,6 +477,9 @@ jobs:
             cat <<'TEXT'
           * Engine: the Rust dictionary/suggestion core (`libkeyboard_core.so`,
             see `rust/README.md`) next to the C++ voice-input library.
+          * English only: the Japanese (mozc) and Chinese (Rime) engines, their
+            dictionaries, the other compiled dictionaries and the translation
+            submodule are not in this package.
           * ABI: the packages contain `arm64-v8a` only.
           * Signed with the keystore that ships in the repository
             (`java/shared.keystore`). Uninstall first if your existing copy is
