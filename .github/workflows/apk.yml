@@ -580,17 +580,6 @@ jobs:
               echo
               echo "Largest entries (compressed, raw):"
               unzip -v "$stable_apk" | awk 'NF>=8 && $1 ~ /^[0-9]+$/ {printf "%9d (raw %9d) %s\n", $3, $1, $8}' | sort -nr | head -20
-              echo
-              echo "Resource entries per type in resources.arsc:"
-              echo
-              aapt2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 2>/dev/null | sort | tail -1)
-              if [ -n "$aapt2" ]; then
-                "$aapt2" dump resources "$stable_apk" 2>/dev/null \
-                  | awk '$1=="resource" {split($2, a, "/"); c[a[1]]++; n++} END {for (t in c) printf "%7d %s\n", c[t], t; printf "%7d total\n", n}' \
-                  | sort -nr | head -20
-              else
-                echo "aapt2 not found"
-              fi
             fi
             echo '```'
             echo
