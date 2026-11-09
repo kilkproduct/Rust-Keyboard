@@ -307,7 +307,7 @@ public final class EngineSmoke {
                 System.out.println("== first bytes:\n" + hex);
                 // The trie buffer starts right after the header.
                 in.getChannel().position(englishHeaderSize[0]);
-                final byte[] trie = new byte[64];
+                final byte[] trie = new byte[1024];
                 final int trieRead = in.read(trie);
                 final StringBuilder trieHex = new StringBuilder();
                 for (int index = 0; index < trieRead; index++) {
