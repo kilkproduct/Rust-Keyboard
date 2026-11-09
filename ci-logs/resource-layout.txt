@@ -8,9 +8,9 @@
 4.0K	Rust-Keyboard/libs/tensorflow-lite-support.aar
 4.0M	Rust-Keyboard/libs/tensorflow-lite.aar
 156K	Rust-Keyboard/libs/vad-release.aar
-75M	Rust-Keyboard/java/res-large
+45M	Rust-Keyboard/java/res-large
 1.3M	Rust-Keyboard/java/assets/layouts
-30M	Rust-Keyboard/java/assets/futo-swipe
+20M	Rust-Keyboard/java/assets/futo-swipe
 79M	Rust-Keyboard/voiceinput-shared/src/main/ml
 
 == java/res-large
@@ -32,7 +32,6 @@ Rust-Keyboard/java/res-large/.git/hooks
 Rust-Keyboard/java/res-large/.git/index
 Rust-Keyboard/java/res-large/.git/info
 Rust-Keyboard/java/res-large/raw
-Rust-Keyboard/java/res-large/raw/ml4_q6_k.gguf
 Rust-Keyboard/java/res-large/raw/main_en.dict
 Rust-Keyboard/java/res-large/raw/emoji_i18n.jsondlgz
 
@@ -143,44 +142,21 @@ Rust-Keyboard/java/assets/layouts/Devanagari
 196K	Rust-Keyboard/java/assets/themes
 1.3M	Rust-Keyboard/java/assets/layouts
 1.4M	Rust-Keyboard/java/assets/fonts
-30M	Rust-Keyboard/java/assets/futo-swipe
+20M	Rust-Keyboard/java/assets/futo-swipe
 
 == java/res-large files
-total 35940
--rw-r--r-- 1 runner runner 30662880 Nov  9 06:47 ml4_q6_k.gguf
--rw-r--r-- 1 runner runner  5077491 Nov  9 06:47 emoji_i18n.jsondlgz
--rw-r--r-- 1 runner runner  1054656 Nov  9 06:47 main_en.dict
+total 5992
+-rw-r--r-- 1 runner runner 5077491 Nov  9 12:33 emoji_i18n.jsondlgz
+-rw-r--r-- 1 runner runner 1054656 Nov  9 12:33 main_en.dict
 
 == voiceinput ml files
 Rust-Keyboard/voiceinput-shared/src/main/ml:
 total 42532
--rw-r--r-- 1 runner runner 43550795 Nov  9 06:46 tiny_en_acft_q8_0.bin.not.tflite
+-rw-r--r-- 1 runner runner 43550795 Nov  9 12:33 tiny_en_acft_q8_0.bin.not.tflite
 
 == java/assets/futo-swipe files
 Rust-Keyboard/java/assets/futo-swipe:
-total 32
--rw-r--r-- 1 runner runner 8146 Nov  9 06:47 README.md
--rw-r--r-- 1 runner runner 5826 Nov  9 06:47 LICENSE.md
-drwxr-xr-x 2 runner runner 4096 Nov  9 06:47 chosen_planarian
-drwxr-xr-x 2 runner runner 4096 Nov  9 06:47 honorable_sturgeon
-drwxr-xr-x 2 runner runner 4096 Nov  9 06:47 magic_macaw
--rw-r--r-- 1 runner runner 1563 Nov  9 06:47 scoring.json
-
-Rust-Keyboard/java/assets/futo-swipe/chosen_planarian:
-total 6388
--rw-r--r-- 1 runner runner 6247616 Nov  9 06:47 context_lm.pte
--rw-r--r-- 1 runner runner  284965 Nov  9 06:47 vocab.txt
--rw-r--r-- 1 runner runner      59 Nov  9 06:47 metadata.json
-
-Rust-Keyboard/java/assets/futo-swipe/honorable_sturgeon:
-total 2592
--rw-r--r-- 1 runner runner 2649856 Nov  9 06:47 model_fp32.pte
--rw-r--r-- 1 runner runner    2110 Nov  9 06:47 metadata.json
-
-Rust-Keyboard/java/assets/futo-swipe/magic_macaw:
-total 1224
--rw-r--r-- 1 runner runner 1247468 Nov  9 06:47 model_fp32.pte
--rw-r--r-- 1 runner runner    1683 Nov  9 06:47 metadata.json
+total 0
 
 == java/assets/layouts mapping
 languages:
