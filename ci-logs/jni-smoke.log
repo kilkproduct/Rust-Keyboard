@@ -1,0 +1,55 @@
+[kb-rust] kb-core 0.1.0 registered (JNI 0xa0000)
+== libkeyboard_core loaded
+== empty dictionary created: 82 bytes
+== header read: version 403, 3 attributes, size 50
+== unigrams added and readable
+== personalisation survived a reopen
+   suggestion 0: hello score 925770 kind 1
+   suggestion 1: help score 893578 kind 1
+== 2 suggestions returned, first is "hello"
+   "hel" -> hello score 925770 kind 1
+   "hel" -> help score 893578 kind 1
+== padded input array: 2 suggestions
+   "its" -> Italian score 503989 kind 268435457
+   "its" -> Italy score 495256 kind 268435457
+   "its" -> Israel score 486893 kind 268435457
+   "its" -> Islamic score 469063 kind 268435457
+   "its" -> Israeli score 468470 kind 268435457
+   "its" -> Islam score 459865 kind 268435457
+   "its" -> Isaac score 437634 kind 268435457
+   "its" -> Istanbul score 420499 kind 268435457
+   "its" -> Isabella score 406689 kind 268435457
+   "its" -> Italians score 406019 kind 268435457
+   "its" -> Isabel score 401594 kind 268435457
+   "its" -> Israel's score 401594 kind 268435457
+   "its" -> Italia score 380772 kind 268435457
+   "its" -> Israelites score 380103 kind 268435457
+   "its" -> Ismail score 377949 kind 268435457
+   "its" -> Israelis score 377280 kind 268435457
+   "its" -> Italy's score 373079 kind 268435457
+   "its" -> Ithaca score 371512 kind 268435457
+   "its" -> Isaiah score 367227 kind 268435457
+   "its" -> Isis score 363568 kind 268435457
+   "its" -> Islamist score 360892 kind 268435457
+   "its" -> Islington score 359196 kind 268435457
+   "its" -> Islamabad score 354778 kind 268435457
+   "its" -> Isabelle score 350982 kind 268435457
+   "its" -> Israelite score 339973 kind 268435457
+   "its" -> Italianate score 334641 kind 268435457
+   "its" -> Ishmael score 332601 kind 268435457
+   "its" -> Isaacs score 331263 kind 268435457
+   "its" -> Isidore score 331263 kind 268435457
+   "its" -> Isfahan score 329169 kind 268435457
+   "its" -> Istria score 328500 kind 268435457
+   "its" -> Isuzu score 325012 kind 268435457
+   "its" -> Ismaili score 310852 kind 268435457
+   "its" -> Isolde score 307125 kind 268435457
+   "its" -> Islip score 297468 kind 268435457
+   "its" -> Ishtar score 293543 kind 268435457
+   "its" -> Ismael score 293543 kind 268435457
+   "its" -> Islay score 292874 kind 268435457
+   "its" -> Isaac's score 292205 kind 268435457
+   "its" -> Isaak score 283472 kind 268435457
+Exception in thread "main" java.lang.AssertionError: "its" is not suggested for "its": [Italian, Italy, Israel, Islamic, Israeli, Islam, Isaac, Istanbul, Isabella, Italians, Isabel, Israel's, Italia, Israelites, Ismail, Israelis, Italy's, Ithaca, Isaiah, Isis, Islamist, Islington, Islamabad, Isabelle, Israelite, Italianate, Ishmael, Isaacs, Isidore, Isfahan, Istria, Isuzu, Ismaili, Isolde, Islip, Ishtar, Ismael, Islay, Isaac's, Isaak]
+	at org.futo.inputmethod.latin.EngineSmoke.check(EngineSmoke.java:27)
+	at org.futo.inputmethod.latin.EngineSmoke.main(EngineSmoke.java:282)
