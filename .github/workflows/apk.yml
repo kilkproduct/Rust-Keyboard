@@ -496,17 +496,19 @@ jobs:
               echo "unzip unavailable or no apk"
             fi
           } > ci-logs/apk-contents.txt
+          # Publish the report on the branch, starting from whatever the tip is
+          # now: a rebase of a commit that rewrites an ignored-to-git file (
+          # ci-logs is force-added) conflicts with the log commits the other jobs
+          # push while this one runs, which is why this step used to give up.
+          # ci-logs is ignored, so a hard reset keeps the files written above.
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f ci-logs
-          git commit -m "CI: apk size for ${GITHUB_SHA}" || exit 0
-          # Same detached-HEAD retry as the smoke-test job: another job may have
-          # pushed a log commit to this branch in the meantime.
           for attempt in 1 2 3 4; do
-            git fetch --quiet origin "$GITHUB_REF_NAME" \
-              && git rebase --quiet "origin/$GITHUB_REF_NAME" \
-              && git push --quiet origin "HEAD:refs/heads/$GITHUB_REF_NAME" && exit 0
-            git rebase --abort 2>/dev/null || true
+            git fetch --quiet origin "$GITHUB_REF_NAME" || { sleep $((attempt * 5)); continue; }
+            git reset --quiet --hard "origin/$GITHUB_REF_NAME" || { sleep $((attempt * 5)); continue; }
+            git add -f ci-logs/apk-size.txt ci-logs/apk-contents.txt ci-logs/verify-apk.txt
+            git commit -m "CI: apk size for ${GITHUB_SHA}" || exit 0
+            git push --quiet origin "HEAD:refs/heads/$GITHUB_REF_NAME" && exit 0
             sleep $((attempt * 5))
           done
           echo "::warning::could not push the size report"
