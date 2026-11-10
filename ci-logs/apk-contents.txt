@@ -1,14 +1,14 @@
-run 42802678814 at 9bb627904c8ccd0c79e8aea4a3b0a6e27d20244d
+run 42803751672 at 2357efc7dc2da654f851edf53a63597e92494b1b
 apk=Rust-Keyboard/dist/keyboard-stable-release.apk
 == largest entries
-  9435548                     1078 files
+  9566312                     1078 files
   5980064  1981-01-01 01:01   classes.dex
-   740968  1981-01-01 01:01   resources.arsc
+   740964  1981-01-01 01:01   resources.arsc
    605030  1981-01-01 01:01   assets/dict/main_en.dict.gzip
    509672  1981-01-01 01:01   lib/arm64-v8a/libkeyboard_core.so
    268869  1981-01-01 01:01   res/oS.json
    201240  1981-01-01 01:01   classes2.dex
-    52170  1981-01-01 01:01   res/g3.jsondlgz
+   182937  1981-01-01 01:01   res/q4.json
     13562  1981-01-01 01:01   assets/layouts/mapping.yaml
     11358  1981-01-01 01:01   assets/layouts/LICENSE
     11303  1981-01-01 01:01   res/_i.json
@@ -27,7 +27,7 @@ apk=Rust-Keyboard/dist/keyboard-stable-release.apk
      5404  1981-01-01 01:01   res/Qr.xml
      5188  1981-01-01 01:01   res/Fr.xml
      5148  1981-01-01 01:01   res/p9.xml
-     4541  1981-01-01 01:01   assets/dexopt/baseline.prof
+     4542  1981-01-01 01:01   assets/dexopt/baseline.prof
      4432  1981-01-01 01:01   res/XV.xml
      4025  1981-01-01 01:01   res/RJ.png
      3792  1981-01-01 01:01   res/0T.xml
@@ -49,14 +49,14 @@ apk=Rust-Keyboard/dist/keyboard-stable-release.apk
 
 == by top level
    5980064 classes.dex
-    740968 resources.arsc
+    740964 resources.arsc
     605030 assets/dict
     526880 lib/arm64-v8a
     268869 res/oS.json
     201240 classes2.dex
+    182937 res/q4.json
     115124 res/color
      54862 assets/layouts
-     52170 res/g3.jsondlgz
      50875 META-INF/androidx
      11303 res/_i.json
      11152 AndroidManifest.xml
@@ -68,7 +68,7 @@ apk=Rust-Keyboard/dist/keyboard-stable-release.apk
       5404 res/Qr.xml
       5188 res/Fr.xml
       5148 res/p9.xml
-      5123 assets/dexopt
+      5124 assets/dexopt
       4788 res/color-v23
       4432 res/XV.xml
       4025 res/RJ.png
@@ -80,25 +80,25 @@ apk=Rust-Keyboard/dist/keyboard-stable-release.apk
       3448 res/bq.xml
 
 == stored bytes by top level
-   2741761 classes.dex
-    740968 resources.arsc
-    605215 assets/dict
+   2741755 classes.dex
+    740964 resources.arsc
+    605030 assets/dict
     526880 lib/arm64-v8a
      91602 classes2.dex
-     52170 res/g3.jsondlgz
+     51464 res/q4.json
      45810 res/color
      33378 res/oS.json
      17815 META-INF/androidx
      16088 assets/layouts
       8477 res/fO.png
       7787 res/ZR.png
-      5123 assets/dexopt
+      5124 assets/dexopt
       4584 res/color-v31
       4025 res/RJ.png
       2922 res/d0.xml
       2834 res/qD.9.png
       2816 res/MF.9.png
-      2764 AndroidManifest.xml
+      2763 AndroidManifest.xml
       2505 res/NA.9.png
       2463 res/zV.9.png
       2443 res/p9.xml
