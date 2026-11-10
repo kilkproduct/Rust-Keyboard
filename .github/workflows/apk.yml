@@ -211,7 +211,7 @@ jobs:
           # from going stale.
           for attempt in 1 2 3 4; do
             git fetch --quiet origin "+refs/heads/$GITHUB_REF_NAME:refs/remotes/origin/$GITHUB_REF_NAME" \
-              && git rebase --quiet "refs/remotes/origin/$GITHUB_REF_NAME" \
+              && git rebase --autostash --quiet "refs/remotes/origin/$GITHUB_REF_NAME" \
               && git push --quiet origin "HEAD:refs/heads/$GITHUB_REF_NAME" && exit 0
             git rebase --abort 2>/dev/null || true
             sleep $((attempt * 5))
@@ -513,14 +513,14 @@ jobs:
           : > "$RUNNER_TEMP/push.err"
           for attempt in 1 2 3 4; do
             if git fetch --quiet origin "+refs/heads/$GITHUB_REF_NAME:refs/remotes/origin/$GITHUB_REF_NAME" \
-              && git rebase --quiet "refs/remotes/origin/$GITHUB_REF_NAME" \
-              && git push origin "HEAD:refs/heads/$GITHUB_REF_NAME" 2> "$RUNNER_TEMP/push.err"; then
+              && git rebase --autostash --quiet "refs/remotes/origin/$GITHUB_REF_NAME" \
+              && git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"; then
               published=yes
               break
             fi
             git rebase --abort 2>/dev/null || true
             sleep $((attempt * 5))
-          done
+          done 2> "$RUNNER_TEMP/push.err"
           if [ "$published" != yes ]; then
             # The reason goes into an annotation: the job log of a private
             # repository cannot be downloaded from this sandbox.
