@@ -26,8 +26,6 @@ const V4_TRIE_BUFFER: usize = 0;
 const V4_TERMINAL_TABLE_BUFFER: usize = 1;
 const V4_LANGUAGE_MODEL_BUFFER: usize = 2;
 
-const TERMINAL_ADDRESS_SIZE: usize = 3;
-const NOT_A_TERMINAL_ADDRESS: u32 = 0;
 const NOT_A_TERMINAL_ID: i32 = -1;
 
 // Probability entry flags, see `Ver4DictConstants`.
@@ -317,6 +315,23 @@ impl Dictionary {
 
     pub fn is_updatable(&self) -> bool {
         self.user.is_some()
+    }
+
+    /// True when the buffer sizes in the header did not add up. Such a
+    /// dictionary is kept open (its personalisation log still works) but asking
+    /// it for words returns nothing: walking a garbage trie would be walking
+    /// unchecked offsets, and this crate is built with `panic = "abort"`.
+    pub fn is_corrupted(&self) -> bool {
+        self.corrupted
+    }
+
+    /// Asks the kernel to pull the trie into the page cache. Only useful
+    /// before a walk that touches most of it - the next word predictions do.
+    pub fn prefetch_trie(&self) {
+        if self.trie.is_empty() {
+            return;
+        }
+        let _ = self.body.willneed(self.trie.offset, self.trie.len);
     }
 
     fn trie_data(&self) -> &[u8] {

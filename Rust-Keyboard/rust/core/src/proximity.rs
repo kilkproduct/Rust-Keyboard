@@ -29,6 +29,9 @@ pub struct ProximityInfo {
     keyboard_width: i32,
     keyboard_height: i32,
     most_common_key_width: i32,
+    /// Recorded for parity with the C++ proximity info; scoring only uses the
+    /// width today.
+    #[allow(dead_code)]
     most_common_key_height: i32,
     key_count: usize,
     /// `grid_width * grid_height * MAX_PROXIMITY_CHARS_SIZE` code points.

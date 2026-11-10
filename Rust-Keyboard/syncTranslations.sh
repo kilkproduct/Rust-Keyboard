@@ -23,11 +23,6 @@ for f in $(find java/unstable/res/values/ -name "strings*.xml"); do
   cp "$f" translations-repo/devbuild/values/"$(basename "$f")";
 done
 
-rm translations-repo/voiceinput/values/strings*
-for f in $(find voiceinput-shared/src/main/res/values/ -name "strings*.xml"); do
-  cp "$f" translations-repo/voiceinput/values/"$(basename "$f")";
-done
-
   # Ignored strings (hidden in Pontoon for now)
 EXCLUDED_NAMES=$(find translations-repo/core-ign/values/ -name "strings*.xml")
 

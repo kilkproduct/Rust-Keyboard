@@ -1,26 +1,25 @@
 # Rust core (`rust/`)
 
-This directory holds the memory-tight replacement for the C++ dictionary and
-suggestion engine that used to live in `native/jni/src/dictionary` and
-`native/jni/src/suggest`.
+This directory holds the dictionary and suggestion engine. It replaced the C++
+engine that used to live in `native/jni/src/dictionary` and
+`native/jni/src/suggest`; that code, and the voice-input natives that shared its
+build, are not in this tree any more.
 
 ```
 Kotlin / Java (unchanged API)
-        │  System.loadLibrary("jni_latinime")   ← C++: voice input (ggml, sentencepiece…)
-        │  System.loadLibrary("keyboard_core")  ← Rust: dictionaries + suggestions
+        │  System.loadLibrary("keyboard_core")  ← the only engine
         ▼
-rust/jni  ── JNI bridge, registers the same natives the C++ code registered
+rust/jni  ── JNI bridge, registers the natives of the dictionary classes
         ▼
 rust/core ── kb-core: dictionary reader, trie, personalisation log, proximity,
              typing / gesture search, scoring
 ```
 
-`libkeyboard_core.so` is loaded *after* `libjni_latinime.so`; its `JNI_OnLoad`
-calls `RegisterNatives` for `BinaryDictionary`, `ProximityInfo`,
-`DicTraverseSession` and `BinaryDictionaryUtils`, which replaces the C++
-bindings for those classes. The voice-input natives keep running on C++. If the
-Rust library is missing (no toolchain, old APK), nothing is registered and the
-keyboard silently keeps using the C++ engine — there is no hard dependency.
+`JNI_OnLoad` calls `RegisterNatives` for `BinaryDictionary`, `ProximityInfo`,
+`DicTraverseSession` and `BinaryDictionaryUtils`. There is no second engine to
+fall back to: `rust/build-android.sh` fails when cargo or the NDK is missing,
+and `checkRustNative` refuses to package a release APK whose
+`java/jniLibs/<abi>/libkeyboard_core.so` is absent.
 
 ## Modules
 
@@ -60,13 +59,14 @@ keyboard silently keeps using the C++ engine — there is no hard dependency.
 ## Building
 
 ```sh
-./rust/build-android.sh            # all four ABIs into java/jniLibs/
-KB_ABIS="arm64-v8a" ./rust/build-android.sh
+./rust/build-android.sh            # arm64-v8a (the shipped ABI) into java/jniLibs/
+KB_ABIS="arm64-v8a,armeabi-v7a" ./rust/build-android.sh
 ```
 
 `./gradlew assembleDebug` runs that script automatically through the
-`rustNativeBuild` task (`-PskipRust` to skip). Without a Rust toolchain the
-script exits 0 and the build continues with the C++ engine.
+`rustNativeBuild` task (`-PskipRust` to reuse a library built earlier). The
+script fails, with the reason, when cargo, the NDK or the requested target is
+missing; release packaging additionally checks that the library exists.
 
 Host-side checks:
 
@@ -106,8 +106,6 @@ Not yet ported: dictionary creation/`dicttool` writing paths, and migration from
 version 2/3 files into version 4. Neither is reachable from typing: the bundled
 and downloaded dictionaries are already version 4.
 
-Verification note: this port was written without an Android NDK/Rust toolchain
-in the authoring environment, so it has been syntax-checked, reviewed and
-unit-tested by hand, but not yet compiled. Build it once and run `cargo test`
-before trusting it on a device; the C++ fallback keeps the keyboard usable while
-you do.
+The core is compiled and tested by CI on every push (`cargo test -p kb-core`,
+plus a desktop-JVM harness that drives the JNI entry points against the real
+English dictionary).

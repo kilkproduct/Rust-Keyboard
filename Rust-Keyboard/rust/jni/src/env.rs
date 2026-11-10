@@ -6,6 +6,9 @@
 //! the only thing that can be wrong is a signature -- the *positions* come
 //! straight from the vendored `jni.h` (see `rust/tools/gen_jni_sys.py`).
 
+#![allow(non_snake_case)]
+#![allow(dead_code)]
+
 use core::ffi::{c_char, c_void};
 
 use crate::jni_sys::JNINativeInterface;

@@ -12,7 +12,6 @@
 //! why every helper tracks the exact position it read from.
 
 use crate::bytes;
-use crate::MAX_WORD_LENGTH;
 
 pub const FLAG_CHILDREN_TYPE_MASK: u8 = 0xC0;
 pub const FLAG_IS_MOVED: u8 = 0x40;

@@ -141,7 +141,11 @@ struct InputState {
     primary: i32,
     x: i32,
     y: i32,
+    // Kept for the key-proximity pass that filled them; the scoring above only
+    // uses the primary key today.
+    #[allow(dead_code)]
     proximity: [i32; MAX_PROXIMITY_CHARS_SIZE],
+    #[allow(dead_code)]
     proximity_len: u8,
 }
 
@@ -738,6 +742,9 @@ pub fn get_suggestions(
     results: &mut Vec<SuggestedWord>,
 ) {
     results.clear();
+    if dict.is_corrupted() {
+        return;
+    }
     if *weight_of_lang_model_vs_spatial < 0.0f32 {
         *weight_of_lang_model_vs_spatial = 1.0f32;
     }
@@ -859,6 +866,12 @@ pub fn get_predictions(
     results: &mut Vec<SuggestedWord>,
 ) {
     results.clear();
+    if dict.is_corrupted() {
+        return;
+    }
+    // A prediction walks the whole trie, so ask for it up front instead of
+    // taking a page fault every few nodes.
+    dict.prefetch_trie();
     let prev_ids = previous_terminal_ids(dict, prev_words);
 
     // Depth-first pass bounded by a node budget so that a huge dictionary does
