@@ -52,18 +52,34 @@
 -keep class org.futo.inputmethod.latin.makedict.ProbabilityInfo
 -keep class org.futo.inputmethod.keyboard.KeyboardLayout { *; }
 
--dontobfuscate
 -optimizations !code/allocation/variable
 
 # JSR 305 annotations are for embedding nullability information.
 -dontwarn javax.annotation.**
 
-# Keep mozc protobuf
--keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite {
-    <fields>;
-    <methods>;
-}
--keep class org.mozc.android.inputmethod.japanese.protobuf.** { *; }
+# Keep the four classes the native library registers methods on. They declare
+# their methods `native`, which the rules above already keep, but the names are
+# also looked up by the engine itself (`JNI_OnLoad` calls FindClass with the
+# fully qualified name), so they are pinned here instead of relying on the
+# side effect of a keep rule.
+-keep class org.futo.inputmethod.latin.BinaryDictionary { *; }
+-keep class org.futo.inputmethod.keyboard.ProximityInfo { *; }
+-keep class org.futo.inputmethod.latin.DicTraverseSession { *; }
+-keep class org.futo.inputmethod.latin.utils.BinaryDictionaryUtils { *; }
 
-# Keep swipe
--keep class org.futo.ml.inference.** { *; }
+# No renaming. Shrinking and optimisation stay on (they are what removes the
+# unused engine and library code), but the names the app is built and shipped
+# with are kept, which is what this project shipped with before the size pass.
+# Repackaging every class into the default package and letting R8 widen access
+# was tried for size and reverted for the same reason: those bytes are not
+# worth a startup that depends on something no test here can see.
+-dontobfuscate
+
+# Strip logging calls from the release build.
+-assumenosideeffects class android.util.Log {
+    public static *** d(...);
+    public static *** v(...);
+    public static *** i(...);
+    public static *** w(...);
+    public static *** e(...);
+}

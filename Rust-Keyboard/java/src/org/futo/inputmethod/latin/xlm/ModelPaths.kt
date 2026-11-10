@@ -12,12 +12,13 @@ import org.futo.inputmethod.latin.R
 import org.futo.inputmethod.latin.uix.SettingsKey
 import org.futo.inputmethod.latin.uix.getSetting
 import org.futo.inputmethod.latin.uix.setSetting
-import org.futo.inputmethod.latin.utils.JniUtils
 import java.io.File
 import java.io.FileOutputStream
 
 
-val BASE_MODEL_RESOURCE = R.raw.ml4_q6_k
+// No model ships with this build; `ensureDefaultModelExists` is a no-op and the
+// model list is always empty, which keeps the transformer language model -- and
+// its 75 MB of weights -- out of the package.
 val BASE_MODEL_NAME = "ml4_q6_k"
 val DEPRECATED_MODEL_NAME = "ml4_1_f16_meta_fixed"
 
@@ -52,12 +53,14 @@ class ModelInfoLoader(
     val path: File,
     val name: String,
 ) {
-    fun loadDetails(): ModelInfo? {
-        JniUtils.loadNativeLibrary()
-        return loadNative(path.absolutePath)
-    }
-
-    external fun loadNative(path: String): ModelInfo?
+    /**
+     * Reading a `.gguf` header lived in the C++ library, which is no longer
+     * built (and this fork ships no model). Returning null unconditionally is
+     * what the caller saw before *and* it keeps an `external fun` that no
+     * library implements out of the picture: a missing native there was an
+     * `UnsatisfiedLinkError` on every language row.
+     */
+    fun loadDetails(): ModelInfo? = null
 }
 
 object ModelPaths {
@@ -224,24 +227,13 @@ object ModelPaths {
     }
 
     fun ensureDefaultModelExists(context: Context) {
+        // Nothing to unpack: this build carries no bundled model.
         val directory = getModelDirectory(context)
-
-
         val oldFile = File(directory, "$DEPRECATED_MODEL_NAME.gguf")
         if(oldFile.isFile) oldFile.delete()
-
-        val tgtFile = File(directory, "$BASE_MODEL_NAME.gguf")
-        if(!tgtFile.isFile) {
-            context.resources.openRawResource(BASE_MODEL_RESOURCE).use { inputStream ->
-                FileOutputStream(tgtFile).use { outputStream ->
-                    var read = 0
-                    val bytes = ByteArray(1024)
-                    while (inputStream.read(bytes).also { read = it } != -1) {
-                        outputStream.write(bytes, 0, read)
-                    }
-                }
-            }
-        }
+        val baseFile = File(directory, "$BASE_MODEL_NAME.gguf")
+        // A model copied out by an older build stays behind in app storage.
+        if(baseFile.isFile) baseFile.delete()
     }
 
     fun shouldFileBeIncludedInExport(file: File): Boolean {

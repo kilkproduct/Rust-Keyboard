@@ -1,0 +1,3 @@
+
+# CI failure logs are committed on demand, never by the developer
+ci-logs/

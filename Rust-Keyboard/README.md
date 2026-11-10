@@ -24,6 +24,27 @@ Due to custom license, pull requests to this repository require signing a [CLA](
 
 Please do not submit AI-generated pull requests, as these tend to make the codebase more difficult to understand. Pull requests made with clear heavy use of AI may be closed without comment. Please also avoid using AI to write issues, and try to explain it in your own words instead.
 
+## Rust core
+
+The dictionary and suggestion engine is Rust, to cut memory use; see
+[`rust/README.md`](rust/README.md) for the architecture and the build steps. It
+is the only engine: `./gradlew assembleDebug` builds it (it needs cargo and the
+NDK, and fails without them), and release packaging refuses to produce an APK
+without it.
+
+The keyboard does not talk to the network. What was removed, and how to verify
+it, is documented in [`PRIVACY.md`](PRIVACY.md).
+
+## English only
+
+This fork ships the Latin engine only: `arm64-v8a`, English resources, no
+voice input. The Japanese (mozc) and Chinese (Rime) engines, their AARs and
+dictionaries, the transformer language model, the voice-input module and the
+`translations` submodule are not in this tree. The package is about 5.5 MB; the
+`stripUnusedResources` step trims the shared resource submodules into `build/`
+at build time. The translation instructions above therefore do not apply to
+this fork.
+
 ## Layouts
 
 If you want to contribute layouts, check out the [layouts repo](https://github.com/futo-org/futo-keyboard-layouts).

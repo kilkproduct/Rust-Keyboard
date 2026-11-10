@@ -8,12 +8,13 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        // Maven Central redirects the Kotlin compiler jar to GitHub releases,
+        // and that host answers 504 often enough to break whole builds. CI
+        // pre-fetches the jar into ~/.m2, so look there first when asked to.
+        if (System.getenv("KB_MAVEN_LOCAL_PREFETCH") == "1") {
+            mavenLocal()
+        }
         google()
         mavenCentral()
-
-        flatDir {
-            dirs 'libs'
-        }
     }
 }
-include ':voiceinput-shared'

@@ -16,22 +16,14 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!--<uses-permission android:name="android.permission.READ_PROFILE"/>--> <!-- ? -->
     <uses-permission android:name="android.permission.READ_USER_DICTIONARY"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.WRITE_USER_DICTIONARY"/>
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
 
     <!-- For clipboard manager reading screenshots -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"
-        android:minSdkVersion="33" />
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove"/>
 
@@ -40,7 +32,6 @@
          android:roundIcon="@mipmap/ic_launcher_round"
          android:supportsRtl="true"
          android:allowBackup="true"
-         android:largeHeap="true"
          android:enableOnBackInvokedCallback="true"
          android:name=".CrashLoggingApplication">
 
@@ -147,8 +138,6 @@
              android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-                <action android:name="android.intent.action.USER_INITIALIZE"/>
                 <action android:name="android.intent.action.LOCALE_CHANGED"/>
             </intent-filter>
         </receiver>
@@ -165,32 +154,6 @@
         </service>
         -->
         <activity
-            android:name=".payment.PaymentCompleteActivity"
-            android:exported="true"
-            android:label="@string/payment_screen_payment_complete_title"
-            android:clearTaskOnLaunch="false"
-            android:launchMode="singleInstance"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="futo-voice-input" />
-                <data android:scheme="futo-keyboard" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name=".MicPermissionActivity"
-            android:clearTaskOnLaunch="false"
-            android:launchMode="standard"
-            android:noHistory="true"
-            android:configChanges="orientation|screenLayout|screenSize|keyboardHidden|keyboard|uiMode|density"
-            android:theme="@style/Theme.TextEditPopup" />
-
-        <activity
             android:name=".uix.TextEditPopupActivity"
             android:exported="true"
             android:label="@string/settings_try_typing_here"
@@ -198,7 +161,6 @@
             android:launchMode="standard"
             android:noHistory="true"
             android:configChanges="orientation|screenLayout|screenSize|keyboardHidden|keyboard|uiMode|density"
-            android:process=":texteditpopup"
             android:theme="@style/Theme.TextEditPopup" />
 
         <provider
@@ -206,12 +168,6 @@
             android:authorities="${applicationId}.androidx-startup"
             tools:node="remove"
             tools:ignore="MissingClass" />
-
-        <provider
-            android:authorities="${applicationId}.font"
-            android:name=".content.KbContentProvider"
-            android:exported="false"
-            android:grantUriPermissions="true" />
 
         <provider
             android:authorities="${applicationId}.clipboard"

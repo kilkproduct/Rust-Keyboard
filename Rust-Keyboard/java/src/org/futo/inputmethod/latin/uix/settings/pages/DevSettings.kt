@@ -43,7 +43,6 @@ import org.futo.inputmethod.engine.general.UseExpandableSuggestionsForGeneralIME
 import org.futo.inputmethod.latin.BuildConfig
 import org.futo.inputmethod.latin.CrashLoggingApplication
 import org.futo.inputmethod.latin.R
-import org.futo.inputmethod.latin.SwipeDecoderDictionary
 import org.futo.inputmethod.latin.SwipeLanguageModelSetting
 import org.futo.inputmethod.latin.SwipeSpecialDecoderSetting
 import org.futo.inputmethod.latin.TextInputAlternativeIC
@@ -77,7 +76,6 @@ import org.futo.inputmethod.latin.uix.theme.TonalPalette
 import org.futo.inputmethod.latin.uix.theme.dynamicTonalPalette
 import org.futo.inputmethod.latin.uix.theme.serialization.AlphaOrder
 import org.futo.inputmethod.latin.uix.theme.serialization.argbLongToHexColorString
-import org.futo.inputmethod.latin.xlm.AllowTransformerOnNonQWERTYLayouts
 import org.futo.inputmethod.updates.DISABLE_UPDATE_REMINDER
 import org.futo.inputmethod.updates.dismissedMigrateUpdateNotice
 import kotlin.system.exitProcess
@@ -268,12 +266,6 @@ fun DeveloperScreen(navController: NavHostController = rememberNavController()) 
             navigate = { navController.navigate("dynamicpalette") }
         )
 
-        SettingToggleDataStore(
-            title = "Allow transformer models on non QWERTY layouts",
-            setting = AllowTransformerOnNonQWERTYLayouts
-        )
-
-
         ScreenTitle("Text input debug")
         SettingToggleDataStore(
             title = "Text input alt. composition",
@@ -319,15 +311,6 @@ fun DeveloperScreen(navController: NavHostController = rememberNavController()) 
             subtitle = "default = yes",
             setting = SwipeLanguageModelSetting
         )
-        NavigationItem(
-            title = "Activate swipe debug logging for 5 minutes",
-            subtitle = "Swipes and text will be logged to logcat",
-            style = NavigationItemStyle.MiscNoArrow,
-            navigate = {
-                SwipeDecoderDictionary.debugLogUntil = System.currentTimeMillis() + 5L * 60L * 1000L
-            }
-        )
-
         ScreenTitle(title = "Payment stuff")
 
         SettingToggleDataStore(title = "Is paid", setting = IS_ALREADY_PAID)

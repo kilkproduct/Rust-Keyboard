@@ -1,0 +1,4 @@
+== startup check: Rust-Keyboard/dist/keyboard-stable-release.apk
+   package: org.futo.inputmethod.latin
+   every manifest class is in the dex
+   subtype strings in the package: 32

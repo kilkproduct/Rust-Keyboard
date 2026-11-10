@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Resources the app reaches through Resources.getIdentifier() rather than
+  through an R field, which the resource shrinker cannot follow.
+
+  SubtypeLocaleUtils composes the names below at runtime
+  (subtype_name_<layout>, subtype_generic_<layout>, subtype_no_language_<layout>,
+  subtype_in_root_locale_<locale>, subtype_<locale>, subtype_<locale>_<layout>),
+  looks them up by name and hands the resulting id to the system, which calls
+  getString() on it. With shrinkResources on, every one of those strings is
+  otherwise "unused" and is removed from the package.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@string/subtype_*" />

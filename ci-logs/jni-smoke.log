@@ -1,0 +1,269 @@
+[kb-rust] kb-core 0.1.0 registered (JNI 0xa0000)
+== libkeyboard_core loaded
+== empty dictionary created: 82 bytes
+== header read: version 403, 3 attributes, size 50
+== unigrams added and readable
+== personalisation survived a reopen
+   suggestion 0: hello score 925770 kind 1
+   suggestion 1: help score 893578 kind 1
+== 2 suggestions returned, first is "hello"
+   "hel" -> hello score 925770 kind 1
+   "hel" -> help score 893578 kind 1
+== padded input array: 2 suggestions
+   "" -> zebra score 976521 kind 8
+   "" -> yesterday score 976521 kind 8
+   "" -> hello score 905912 kind 8
+   "" -> help score 865108 kind 8
+== learned context, after "the": 4 predictions: zebra, yesterday, hello, help
+   "" -> yesterday score 976521 kind 8
+   "" -> zebra score 976521 kind 8
+   "" -> hello score 905912 kind 8
+   "" -> help score 865108 kind 8
+== learned context, after "i": 4 predictions: yesterday, zebra, hello, help
+== english dictionary: format 202, header 97 bytes, version 202, 5 attributes, file 1054656 bytes
+== first bytes:
+9bc13afe00ca00000000006164617465
+1f313736363138333833331f64696374
+696f6e6172791f6d61696e3a656e1f64
+65736372697074696f6e1f456e676c69
+7368206d6f6469666965641f6c6f6361
+6c651f656e1f76657273696f6e1f3534
+
+== trie start:
+373031576561746865721f1980410110
+8042451a80439c7c8044f758c0450129
+0ec046014ce8c04701736fc04801a843
+d049c401dce1c04a01f0d4c04b02098a
+c04c022f27c04d02634ec04e02c1cfc0
+4f02de6bc05002f693c05103360ec052
+033aa4c053036ac4c05403d509c05504
+0d38c056041658c057042a55c058044f
+e5c05904511fc05a04588cd061d00460
+93c062050e03c06305af1bc06406c59a
+c065077c72c06607f549c067086ff6c0
+6808ce0ed869000939c300050f491fc0
+6a09be8bc06b09d6b8c06c09f140c06d
+0a4631c06e0aeb85c06f0b338bc0700b
+8235c0710c76fcc0720c8526c0730d39
+d2c0740e841fc0750f1775c0760f9317
+c0770fc04dc078100630c079100809c0
+7a100f87c0c91015d2c0e91015e81b10
+4d004061694062e78063044280640618
+8065099a80660a6780670baf80680d5a
+80690d9f806a0ee7806b0f09806c0f81
+806d1b30806e1f9f806f2a7280702a8a
+80712cf780722dba8073365280743a7d
+80753d1e807640d230776c776f72741f
+018078420880794241807a42e9037063
+68656e1f5107406c0a40723c01302773
+1f170430626f72671f4540650d707374
+1f351970746f1f3c1902106e27707375
+6e641f3101013027731f01013027731f
+01013027731f22043061751f3b306761
+751f44306875731f49706f6e1f680103
+3027731f455073310a7076697463681f
+010701306f6e1f30013027731f010e40
+61454062884064f69065570105a0686f
+7272651f01a9806901b3b06b68617a1f
+4601fcb06e65721f4b01ff806f020180
+720260807302af90751902d7807902f6
+307a75671f29087062611f4d3a306375
+7327731f013064616e1f35306761696c
+27731f01306b616e27731f01306e646f
+6e6572731f01307365721f013074746f
+697227731f01013027731f1205506149
+144065267069651f4148706f741f5b48
+50795554023027731f1b507358010230
+27731f2a3069641f4d033027731f1e60
+76696c6c1f0550796f12025065430730
+69616e1f1b013027731f01013027731f
+3c013027731f12023027731f3650745f
+01013027731f3d013027731f38023069
+61731f1570756c1f6501013027731f2d
+063027731f3730646e65676f1f26306b
+651f01506c5a0c306f6b7574611f3140
+7226043027731f3a706172641f390d30
+65731f2770736f6e1f3007013027731f
+1c013027731f010570636f6e77791f2d
+1f706465656e1f651d406e2f3072616e
+63651f1570797374777974681f4b3901
+3027731f01023027731f357073686972
+651f4c01013027731f01027061746879
+1f3e0970657468791f4007013027731f
+19013027731f1b013027731f0a02306e
+636527731f013072731f0f0470646a61
+6e1f41136067611f14706c656e651f4c
+23606e671f24013027731f0a0330656c
+
+   probability "its" = 158
+   probability "it's" = 162
+   probability "inserts" = 95
+   probability "the" = 222
+   probability "italian" = -1
+== dictionary walk: 162086 words, first: 1Weather AM Aachen Aachen's Aalborg Aalen Aalesund Aalesund's Aalst Aalst's Aalto Aalto's
+   "its" -> its score 1953747 kind 1342177280
+   "its" -> is score 848058 kind 268435457
+   "its" -> itself score 833101 kind 268435457
+   "its" -> it's score 819910 kind 268435457
+   "its" -> instead score 788884 kind 268435457
+   "its" -> inside score 771787 kind 268435457
+   "its" -> inspired score 761527 kind 268435457
+   "its" -> institutions score 758586 kind 268435457
+   "its" -> items score 756668 kind 268435457
+   "its" -> Italian score 755999 kind 268435457
+   "its" -> instance score 754661 kind 268435457
+   "its" -> installed score 753992 kind 268435457
+   "its" -> instruments score 753006 kind 268435457
+   "its" -> institution score 749996 kind 268435457
+   "its" -> island score 749894 kind 268435457
+   "its" -> Italy score 747266 kind 268435457
+   "its" -> instrument score 746597 kind 268435457
+   "its" -> issue score 746349 kind 268435457
+   "its" -> issues score 745680 kind 268435457
+   "its" -> instrumental score 745259 kind 268435457
+   "its" -> insurance score 740447 kind 268435457
+   "its" -> issued score 737072 kind 268435457
+   "its" -> inspiration score 733753 kind 268435457
+   "its" -> instruction score 733084 kind 268435457
+   "its" -> installation score 727406 kind 268435457
+   "its" -> insects score 726209 kind 268435457
+   "its" -> item score 725659 kind 268435457
+   "its" -> instructions score 724871 kind 268435457
+   "its" -> insisted score 721073 kind 268435457
+   "its" -> institute score 721073 kind 268435457
+   "its" -> islands score 720731 kind 268435457
+   "its" -> inscription score 718473 kind 268435457
+   "its" -> instructor score 715850 kind 268435457
+   "its" -> instances score 714512 kind 268435457
+   "its" -> inserted score 710537 kind 268435457
+   "its" -> inspection score 707845 kind 268435457
+   "its" -> instant score 707845 kind 268435457
+   "its" -> instructed score 707845 kind 268435457
+   "its" -> insufficient score 705129 kind 268435457
+   "its" -> instituted score 704460 kind 268435457
+== "its": 40 suggestions, apostrophe variant present
+   "" -> the score 946328 kind 8
+   "" -> to score 933920 kind 8
+   "" -> of score 932114 kind 8
+   "" -> and score 928478 kind 8
+   "" -> in score 924807 kind 8
+   "" -> a score 921101 kind 8
+   "" -> was score 907843 kind 8
+   "" -> is score 905912 kind 8
+   "" -> this score 905912 kind 8
+   "" -> I score 898088 kind 8
+   "" -> as score 898088 kind 8
+   "" -> for score 898088 kind 8
+   "" -> on score 896107 kind 8
+   "" -> with score 896107 kind 8
+   "" -> by score 894115 kind 8
+   "" -> that score 890102 kind 8
+   "" -> from score 888080 kind 8
+   "" -> at score 886047 kind 8
+   "" -> his score 886047 kind 8
+   "" -> an score 879883 kind 8
+   "" -> he score 879883 kind 8
+   "" -> are score 877807 kind 8
+   "" -> were score 877807 kind 8
+   "" -> don't score 875719 kind 8
+   "" -> which score 875719 kind 8
+   "" -> it score 873620 kind 8
+   "" -> or score 873620 kind 8
+   "" -> had score 869387 kind 8
+   "" -> has score 869387 kind 8
+   "" -> one score 869387 kind 8
+   "" -> but score 867253 kind 8
+   "" -> first score 865108 kind 8
+   "" -> very score 865108 kind 8
+   "" -> we score 865108 kind 8
+   "" -> not score 862950 kind 8
+   "" -> their score 862950 kind 8
+   "" -> any score 860781 kind 8
+   "" -> have score 860781 kind 8
+   "" -> who score 860781 kind 8
+   "" -> been score 856404 kind 8
+== no context: 40 predictions: the, to, of, and, in, a, was, is
+   "" -> the score 946328 kind 8
+   "" -> to score 933920 kind 8
+   "" -> of score 932114 kind 8
+   "" -> and score 928478 kind 8
+   "" -> in score 924807 kind 8
+   "" -> a score 921101 kind 8
+   "" -> was score 907843 kind 8
+   "" -> is score 905912 kind 8
+   "" -> this score 905912 kind 8
+   "" -> I score 898088 kind 8
+   "" -> as score 898088 kind 8
+   "" -> for score 898088 kind 8
+   "" -> on score 896107 kind 8
+   "" -> with score 896107 kind 8
+   "" -> by score 894115 kind 8
+   "" -> that score 890102 kind 8
+   "" -> from score 888080 kind 8
+   "" -> at score 886047 kind 8
+   "" -> his score 886047 kind 8
+   "" -> an score 879883 kind 8
+   "" -> he score 879883 kind 8
+   "" -> are score 877807 kind 8
+   "" -> were score 877807 kind 8
+   "" -> don't score 875719 kind 8
+   "" -> which score 875719 kind 8
+   "" -> it score 873620 kind 8
+   "" -> or score 873620 kind 8
+   "" -> had score 869387 kind 8
+   "" -> has score 869387 kind 8
+   "" -> one score 869387 kind 8
+   "" -> but score 867253 kind 8
+   "" -> first score 865108 kind 8
+   "" -> very score 865108 kind 8
+   "" -> we score 865108 kind 8
+   "" -> not score 862950 kind 8
+   "" -> their score 862950 kind 8
+   "" -> any score 860781 kind 8
+   "" -> have score 860781 kind 8
+   "" -> who score 860781 kind 8
+   "" -> been score 856404 kind 8
+== after "the": 40 predictions: the, to, of, and, in, a, was, is
+== predictions that are not dictionary words: 0
+   "hel" -> hel score 1526287 kind 1342177280
+   "hel" -> held score 853078 kind 268435457
+   "hel" -> her score 845904 kind 268435457
+   "hel" -> help score 835159 kind 268435457
+   "hel" -> helped score 819118 kind 268435457
+   "hel" -> here score 816114 kind 268435457
+   "hel" -> half score 800442 kind 268435457
+   "hel" -> head score 800442 kind 268435457
+   "hel" -> helping score 788073 kind 268435457
+   "hel" -> hold score 779649 kind 268435457
+   "hel" -> helps score 778373 kind 268435457
+   "hel" -> hear score 775315 kind 268435457
+   "hel" -> hello score 768354 kind 268435457
+   "hel" -> helicopter score 767685 kind 268435457
+   "hel" -> hey score 764872 kind 268435457
+   "hel" -> Hall score 761932 kind 268435457
+   "hel" -> hall score 759643 kind 268435457
+   "hel" -> heat score 757337 kind 268435457
+   "hel" -> Henry score 756668 kind 268435457
+   "hel" -> hill score 752672 kind 268435457
+   "hel" -> helicopters score 751344 kind 268435457
+   "hel" -> helmet score 743865 kind 268435457
+   "hel" -> hero score 743123 kind 268435457
+   "hel" -> hole score 740689 kind 268435457
+   "hel" -> hell score 736831 kind 268435457
+   "hel" -> Helen score 733989 kind 268435457
+   "hel" -> he's score 733266 kind 268435457
+   "hel" -> heir score 733266 kind 268435457
+   "hel" -> helpful score 727555 kind 268435457
+   "hel" -> holy score 723081 kind 268435457
+   "hel" -> hull score 723081 kind 268435457
+   "hel" -> Head score 720480 kind 268435457
+   "hel" -> helm score 719367 kind 268435457
+   "hel" -> helium score 718698 kind 268435457
+   "hel" -> helmets score 711309 kind 268435457
+   "hel" -> Helsinki score 709577 kind 268435457
+   "hel" -> Hebrew score 709183 kind 268435457
+   "hel" -> halt score 704395 kind 268435457
+   "hel" -> Helena score 703341 kind 268435457
+   "hel" -> Holland score 700961 kind 268435457
+== "hel" after "i": 40 suggestions
+== JNI smoke test passed

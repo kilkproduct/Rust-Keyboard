@@ -64,7 +64,7 @@ import org.futo.inputmethod.latin.uix.settings.Route
 import org.futo.inputmethod.latin.uix.settings.ScreenTitle
 import org.futo.inputmethod.latin.uix.settings.Tip
 import org.futo.inputmethod.latin.uix.settings.UserSettingsMenu
-import org.futo.inputmethod.latin.uix.settings.pages.modelmanager.openModelImporter
+import org.futo.inputmethod.latin.uix.settings.pages.openModelImporter
 import org.futo.inputmethod.latin.uix.settings.useDataStore
 import org.futo.inputmethod.latin.uix.settings.useDataStoreValue
 import org.futo.inputmethod.latin.uix.settings.userSettingNavigationItem
@@ -74,7 +74,6 @@ import org.futo.inputmethod.latin.uix.theme.presets.DynamicDarkTheme
 import org.futo.inputmethod.latin.uix.urlEncode
 import org.futo.inputmethod.latin.utils.Dictionaries
 import org.futo.inputmethod.latin.utils.SubtypeLocaleUtils
-import org.futo.inputmethod.latin.xlm.ModelPaths
 import org.futo.inputmethod.updates.openURI
 import java.util.Locale
 
@@ -373,7 +372,8 @@ fun ConfirmResourceActionDialog(
     locale: Locale
 ) {
     val hasBuiltInFallback = if (resourceKind == FileKind.VoiceInput) {
-        ResourceHelper.BuiltInVoiceInputFallbacks[locale.language] != null
+        // No bundled voice model in this build.
+        false
     } else if (resourceKind == FileKind.Dictionary) {
         Dictionaries.getDictionaryIfExists(LocalContext.current, locale, Dictionaries.DictionaryKind.Any) != null
     } else {
@@ -654,10 +654,7 @@ fun LanguagesScreen(navController: NavHostController = rememberNavController()) 
 
             val name = Subtypes.getName(subtypes.first())
 
-            val voiceInputModelName = ResourceHelper.tryFindingVoiceInputModelForLocale(
-                context,
-                locale
-            )?.name?.let { stringResource(it) }
+            val voiceInputModelName: String? = null
             val dictionaryName = runBlocking {
                 ResourceHelper.findKeyForLocaleAndKind(
                     context,
@@ -679,12 +676,9 @@ fun LanguagesScreen(navController: NavHostController = rememberNavController()) 
                 null
             }
 
-            val transformerName =
-                runBlocking { ModelPaths.getModelOptions(context) }.get(locale.language)?.let {
-                    it.loadDetails()?.let {
-                        it.name + if (it.isUnsupported()) (" " + resources.getString(R.string.language_settings_resource_unsupported_indicator)) else ""
-                    }
-                }
+            // No language model ships with this build (and no code can inspect
+            // a model file any more), so there is never a transformer to show.
+            val transformerName: String? = null
 
             val options = LanguageOptions(
                 voiceInputModel = voiceInputModelName,
@@ -722,11 +716,9 @@ fun LanguagesScreen(navController: NavHostController = rememberNavController()) 
                     }
                 },
                 onConfigurableSelected = { kind ->
-                    if (kind == FileKind.Transformer && transformerName != null) {
-                        navController.navigate("models")
-                    } else {
-                        deleteDialogInfo.value = DeleteInfo(locale, kind)
-                    }
+                    // There is no model manager any more: an imported resource
+                    // can only be deleted.
+                    deleteDialogInfo.value = DeleteInfo(locale, kind)
                 },
                 onLayoutAdditionRequested = {
                     navController.navigate(Route.AddLayout(locale.toLanguageTag()))

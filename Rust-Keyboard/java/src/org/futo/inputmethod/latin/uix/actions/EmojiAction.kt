@@ -125,17 +125,15 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 import java.util.Locale
-import java.util.zip.GZIPInputStream
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
 private val CompatEmojiVersions = setOf("9.0", "10.0", "12.0", "12.1", "13.0", "13.1", "14.0", "15.0", "15.1", "16.0", "17.0")
-val Context.compatEmojiTypeface: Typeface? get() = try {
-    Typeface.createFromAsset(assets, "fonts/NotoColorEmoji_api24.ttf")
-} catch(e: Exception) {
-    null
-}
+// The bundled NotoColorEmoji_api24.ttf (1.1 MB in the package) is gone: emoji
+// are drawn with the system font instead, and an emoji the device cannot render
+// is simply not offered (emojiShouldShow filters those out).
+val Context.compatEmojiTypeface: Typeface? get() = null
 
 private fun levenshteinDistance(lhs: CharSequence, rhs: CharSequence): Int {
     val lhsLen = lhs.length
@@ -984,7 +982,9 @@ class PersistentEmojiState : PersistentActionState {
             }
 
             GlobalScope.launch(Dispatchers.IO) {
-                val inputStream = GZIPInputStream(context.resources.openRawResource(R.raw.emoji_i18n))
+                // Plain JSON in the package: aapt already deflates raw
+                // resources, so gzipping it here saved nothing and cost a decode.
+                val inputStream = context.resources.openRawResource(R.raw.emoji_i18n)
 
                 var data: JsonObject? = null
                 BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8)).use { reader ->

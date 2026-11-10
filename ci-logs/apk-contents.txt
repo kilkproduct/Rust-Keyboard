@@ -1,0 +1,114 @@
+run 42804849747 at 4fce2d62445fff18a9024101fdcb742d121d4f81
+apk=Rust-Keyboard/dist/keyboard-stable-release.apk
+== largest entries
+  9517159                     1078 files
+  5980064  1981-01-01 01:01   classes.dex
+   740964  1981-01-01 01:01   resources.arsc
+   605030  1981-01-01 01:01   assets/dict/main_en.dict.gzip
+   509672  1981-01-01 01:01   lib/arm64-v8a/libkeyboard_core.so
+   268869  1981-01-01 01:01   res/oS.json
+   201240  1981-01-01 01:01   classes2.dex
+   133784  1981-01-01 01:01   res/q4.json
+    13562  1981-01-01 01:01   assets/layouts/mapping.yaml
+    11358  1981-01-01 01:01   assets/layouts/LICENSE
+    11303  1981-01-01 01:01   res/_i.json
+    11152  1981-01-01 01:01   AndroidManifest.xml
+    10496  1981-01-01 01:01   res/02.xml
+    10175  1981-01-01 01:01   META-INF/androidx/lifecycle/lifecycle-common/LICENSE.txt
+    10175  1981-01-01 01:01   META-INF/androidx/lifecycle/lifecycle-common-java8/LICENSE.txt
+    10175  1981-01-01 01:01   META-INF/androidx/collection/collection/LICENSE.txt
+    10175  1981-01-01 01:01   META-INF/androidx/collection/collection-ktx/LICENSE.txt
+    10175  1981-01-01 01:01   META-INF/androidx/annotation/annotation/LICENSE.txt
+    10096  1981-01-01 01:01   lib/arm64-v8a/libandroidx.graphics.path.so
+     8477  1981-01-01 01:01   res/fO.png
+     7787  1981-01-01 01:01   res/ZR.png
+     7112  1981-01-01 01:01   lib/arm64-v8a/libdatastore_shared_counter.so
+     6544  1981-01-01 01:01   res/d0.xml
+     5404  1981-01-01 01:01   res/Qr.xml
+     5188  1981-01-01 01:01   res/Fr.xml
+     5148  1981-01-01 01:01   res/p9.xml
+     4542  1981-01-01 01:01   assets/dexopt/baseline.prof
+     4432  1981-01-01 01:01   res/XV.xml
+     4025  1981-01-01 01:01   res/RJ.png
+     3792  1981-01-01 01:01   res/0T.xml
+     3624  1981-01-01 01:01   res/4b.xml
+     3620  1981-01-01 01:01   res/Lv1.xml
+     3472  1981-01-01 01:01   res/dO.xml
+     3448  1981-01-01 01:01   res/bq.xml
+     3404  1981-01-01 01:01   res/bI.xml
+     3276  1981-01-01 01:01   res/Z7.xml
+     3268  1981-01-01 01:01   res/sU.xml
+     3212  1981-01-01 01:01   res/lD.xml
+     3196  1981-01-01 01:01   res/Cy.xml
+     3184  1981-01-01 01:01   res/CD.xml
+     3116  1981-01-01 01:01   res/Bo.xml
+     3100  1981-01-01 01:01   res/wa1.xml
+     3080  1981-01-01 01:01   res/7f.xml
+     3048  1981-01-01 01:01   res/Wq.xml
+     2956  1981-01-01 01:01   assets/layouts/Default/clearflow_symbols_shift.yaml
+
+== by top level
+   5980064 classes.dex
+    740964 resources.arsc
+    605030 assets/dict
+    526880 lib/arm64-v8a
+    268869 res/oS.json
+    201240 classes2.dex
+    133784 res/q4.json
+    115124 res/color
+     54862 assets/layouts
+     50875 META-INF/androidx
+     11303 res/_i.json
+     11152 AndroidManifest.xml
+     10496 res/02.xml
+      9016 res/color-v31
+      8477 res/fO.png
+      7787 res/ZR.png
+      6544 res/d0.xml
+      5404 res/Qr.xml
+      5188 res/Fr.xml
+      5148 res/p9.xml
+      5124 assets/dexopt
+      4788 res/color-v23
+      4432 res/XV.xml
+      4025 res/RJ.png
+      3807 assets/spacing-and-punctuations
+      3792 res/0T.xml
+      3624 res/4b.xml
+      3620 res/Lv1.xml
+      3472 res/dO.xml
+      3448 res/bq.xml
+
+== stored bytes by top level
+   2741756 classes.dex
+    740964 resources.arsc
+    605030 assets/dict
+    526880 lib/arm64-v8a
+     91602 classes2.dex
+     45810 res/color
+     37755 res/q4.json
+     33378 res/oS.json
+     17815 META-INF/androidx
+     16088 assets/layouts
+      8477 res/fO.png
+      7787 res/ZR.png
+      5124 assets/dexopt
+      4584 res/color-v31
+      4025 res/RJ.png
+      2922 res/d0.xml
+      2834 res/qD.9.png
+      2816 res/MF.9.png
+      2764 AndroidManifest.xml
+      2505 res/NA.9.png
+      2463 res/zV.9.png
+      2443 res/p9.xml
+      2397 res/KW.png
+      2371 res/fd.png
+      2305 res/1I.9.png
+      2262 res/ie.png
+      2223 res/xT.png
+      2211 res/Pp.png
+      2147 res/Zr.png
+      2138 res/J-.png
+
+== uncompressed files still stored raw (>= 64 KB)

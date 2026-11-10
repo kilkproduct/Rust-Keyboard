@@ -13,3 +13,6 @@ java/res/raw/mozc.data
 java/src/org/futo/inputmethod/keyboard/internal/KeyboardTextsTable.java
 
 atl/
+# Rust build outputs
+rust/target/
+java/jniLibs/

@@ -671,7 +671,7 @@ class UixManager(private val latinIME: LatinIME) {
 
     /// public function to skip action override for voice input
     fun activateInternalVoiceIME() {
-        onActionActivatedInternal(org.futo.inputmethod.latin.uix.actions.VoiceInputAction, skipOverride = true)
+        onActionActivatedInternal(org.futo.inputmethod.latin.uix.actions.SystemVoiceInputAction, skipOverride = true)
     }
 
     private fun onActionAltActivatedInternal(rawAction: Action) {

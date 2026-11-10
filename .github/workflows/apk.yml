@@ -1,0 +1,694 @@
+name: APK
+
+# Builds the keyboard APK and, for a version tag, publishes it as a GitHub
+# release.
+#
+# Two things about this repository make the steps below look unusual:
+#   * everything lives one level down, in Rust-Keyboard/, which is why every
+#     step runs in that directory;
+#   * the submodules were never committed as gitlinks, so `submodules: recursive`
+#     does nothing and they have to be cloned from Rust-Keyboard/.gitmodules.
+
+on:
+  push:
+    branches: ['arena/250e75f0-rust-keyboard']
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  PROJECT_DIR: Rust-Keyboard
+  # The four-ABI C++ build takes hours on a hosted runner; arm64 covers
+  # practically every phone. Add ABIs here (and to KB_ABIS) if you need them.
+  KB_ABIS: arm64-v8a
+  NDK_VERSION: 28.2.13676358
+  CMAKE_VERSION: 3.22.1
+
+jobs:
+  rust-core:
+    name: Rust core (tests)
+    runs-on: ubuntu-22.04
+    # A regression that makes a walk loop forever must not burn six hours of
+    # runner time before anyone notices.
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ${{ env.PROJECT_DIR }}/rust/target
+          key: cargo-test-${{ hashFiles('Rust-Keyboard/rust/**/Cargo.toml', 'Rust-Keyboard/rust/**/Cargo.lock') }}
+
+      # The logs of a private repository's jobs cannot be downloaded from the
+      # API used here, so every compiler invocation is copied into the job
+      # summary; that is the only readable copy of the errors.
+      - name: Unit tests
+        id: test
+        continue-on-error: true
+        timeout-minutes: 20
+        working-directory: ${{ env.PROJECT_DIR }}/rust
+        run: |
+          set -o pipefail
+          # One thread and a wall clock: the log then names the test that is
+          # still running when the timeout fires, which is the only way to see a
+          # hang from here (a test that never returns used to burn the whole job).
+          timeout 900 cargo test -p kb-core --all-targets -- --test-threads=1 2>&1 \
+            | tee "$RUNNER_TEMP/test.log"
+
+      - name: Check the JNI crate
+        id: check
+        continue-on-error: true
+        working-directory: ${{ env.PROJECT_DIR }}/rust
+        run: |
+          set -o pipefail
+          cargo check -p kb-jni 2>&1 | tee "$RUNNER_TEMP/jni.log"
+
+      - name: Report compiler output
+        if: always()
+        run: |
+          for log in "$RUNNER_TEMP/test.log" "$RUNNER_TEMP/jni.log"; do
+            [ -f "$log" ] || continue
+            echo "### $(basename "$log")" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            tail -c 60000 "$log" >> "$GITHUB_STEP_SUMMARY" || true
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          done
+
+      - name: Publish the compiler output
+        if: ${{ always() && (steps.test.outcome != 'success' || steps.check.outcome != 'success') }}
+        run: |
+          mkdir -p ci-logs
+          cat "$RUNNER_TEMP/test.log" "$RUNNER_TEMP/jni.log" > ci-logs/rust-core.log 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f ci-logs/rust-core.log
+          git commit -m "CI: rust-core output for ${GITHUB_SHA}" || exit 0
+          git push
+
+      # A private repository's job logs cannot be downloaded from the API used
+      # here, but check-run annotations can be read. So when something fails,
+      # the first errors are repeated as annotations, with the newlines
+      # percent-encoded inside a single message.
+      - name: Annotate the compiler output
+        if: always()
+        run: |
+          for log in "$RUNNER_TEMP/test.log" "$RUNNER_TEMP/jni.log"; do
+            [ -f "$log" ] || continue
+            excerpt=$(grep -aE '^(error|warning)' -A 6 "$log" | head -c 5000 || true)
+            [ -n "$excerpt" ] || continue
+            printf '%s' "$excerpt" \
+              | python3 -c 'import sys,urllib.parse; print(urllib.parse.quote(sys.stdin.read(), safe=""))' \
+              | while read -r encoded; do
+                  echo "::error title=$(basename "$log")::${encoded}"
+                done
+          done
+
+      - name: Fail when the crate does not build
+        if: steps.test.outcome != 'success' || steps.check.outcome != 'success'
+        run: exit 1
+
+  jni-smoke:
+    name: JNI smoke test (desktop JVM)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # The suggestion checks need a real dictionary, not just the words the
+      # test writes itself.
+      - name: Fetch the English dictionary
+        run: |
+          cd ${{ env.PROJECT_DIR }}
+          git config -f .gitmodules --get-regexp '^submodule\..*\.path$' \
+            | while read -r key path; do
+                [ "$path" = "java/res-large" ] || continue
+                name="${key#submodule.}"
+                name="${name%.path}"
+                source=$(git config -f .gitmodules --get "submodule.$name.url")
+                echo "== cloning $source -> $path"
+                rm -rf "$path"
+                GIT_LFS_SKIP_SMUDGE=0 git clone --depth 1 "$source" "$path" \
+                  || { echo "::warning::could not clone $source"; rm -rf "$path"; }
+              done
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ${{ env.PROJECT_DIR }}/rust/target
+          key: cargo-jni-smoke-${{ hashFiles('Rust-Keyboard/rust/**/Cargo.toml', 'Rust-Keyboard/rust/**/Cargo.lock') }}
+
+      # Two defects that shipped in the first release -- a wrong JNI table slot
+      # and a variadic call where the `A' variant was required -- both abort the
+      # process on a phone and both fail here in about a minute.
+      # Keep the symbols: a crash report from this job is only useful if the
+      # native frames have names.
+      - name: Build the engine for the host
+        working-directory: ${{ env.PROJECT_DIR }}/rust
+        env:
+          CARGO_PROFILE_RELEASE_STRIP: none
+          CARGO_PROFILE_RELEASE_DEBUG: '1'
+        run: cargo build -p kb-jni --release
+
+      - name: Compile the harness
+        working-directory: ${{ env.PROJECT_DIR }}/rust
+        run: |
+          mkdir -p "$RUNNER_TEMP/classes"
+          javac -Xlint:-options -d "$RUNNER_TEMP/classes" \
+            $(find tools/jni_harness -name '*.java' | sort)
+
+      - name: Run the smoke test
+        working-directory: ${{ env.PROJECT_DIR }}/rust
+        env:
+          KB_ENGLISH_DICT: ${{ github.workspace }}/${{ env.PROJECT_DIR }}/java/res-large/raw/main_en.dict
+        run: |
+          set -o pipefail
+          java -Xcheck:jni -cp "$RUNNER_TEMP/classes" \
+            -Djava.library.path="$PWD/target/release" \
+            org.futo.inputmethod.latin.EngineSmoke 2>&1 | tee "$RUNNER_TEMP/jni-smoke.log"
+
+      # A native that fails to register only explodes later, on the phone, with
+      # an UnsatisfiedLinkError; the harness declares every method the engine
+      # registers, so any message here is a signature that must be fixed.
+      - name: Fail when a native did not register
+        working-directory: ${{ env.PROJECT_DIR }}/rust
+        run: |
+          if grep -q "cannot register" "$RUNNER_TEMP/jni-smoke.log"; then
+            echo "::error::some natives did not register; see the log above"
+            exit 1
+          fi
+
+      - name: Report the smoke test output
+        if: always()
+        run: |
+          echo '### JNI smoke test' >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          tail -c 40000 "$RUNNER_TEMP/jni-smoke.log" >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Annotate the smoke test output
+        if: always()
+        run: |
+          [ -f "$RUNNER_TEMP/jni-smoke.log" ] || exit 0
+          tail -c 4000 "$RUNNER_TEMP/jni-smoke.log" \
+            | python3 -c 'import sys,urllib.parse; print(urllib.parse.quote(sys.stdin.read(), safe=""))' \
+            | while read -r encoded; do
+                echo "::error title=jni-smoke::${encoded}"
+              done
+
+      - name: Publish the smoke test log
+        if: always() && github.ref_type != 'tag'
+        run: |
+          mkdir -p ci-logs
+          cp "$RUNNER_TEMP/jni-smoke.log" ci-logs/jni-smoke.log 2>/dev/null || true
+          # A SIGSEGV in the JVM leaves its own report behind; it names the
+          # faulting native frame and its offsets.
+          for report in hs_err_pid*.log; do
+            [ -f "$report" ] || continue
+            cp "$report" ci-logs/
+          done
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f ci-logs/jni-smoke.log
+          git commit -m "CI: JNI smoke test output for ${GITHUB_SHA}" || exit 0
+          # The job runs on a detached HEAD, so there is no branch to pull; fetch
+          # and push the log commit by explicit ref. Other jobs commit logs to
+          # the same branch, hence the rebase and the retries.
+          # `git fetch origin <branch>` only writes FETCH_HEAD, so the explicit
+          # refspec is what keeps origin/<branch> - the ref this rebases onto -
+          # from going stale.
+          for attempt in 1 2 3 4; do
+            git fetch --quiet origin "+refs/heads/$GITHUB_REF_NAME:refs/remotes/origin/$GITHUB_REF_NAME" \
+              && git rebase --autostash --quiet "refs/remotes/origin/$GITHUB_REF_NAME" \
+              && git push --quiet origin "HEAD:refs/heads/$GITHUB_REF_NAME" && exit 0
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+          echo "::warning::could not push the smoke test log"
+
+  apk:
+    name: Build APK
+    needs: [rust-core, jni-smoke]
+    timeout-minutes: 75
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch submodules
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | while read -r key path; do
+            name="${key#submodule.}"
+            name="${name%.path}"
+            url=$(git config -f .gitmodules --get "submodule.$name.url")
+            if [ -d "$path" ] && [ -n "$(ls -A "$path" 2>/dev/null)" ]; then
+              echo "== $path already present"
+              continue
+            fi
+            echo "== cloning $url -> $path"
+            if ! GIT_LFS_SKIP_SMUDGE=0 git clone --depth 1 --recursive "$url" "$path"; then
+              echo "::warning::could not clone submodule $path from $url"
+              rm -rf "$path"
+            fi
+          done
+          for required in java/assets/layouts java/res-large; do
+            if [ ! -e "$required" ]; then
+              echo "::error::missing $required (submodule not fetched)"
+              exit 1
+            fi
+          done
+
+      # The keyboard is English only. What remains of the submodules is what the
+      # English build needs, so record it: the next pruning pass works from this
+      # listing instead of guessing at paths inside the submodules.
+      - name: Record the resource layout
+        if: github.ref_type != 'tag'
+        run: |
+          mkdir -p ci-logs
+          {
+            echo "== sizes"
+            du -sh ${{ env.PROJECT_DIR }}/java/res-large \
+              ${{ env.PROJECT_DIR }}/java/assets/layouts 2>/dev/null || true
+            echo
+            echo "== java/res-large"
+            find ${{ env.PROJECT_DIR }}/java/res-large -maxdepth 2 | head -200
+            echo
+            echo "== java/assets/layouts directories"
+            find ${{ env.PROJECT_DIR }}/java/assets/layouts -maxdepth 2 -type d | head -200
+            echo
+            echo "== java/assets/layouts files by directory"
+            find ${{ env.PROJECT_DIR }}/java/assets/layouts -type f | sed 's|/[^/]*$||' | sort | uniq -c | sort -rn | head -80
+            echo
+            echo "== java/assets top level"
+            du -sh ${{ env.PROJECT_DIR }}/java/assets/* 2>/dev/null | sort -h | tail -20
+            echo
+            echo "== java/res-large files"
+            ls -lS ${{ env.PROJECT_DIR }}/java/res-large/raw 2>/dev/null
+            echo
+            echo "== java/res-large values (the English string tables in resources.arsc)"
+            ls -lS ${{ env.PROJECT_DIR }}/java/res-large/values 2>/dev/null
+            echo
+            echo "== java/assets/layouts mapping"
+            head -40 ${{ env.PROJECT_DIR }}/java/assets/layouts/mapping.yaml 2>/dev/null
+            echo
+            # Which layouts the English subtype can actually reach: the pruning
+            # pass needs this list, and it lives in a submodule.
+            echo "== layouts reachable for en"
+            grep -A 16 '^  en:' ${{ env.PROJECT_DIR }}/java/assets/layouts/mapping.yaml 2>/dev/null | head -20
+            echo
+            echo "== java/assets/layouts by directory"
+            du -sh ${{ env.PROJECT_DIR }}/java/assets/layouts/* 2>/dev/null | sort -h | tail -25
+          } > ci-logs/resource-layout.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f ci-logs/resource-layout.txt
+          git commit -m "CI: resource layout for ${GITHUB_SHA}" || exit 0
+          git push || true
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          # The Gradle distribution and the Kotlin compiler both come from hosts
+          # that have timed out on this runner; the cache removes the download
+          # from most runs and the retry below covers the rest.
+          cache-read-only: false
+
+      - name: Install Android NDK and CMake
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER="$(find "$ANDROID_HOME" -name sdkmanager -type f | head -n 1)"
+          fi
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" "ndk;${NDK_VERSION}" "cmake;${CMAKE_VERSION}" "platforms;android-35" "build-tools;35.0.0"
+          # cargo/cc read ANDROID_NDK_HOME and the runner image also exports
+          # ANDROID_NDK_ROOT for its own NDK; leaving them different makes
+          # every Rust build warn about which NDK is in use.
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
+
+      - name: Install Rust targets
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk --locked
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ${{ env.PROJECT_DIR }}/rust/target
+          key: cargo-android-${{ hashFiles('Rust-Keyboard/rust/**/Cargo.toml', 'Rust-Keyboard/rust/**/Cargo.lock') }}
+
+      - name: Build the Rust core
+        id: rustbuild
+        continue-on-error: true
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          set -o pipefail
+          sh ./rust/build-android.sh 2>&1 | tee "$RUNNER_TEMP/rust-build.log"
+
+      # Maven Central redirects this jar to github.com/JetBrains/kotlin/releases,
+      # which has answered 504 on these runners and failed the build before
+      # compiling anything. Fetch it into the local Maven repository instead, and
+      # settings.gradle puts ~/.m2 first when KB_MAVEN_LOCAL_PREFETCH is set.
+      - name: Pre-fetch the Kotlin compiler
+        run: |
+          set -uo pipefail
+          version=2.1.0
+          remote=org/jetbrains/kotlin/kotlin-compiler-embeddable/$version
+          dest="$HOME/.m2/repository/$remote"
+          mkdir -p "$dest"
+          got_jar=0
+          got_pom=0
+          for mirror in \
+            https://maven-central.storage-download.googleapis.com/maven2 \
+            https://repo1.maven.org/maven2 \
+            https://repo.maven.apache.org/maven2; do
+            if [ "$got_jar" = 0 ] && curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 \
+                -o "$dest/kotlin-compiler-embeddable-$version.jar" \
+                "$mirror/$remote/kotlin-compiler-embeddable-$version.jar"; then
+              echo "fetched the compiler jar from $mirror"
+              got_jar=1
+            fi
+            if [ "$got_pom" = 0 ] && curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 \
+                -o "$dest/kotlin-compiler-embeddable-$version.pom" \
+                "$mirror/$remote/kotlin-compiler-embeddable-$version.pom"; then
+              got_pom=1
+            fi
+            if [ "$got_jar" = 1 ] && [ "$got_pom" = 1 ]; then
+              break
+            fi
+          done
+          # A jar in ~/.m2 without its pom makes Gradle treat the module as
+          # artifact only, so only keep a complete pair; otherwise stay out of
+          # the way and let Gradle resolve from the network.
+          if [ "$got_jar" = 0 ] || [ "$got_pom" = 0 ]; then
+            echo "::warning::could not pre-fetch the Kotlin compiler, Gradle will try on its own"
+            rm -rf "$dest"
+          fi
+
+      - name: Build the APKs
+        id: gradle
+        if: steps.rustbuild.outcome == 'success'
+        continue-on-error: true
+        working-directory: ${{ env.PROJECT_DIR }}
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+          VERSION_NAME: ${{ github.ref_type == 'tag' && github.ref_name || format('0.1.0-rust.{0}', github.run_number) }}
+          KB_MAVEN_LOCAL_PREFETCH: '1'
+        run: |
+          chmod +x ./gradlew
+          set -o pipefail
+          gradle_args=(
+            -PabiFilter="${KB_ABIS}" -PskipRust
+            -Dorg.gradle.internal.http.connectionTimeout=60000
+            -Dorg.gradle.internal.http.socketTimeout=180000
+            # Only the stable package is built: the unstable flavour doubles
+            # the Gradle work and is never published.
+            assembleStableRelease
+          )
+          for attempt in 1 2 3; do
+            if ./gradlew --no-daemon --console=plain --stacktrace "${gradle_args[@]}" 2>&1 \
+                | tee "$RUNNER_TEMP/gradle.log"; then
+              exit 0
+            fi
+            if [ "$attempt" = 3 ]; then
+              exit 1
+            fi
+            echo "::warning::gradle failed on attempt $attempt, dropping any partial download and retrying"
+            rm -rf "$HOME/.gradle/wrapper/dists"/*/*/*.part "$HOME/.gradle/wrapper/dists"/*/*/*.lck || true
+            sleep 20
+          done
+
+      - name: Report build output
+        if: always()
+        run: |
+          for log in "$RUNNER_TEMP/rust-build.log" "$RUNNER_TEMP/gradle.log"; do
+            [ -f "$log" ] || continue
+            echo "### $(basename "$log")" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            tail -c 60000 "$log" >> "$GITHUB_STEP_SUMMARY" || true
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          done
+
+      - name: Publish the build output
+        if: ${{ always() && (steps.rustbuild.outcome != 'success' || steps.gradle.outcome != 'success') }}
+        run: |
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            echo "tag run: the logs are in the run summary, nothing to push"
+            exit 0
+          fi
+          mkdir -p ci-logs
+          cat "$RUNNER_TEMP/rust-build.log" "$RUNNER_TEMP/gradle.log" > ci-logs/apk.log 2>/dev/null || true
+          echo "rustbuild=${{ steps.rustbuild.outcome }} gradle=${{ steps.gradle.outcome }}" >> ci-logs/apk.log
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f ci-logs/apk.log
+          git commit -m "CI: apk output for ${GITHUB_SHA}" || exit 0
+          git push
+
+      - name: Fail when the build failed
+        if: steps.rustbuild.outcome != 'success' || steps.gradle.outcome != 'success'
+        run: exit 1
+
+      - name: Collect APKs
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          mkdir -p dist
+          cp build/outputs/apk/stable/release/*.apk dist/keyboard-stable-release.apk
+          ls -l dist
+
+      # Package size is a goal of this fork (English only, Rust core), so publish
+      # it on every run instead of only in the tag release notes.
+      - name: Record the packaged size
+        if: always()
+        run: |
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            echo "| APK | size |" >> "$GITHUB_STEP_SUMMARY"
+            for apk in ${{ env.PROJECT_DIR }}/dist/*.apk; do
+              echo "| \`$(basename "$apk")\` | $(du -h "$apk" | cut -f1) |" >> "$GITHUB_STEP_SUMMARY"
+            done
+            exit 0
+          fi
+          mkdir -p ci-logs
+          # The startup check runs again here only so that its output lands in
+          # ci-logs, where it can be read; the verify step is what enforces it.
+          sh ${{ env.PROJECT_DIR }}/tools/verify-apk-startup.sh ${{ env.PROJECT_DIR }}/dist/*.apk > ci-logs/verify-apk.txt 2>&1 || true
+          {
+            echo "run ${GITHUB_RUN_ID} at ${GITHUB_SHA}"
+            ls -l ${{ env.PROJECT_DIR }}/dist/*.apk 2>/dev/null || echo "no apks"
+          } > ci-logs/apk-size.txt
+          # What is actually inside the package: the next pruning pass works
+          # from these numbers instead of guessing.
+          {
+            echo "run ${GITHUB_RUN_ID} at ${GITHUB_SHA}"
+            apk=$(ls ${{ env.PROJECT_DIR }}/dist/keyboard-stable-release.apk 2>/dev/null | head -1)
+            echo "apk=${apk:-none}"
+            if [ -n "$apk" ] && command -v unzip >/dev/null; then
+              echo "== largest entries"
+              unzip -l "$apk" | sort -k1,1 -n -r | head -45
+              echo
+              echo "== by top level"
+              unzip -l "$apk" | awk 'NF==4 && $1 ~ /^[0-9]+$/ {n=split($4, p, "/"); key=p[1]; if (n > 1) key=p[1]"/"p[2]; sum[key]+=$1} END {for (k in sum) printf "%10d %s\n", sum[k], k}' | sort -nr | head -30
+              echo
+              # `unzip -l` reports the *uncompressed* size of every entry, which
+              # is not what the download costs. The stored bytes are.
+              # columns: Length Method Size Cmpr Date Time CRC-32 Name
+              echo "== stored bytes by top level"
+              unzip -lv "$apk" | awk 'NF>=8 && $3 ~ /^[0-9]+$/ {n=split($8, p, "/"); key=p[1]; if (n > 1) key=p[1]"/"p[2]; sum[key]+=$3} END {for (k in sum) printf "%10d %s\n", sum[k], k}' | sort -nr | head -30
+              echo
+              echo "== uncompressed files still stored raw (>= 64 KB)"
+              unzip -lv "$apk" | awk 'NF>=8 && $1 ~ /^[0-9]+$/ && $3 ~ /^[0-9]+$/ && $1 >= 65536 && $3 >= $1 * 1.05 {printf "%10d stored %10d raw  %s\n", $3, $1, $8}'
+            else
+              echo "unzip unavailable or no apk"
+            fi
+          } > ci-logs/apk-contents.txt
+          # The other two jobs push their own ci-logs commits while this one
+          # runs, so the report goes on top of a freshly fetched tip.
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f ci-logs/apk-size.txt ci-logs/apk-contents.txt ci-logs/verify-apk.txt
+          if git diff --cached --quiet; then
+            echo "::warning::nothing to publish: $(git status --short ci-logs | head -3)"
+            exit 0
+          fi
+          git commit -q -m "CI: apk size for ${GITHUB_SHA}"
+          published=no
+          : > "$RUNNER_TEMP/push.err"
+          for attempt in 1 2 3 4; do
+            if git fetch --quiet origin "+refs/heads/$GITHUB_REF_NAME:refs/remotes/origin/$GITHUB_REF_NAME" \
+              && git rebase --autostash --quiet "refs/remotes/origin/$GITHUB_REF_NAME" \
+              && git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"; then
+              published=yes
+              break
+            fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done 2> "$RUNNER_TEMP/push.err"
+          if [ "$published" != yes ]; then
+            # The reason goes into an annotation: the job log of a private
+            # repository cannot be downloaded from this sandbox.
+            echo "::warning::could not publish the size report: $(tr '\n' ' ' < "$RUNNER_TEMP/push.err" | tail -c 400)"
+          fi
+
+      # Guards the two claims of this fork: the Rust engine is really inside the
+      # package, and the package really cannot reach the network.
+      - name: Verify the packaged APKs
+        id: verify
+        continue-on-error: true
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          set -e
+          MANIFESTS=$(find build/intermediates/packaged_manifests -name AndroidManifest.xml 2>/dev/null)
+          if echo "$MANIFESTS" | xargs grep -l "android.permission.INTERNET" 2>/dev/null; then
+            echo "::error::an APK requests android.permission.INTERNET"
+            exit 1
+          fi
+          echo "No INTERNET permission in any packaged manifest"
+          found=0
+          for apk in dist/*.apk; do
+            [ -f "$apk" ] || continue
+            found=1
+            echo "== $apk"
+            unzip -l "$apk" | grep -E "lib/.*\.so$" || true
+            unzip -l "$apk" | grep -q "lib/${KB_ABIS}/libkeyboard_core.so" \
+              || { echo "::error::$apk does not contain lib/${KB_ABIS}/libkeyboard_core.so"; exit 1; }
+            # The C++ engine and its llama/whisper payload are gone.
+            if unzip -l "$apk" | grep -q "libjni_latinime.so"; then
+              echo "::error::$apk still contains the C++ engine"; exit 1
+            fi
+            if unzip -l "$apk" | grep -qE "lib/(armeabi-v7a|x86|x86_64)/"; then
+              echo "::error::$apk contains a non-arm64 ABI"; exit 1
+            fi
+            if unzip -l "$apk" | grep -qE "ml4_.*\.gguf|assets/futo-swipe/"; then
+              echo "::error::$apk still carries the language model or swipe assets"; exit 1
+            fi
+            # The dictionary has to be inside the package as the compressed
+            # asset Dictionaries.kt unpacks; a raw res/raw/main_en.dict means the
+            # build step did not run and the engine would find no words at all.
+            if ! unzip -l "$apk" | grep -q "assets/dict/main_en.dict.gzip"; then
+              echo "::error::$apk does not carry the bundled dictionary asset"; exit 1
+            fi
+            if unzip -l "$apk" | grep -qE "assets/dict/main_en\.dict$|res/raw/main_en"; then
+              echo "::error::$apk carries the dictionary uncompressed"; exit 1
+            fi
+            # ... and it has to decompress back to a full English dictionary.
+            dict_bytes=$(unzip -p "$apk" assets/dict/main_en.dict.gzip 2>/dev/null | gunzip -c 2>/dev/null | wc -c)
+            if [ "${dict_bytes:-0}" -lt 1000000 ]; then
+              echo "::error::the packaged dictionary decompresses to ${dict_bytes:-0} bytes"; exit 1
+            fi
+            echo "packaged dictionary: $dict_bytes bytes once unpacked"
+            # Assets and manifest classes a package needs in order to start at
+            # all; see tools/verify-apk-startup.sh.
+            sh tools/verify-apk-startup.sh "$apk" || exit 1
+            # The body of the package, for the next pruning pass.
+            unzip -l "$apk" | sort -k1,1 -n -r | head -25
+          done
+          [ "$found" = "1" ] || { echo "::error::no APK was collected"; exit 1; }
+
+      - name: Compose release notes
+        if: github.ref_type == 'tag'
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          {
+            echo "Rust-core build of this keyboard fork (${{ github.ref_name }})."
+            echo
+            echo "| APK | size |"
+            echo "| --- | --- |"
+            for apk in dist/*.apk; do
+              echo "| \`$(basename "$apk")\` | $(du -h "$apk" | cut -f1) |"
+            done
+            echo
+            echo "Native libraries inside the package:"
+            echo
+            echo '```'
+            for apk in dist/*.apk; do
+              echo "\$ $(basename "$apk")"
+              unzip -l "$apk" | grep -E "lib/.*\.so$" | awk '{printf "  %10d  %s\n", $1, $4}'
+            done
+            echo '```'
+            echo
+            echo "What the stable package is made of, compressed bytes per top-level path:"
+            echo
+            echo '```'
+            stable_apk=$(ls dist/keyboard-stable-release.apk 2>/dev/null | head -1)
+            if [ -n "$stable_apk" ]; then
+              unzip -v "$stable_apk" \
+                | awk 'NF>=8 && $1 ~ /^[0-9]+$/ {n=split($NF, p, "/"); key=p[1]; if (n > 1) key=p[1]"/"p[2]; sum[key]+=$3; raw[key]+=$1} END {for (k in sum) printf "%9d  (raw %9d)  %s\n", sum[k], raw[k], k}' \
+                | sort -nr | head -25
+              echo
+              echo "Largest entries (compressed, raw):"
+              unzip -v "$stable_apk" | awk 'NF>=8 && $1 ~ /^[0-9]+$/ {printf "%9d (raw %9d) %s\n", $3, $1, $8}' | sort -nr | head -20
+            fi
+            echo '```'
+            echo
+            cat <<'TEXT'
+          * Engine: the Rust dictionary/suggestion core (`libkeyboard_core.so`,
+            see `rust/README.md`). The C++ engine, its llama.cpp/whisper.cpp
+            payload and the bundled voice models are not in this build.
+          * English only: the Japanese (mozc) and Chinese (Rime) engines, their
+            dictionaries, the other compiled dictionaries and the translation
+            submodule are not in this package.
+          * ABI: the packages contain `arm64-v8a` only.
+          * Signed with the keystore that ships in the repository
+            (`java/shared.keystore`). Uninstall first if your existing copy is
+            signed with a different key.
+          * No network permission is requested at all: see `PRIVACY.md`.
+          * `keyboard-stable-release.apk` installs as
+            `org.futo.inputmethod.latin`.
+          TEXT
+          } > dist/RELEASE_BODY.md
+          cat dist/RELEASE_BODY.md
+
+      # Release assets have their own quota and never block on artifact storage.
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        if: steps.verify.outcome == 'success'
+        with:
+          name: keyboard-apk
+          path: ${{ env.PROJECT_DIR }}/dist/*.apk
+          if-no-files-found: warn
+
+      - name: Publish release
+        if: github.ref_type == 'tag' && steps.verify.outcome == 'success'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.PROJECT_DIR }}/dist/*.apk
+          body_path: ${{ env.PROJECT_DIR }}/dist/RELEASE_BODY.md
+          name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
