@@ -119,6 +119,12 @@ pub fn read_string(
     let limit = max_len.min(out.len());
     let mut len = 0usize;
     loop {
+        // Past the end of the buffer the reader returns zeros for ever, so a
+        // string that was cut off (a truncated download) used to spin here
+        // instead of returning. Nothing is readable past the end anyway.
+        if *pos >= data.len() {
+            break;
+        }
         let cp = read_code_point(data, table, pos);
         if cp == super::NOT_A_CODE_POINT {
             break;
@@ -164,6 +170,22 @@ pub fn read_string_to_string(data: &[u8], max_len: usize, pos: &mut usize) -> St
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn unterminated_string_at_the_end_of_the_buffer_returns() {
+        // A multi-char node whose string was cut off: no terminator, and every
+        // read past the end yields zeros.
+        let data = [0x00, 0x00, 0x41, 0x42];
+        let mut pos = 0usize;
+        let mut out = [0i32; 8];
+        let len = read_string(&data, None, 8, &mut out, &mut pos);
+        assert!(len > 0);
+        assert!(pos >= data.len());
+
+        let empty: [u8; 0] = [];
+        let mut pos = 0usize;
+        assert_eq!(read_string(&empty, None, 8, &mut out, &mut pos), 0);
+    }
 
     #[test]
     fn reads_big_endian_integers() {
