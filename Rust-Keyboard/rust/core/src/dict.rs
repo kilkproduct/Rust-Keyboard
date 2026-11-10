@@ -499,13 +499,6 @@ impl Dictionary {
         let mut bitmap_entry = 0i32;
         for id in context.iter().take(MAX_PREV_WORD_COUNT_FOR_N_GRAM) {
             let next = triemap::next_level_bitmap_entry_index(data, *id, bitmap_entry);
-            eprintln!(
-                "DIAG ngram descent: id={} address={:?} from={} next={}",
-                id,
-                self.terminal_address(*id),
-                bitmap_entry,
-                next
-            );
             if next == triemap::INVALID_INDEX {
                 // No n-gram data for this context; the caller falls back.
                 out.clear();
