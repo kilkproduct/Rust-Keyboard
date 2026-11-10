@@ -556,6 +556,13 @@ impl Dictionary {
             if !matched {
                 return (NOT_A_TERMINAL_ID, last);
             }
+            // A node that carries no characters of its own cannot consume any
+            // input. Without this the loop below never advances: corrupt data
+            // that made every child character-less turned a lookup into an
+            // endless walk between the same nodes.
+            if char_index == 0 {
+                return (NOT_A_TERMINAL_ID, last);
+            }
             index += char_index;
             if child.is_terminal() {
                 terminal_id = if self.is_v4 {
@@ -676,7 +683,9 @@ impl Dictionary {
                     return false;
                 }
             }
-            if child.has_children() && !self.walk_words(&child, buffer, new_length, f) {
+            // A character-less node cannot extend a word, so descending into it
+            // would only walk a cycle on corrupt data.
+            if add > 0 && child.has_children() && !self.walk_words(&child, buffer, new_length, f) {
                 return false;
             }
             let next = child.sibling_pos;

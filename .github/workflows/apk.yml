@@ -55,10 +55,15 @@ jobs:
       - name: Unit tests
         id: test
         continue-on-error: true
+        timeout-minutes: 20
         working-directory: ${{ env.PROJECT_DIR }}/rust
         run: |
           set -o pipefail
-          cargo test -p kb-core --all-targets 2>&1 | tee "$RUNNER_TEMP/test.log"
+          # One thread and a wall clock: the log then names the test that is
+          # still running when the timeout fires, which is the only way to see a
+          # hang from here (a test that never returns used to burn the whole job).
+          timeout 900 cargo test -p kb-core --all-targets -- --test-threads=1 2>&1 \
+            | tee "$RUNNER_TEMP/test.log"
 
       - name: Check the JNI crate
         id: check
