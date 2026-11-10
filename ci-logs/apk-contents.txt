@@ -1,12 +1,12 @@
-run 42768404059 at 1972bae032675d7b2a84e424d21716a1271d094a
+run 42802678814 at 9bb627904c8ccd0c79e8aea4a3b0a6e27d20244d
 apk=Rust-Keyboard/dist/keyboard-stable-release.apk
 == largest entries
-  9585389                     1078 files
+  9435548                     1078 files
   5980064  1981-01-01 01:01   classes.dex
    740968  1981-01-01 01:01   resources.arsc
    605030  1981-01-01 01:01   assets/dict/main_en.dict.gzip
-   503632  1981-01-01 01:01   lib/arm64-v8a/libkeyboard_core.so
-   424750  1981-01-01 01:01   res/oS.json
+   509672  1981-01-01 01:01   lib/arm64-v8a/libkeyboard_core.so
+   268869  1981-01-01 01:01   res/oS.json
    201240  1981-01-01 01:01   classes2.dex
     52170  1981-01-01 01:01   res/g3.jsondlgz
     13562  1981-01-01 01:01   assets/layouts/mapping.yaml
@@ -51,8 +51,8 @@ apk=Rust-Keyboard/dist/keyboard-stable-release.apk
    5980064 classes.dex
     740968 resources.arsc
     605030 assets/dict
-    520840 lib/arm64-v8a
-    424750 res/oS.json
+    526880 lib/arm64-v8a
+    268869 res/oS.json
     201240 classes2.dex
     115124 res/color
      54862 assets/layouts
@@ -78,3 +78,37 @@ apk=Rust-Keyboard/dist/keyboard-stable-release.apk
       3620 res/Lv1.xml
       3472 res/dO.xml
       3448 res/bq.xml
+
+== stored bytes by top level
+   2741761 classes.dex
+    740968 resources.arsc
+    605215 assets/dict
+    526880 lib/arm64-v8a
+     91602 classes2.dex
+     52170 res/g3.jsondlgz
+     45810 res/color
+     33378 res/oS.json
+     17815 META-INF/androidx
+     16088 assets/layouts
+      8477 res/fO.png
+      7787 res/ZR.png
+      5123 assets/dexopt
+      4584 res/color-v31
+      4025 res/RJ.png
+      2922 res/d0.xml
+      2834 res/qD.9.png
+      2816 res/MF.9.png
+      2764 AndroidManifest.xml
+      2505 res/NA.9.png
+      2463 res/zV.9.png
+      2443 res/p9.xml
+      2397 res/KW.png
+      2371 res/fd.png
+      2305 res/1I.9.png
+      2262 res/ie.png
+      2223 res/xT.png
+      2211 res/Pp.png
+      2147 res/Zr.png
+      2138 res/J-.png
+
+== uncompressed files still stored raw (>= 64 KB)
