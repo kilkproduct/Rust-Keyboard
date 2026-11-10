@@ -242,15 +242,12 @@ jobs:
               rm -rf "$path"
             fi
           done
-          for required in libs/futo-swipe-release.aar java/assets/layouts java/res-large; do
+          for required in java/assets/layouts java/res-large; do
             if [ ! -e "$required" ]; then
               echo "::error::missing $required (submodule not fetched)"
               exit 1
             fi
           done
-
-      - name: Strip non-English resources
-        run: bash ${{ env.PROJECT_DIR }}/tools/strip-non-english-resources.sh
 
       # The keyboard is English only. What remains of the submodules is what the
       # English build needs, so record it: the next pruning pass works from this
@@ -261,9 +258,8 @@ jobs:
           mkdir -p ci-logs
           {
             echo "== sizes"
-            du -sh ${{ env.PROJECT_DIR }}/libs/* ${{ env.PROJECT_DIR }}/java/res-large \
-              ${{ env.PROJECT_DIR }}/java/assets/layouts ${{ env.PROJECT_DIR }}/java/assets/futo-swipe \
-              ${{ env.PROJECT_DIR }}/voiceinput-shared/src/main/ml 2>/dev/null || true
+            du -sh ${{ env.PROJECT_DIR }}/java/res-large \
+              ${{ env.PROJECT_DIR }}/java/assets/layouts 2>/dev/null || true
             echo
             echo "== java/res-large"
             find ${{ env.PROJECT_DIR }}/java/res-large -maxdepth 2 | head -200
@@ -282,12 +278,6 @@ jobs:
             echo
             echo "== java/res-large values (the English string tables in resources.arsc)"
             ls -lS ${{ env.PROJECT_DIR }}/java/res-large/values 2>/dev/null
-            echo
-            echo "== voiceinput ml files"
-            ls -lSR ${{ env.PROJECT_DIR }}/voiceinput-shared/src/main/ml 2>/dev/null | head -60
-            echo
-            echo "== java/assets/futo-swipe files"
-            ls -lSR ${{ env.PROJECT_DIR }}/java/assets/futo-swipe 2>/dev/null | head -60
             echo
             echo "== java/assets/layouts mapping"
             head -40 ${{ env.PROJECT_DIR }}/java/assets/layouts/mapping.yaml 2>/dev/null
