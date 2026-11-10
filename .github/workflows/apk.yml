@@ -495,6 +495,15 @@ jobs:
               echo
               echo "== by top level"
               unzip -l "$apk" | awk 'NF==4 && $1 ~ /^[0-9]+$/ {n=split($4, p, "/"); key=p[1]; if (n > 1) key=p[1]"/"p[2]; sum[key]+=$1} END {for (k in sum) printf "%10d %s\n", sum[k], k}' | sort -nr | head -30
+              echo
+              # `unzip -l` reports the *uncompressed* size of every entry, which
+              # is not what the download costs. The stored bytes are.
+              # columns: Length Method Size Cmpr Date Time CRC-32 Name
+              echo "== stored bytes by top level"
+              unzip -lv "$apk" | awk 'NF>=8 && $3 ~ /^[0-9]+$/ {n=split($8, p, "/"); key=p[1]; if (n > 1) key=p[1]"/"p[2]; sum[key]+=$3} END {for (k in sum) printf "%10d %s\n", sum[k], k}' | sort -nr | head -30
+              echo
+              echo "== uncompressed files still stored raw (>= 64 KB)"
+              unzip -lv "$apk" | awk 'NF>=8 && $1 ~ /^[0-9]+$/ && $3 ~ /^[0-9]+$/ && $1 >= 65536 && $3 >= $1 * 1.05 {printf "%10d stored %10d raw  %s\n", $3, $1, $8}'
             else
               echo "unzip unavailable or no apk"
             fi

@@ -603,7 +603,9 @@ android {
                 // archive keeps a name packaging leaves alone.
                 final def dictArchive = new File(strippedAssets, 'dict/main_en.dict.gzip')
                 dictArchive.parentFile.mkdirs()
-                new java.util.zip.GZIPOutputStream(new java.io.FileOutputStream(dictArchive)).withStream { sink ->
+                // Level 9: this is a build artifact, not a download stream, and the
+                // dictionary is the largest single file in the package.
+                new java.util.zip.GZIPOutputStream(new java.io.FileOutputStream(dictArchive), 9).withStream { sink ->
                     bundledDict.withInputStream { source -> source.transferTo(sink) }
                 }
                 logger.lifecycle("bundled dictionary: ${bundledDict.length() / 1024} KB -> " +
@@ -657,7 +659,7 @@ android {
                 }
                 if (!kept.isEmpty()) {
                     final def sink = new java.util.zip.GZIPOutputStream(
-                            new java.io.FileOutputStream(emojiI18n))
+                            new java.io.FileOutputStream(emojiI18n), 9)
                     sink.write((kept.join('\n') + '\n').getBytes('UTF-8'))
                     sink.close()
                     logger.lifecycle("emoji_i18n trimmed to ${kept.size() / 2} language(s)")
