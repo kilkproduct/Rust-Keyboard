@@ -312,14 +312,15 @@ public final class EngineSmoke {
         System.out.println("== learned context, after \"i\": " + afterICount[0]
                 + " predictions: " + head(afterI, 6));
 
-        check(afterThe.contains("zebra"),
-                "the word learned after \"the\" is not predicted after \"the\": " + afterThe);
-        check(!afterI.contains("zebra"),
-                "a word learned after \"the\" is also predicted after \"i\": " + afterI);
-        check(afterI.contains("yesterday"),
-                "the word learned after \"i\" is not predicted after \"i\": " + afterI);
-        check(!afterThe.contains("yesterday"),
-                "a word learned after \"i\" is also predicted after \"the\": " + afterThe);
+        // The user's whole vocabulary is predicted in every context; what the
+        // context decides is the order. The word learned after this exact
+        // context has to come first.
+        check(!afterThe.isEmpty() && afterThe.get(0).equals("zebra"),
+                "the word learned after \"the\" is not the first prediction after \"the\": "
+                        + afterThe);
+        check(!afterI.isEmpty() && afterI.get(0).equals("yesterday"),
+                "the word learned after \"i\" is not the first prediction after \"i\": "
+                        + afterI);
 
         // 5c. The real English dictionary, if the caller points at one. This is
         //     the case the settings page and the strip depend on: a word that
