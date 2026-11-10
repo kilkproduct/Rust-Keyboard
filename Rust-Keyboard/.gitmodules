@@ -1,9 +1,3 @@
-[submodule "libs"]
-	path = libs
-	url = https://gitlab.futo.org/keyboard/android-libs.git
-[submodule "voiceinput-shared/src/main/ml"]
-	path = voiceinput-shared/src/main/ml
-	url = https://gitlab.futo.org/keyboard/voice-input-models.git
 [submodule "java/assets/layouts"]
 	path = java/assets/layouts
 	url = https://github.com/futo-org/futo-keyboard-layouts.git
@@ -13,6 +7,3 @@
 [submodule "java/res-large"]
 	path = java/res-large
 	url = https://gitlab.futo.org/keyboard/keyboard-large-resources.git
-[submodule "java/assets/futo-swipe"]
-	path = java/assets/futo-swipe
-	url = https://huggingface.co/futo-org/futo-swipe
