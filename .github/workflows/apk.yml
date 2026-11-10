@@ -31,6 +31,9 @@ jobs:
   rust-core:
     name: Rust core (tests)
     runs-on: ubuntu-22.04
+    # A regression that makes a walk loop forever must not burn six hours of
+    # runner time before anyone notices.
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -210,6 +213,7 @@ jobs:
   apk:
     name: Build APK
     needs: [rust-core, jni-smoke]
+    timeout-minutes: 75
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4

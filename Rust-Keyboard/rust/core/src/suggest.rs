@@ -107,6 +107,11 @@ impl SuggestOptions {
     }
 }
 
+/// Ceiling on the breadth-first queue of a prediction walk. Four times the node
+/// budget: every entry is only ever popped once, and anything past this cannot
+/// be inspected before the budget runs out.
+const MAX_PREDICTION_QUEUE: usize = 4 * 4000;
+
 /// One suggestion, laid out exactly like the arrays the Java side reads:
 /// `MAX_WORD_LENGTH` code points per slot plus a score and an attribute mask.
 #[derive(Clone, Copy)]
@@ -974,6 +979,12 @@ fn collect_predictions(
         // `word` is the prefix of every child, so it is copied once per child
         // instead of being rebuilt in a shared buffer.
         dict.for_each_child(&node, |child| {
+            // A corrupt trie can make every node look like it has thousands of
+            // children; stop filling the queue once it is far larger than the
+            // budget can ever inspect.
+            if queue.len() >= MAX_PREDICTION_QUEUE {
+                return false;
+            }
             if child.char_count > 0 && word.len() + child.char_count as usize <= MAX_WORD_LENGTH {
                 let mut child_word = word.clone();
                 for index in 0..child.char_count as usize {

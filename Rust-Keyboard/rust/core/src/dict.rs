@@ -18,6 +18,10 @@ use crate::triemap;
 use crate::user::UserDict;
 use crate::{MAX_PREV_WORD_COUNT_FOR_N_GRAM, MAX_WORD_LENGTH, NOT_A_PROBABILITY};
 
+/// Upper bound on the children of one node. A real node array holds at most a
+/// few hundred entries (one per distinct code point that continues the word).
+const MAX_CHILDREN_PER_NODE: usize = 4096;
+
 /// Number of size-prefixed buffers inside a version 4 body file:
 /// trie, terminal table, language model map, language model counters,
 /// shortcut lookup table, shortcut address table, shortcut content.
@@ -375,9 +379,15 @@ impl Dictionary {
             return;
         }
         let array = self.array_at(node.children_pos as usize);
+        // The child count comes straight out of the file, and every child needs
+        // at least one byte of the trie. Without this clamp a corrupt count made
+        // one node look like it had 32 000 children, which turned a prediction
+        // into a queue of millions of entries.
+        let remaining = self.trie.len.saturating_sub(array.first_node_pos);
+        let count = array.count.min(remaining).min(MAX_CHILDREN_PER_NODE);
         let mut pos = array.first_node_pos;
         let mut index = 0usize;
-        while index < array.count {
+        while index < count {
             let child = match self.node_at(pos) {
                 Some(c) => c,
                 None => return,
