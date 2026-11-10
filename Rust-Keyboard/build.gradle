@@ -573,6 +573,25 @@ android {
                 }
             }
 
+            // One compiled dictionary per language: main_en.dict is the only one
+            // an English build can offer, and the other six were 7.8 MB of the
+            // package. (The shell script this copy replaced did the same thing.)
+            final def rawDir = new File(strippedLarge, 'raw')
+            if (rawDir.isDirectory()) {
+                long droppedDictBytes = 0
+                rawDir.listFiles()?.each { entry ->
+                    if (!entry.isFile()) { return }
+                    final def name = entry.name
+                    if (name.startsWith('main_') && name.endsWith('.dict') && name != 'main_en.dict') {
+                        droppedDictBytes += entry.length()
+                        entry.delete()
+                    }
+                }
+                if (droppedDictBytes > 0) {
+                    logger.lifecycle("dropped ${droppedDictBytes / 1024} KB of non-English dictionaries")
+                }
+            }
+
             // The English dictionary is mmapped straight out of the package
             // today, which only works if aapt stores it uncompressed - a full
             // megabyte of a six megabyte package. Ship it gzipped in the assets
