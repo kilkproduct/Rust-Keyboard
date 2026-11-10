@@ -1,55 +1,363 @@
 [1m[92m   Compiling[0m kb-core v0.1.0 (/home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/rust/core)
-[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 3.98s
-[1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/kb_core-f781f3eb047d243a)
+[1m[91merror[E0560][0m[1m: struct `dict::Dictionary` has no field named `top_unigrams`[0m
+   [1m[94m--> [0mcore/src/dict.rs:145:13
+    [1m[94m|[0m
+[1m[94m145[0m [1m[94m|[0m             top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^[0m [1m[91m`dict::Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
 
-running 39 tests
-test bytes::tests::reads_big_endian_integers ... ok
-test bytes::tests::reads_one_and_three_byte_codepoints ... ok
-test bytes::tests::reads_signed_offsets ... ok
-test charutils::tests::folds_accents ... ok
-test charutils::tests::folds_case ... ok
-test dict::tests::empty_trie_reports_no_children ... ok
-test dict::tests::test_trie_round_trips_through_find_word ... ok
-test dict::tests::writes_and_reopens_an_empty_dictionary ... ok
-test header::tests::parses_v4_header_with_attributes ... ok
-test header::tests::rejects_bad_magic ... ok
-test mmap::tests::empty_source_is_safe ... ok
-test mmap::tests::heap_backed_source_roundtrip ... ok
-test mmap::tests::maps_this_test_binary ... ok
-test mmap::tests::page_size_is_sane ... ok
-test mmap::tests::unaligned_offset_is_mapped_not_copied ... ok
-test mmap::tests::window_past_the_end_is_clamped ... ok
-test proximity::tests::classifies_proximity ... ok
-test proximity::tests::distance_is_small_under_the_key ... ok
-test proximity::tests::finds_key_index ... ok
-test proximity::tests::reads_cell_characters ... ok
-test ptrie::tests::reads_multi_char_v4_node ... ok
-test ptrie::tests::reads_single_char_terminal_v4_node ... ok
-test ptrie::tests::reads_two_byte_node_array_size ... ok
-test ptrie::tests::reads_v2_terminal_probability ... ok
-test suggest::tests::every_suggestion_is_a_dictionary_word ... ok
-test suggest::tests::parses_option_array ... ok
-test suggest::tests::results_are_capped ... ok
-test suggest::tests::results_keep_the_best_score ... ok
-test suggest::tests::suggestions_stay_on_the_typed_prefix ... ok
-test suggest::tests::typos_are_corrected_to_the_expected_word ... ok
-test suggest::tests::unrelated_input_does_not_produce_words ... ok
-test triemap::tests::decodes_probability_entry ... ok
-test triemap::tests::empty_map_has_no_entries ... ok
-test triemap::tests::hash_spreads_bits ... ok
-test user::tests::adds_and_looks_up ... ok
-test user::tests::context_hash_is_stable ... ok
-test user::tests::prefix_search_works ... ok
-test user::tests::repeated_word_gets_stronger ... ok
-test user::tests::roundtrips_through_disk ... ok
+[1m[91merror[E0560][0m[1m: struct `Dictionary` has no field named `top_unigrams`[0m
+   [1m[94m--> [0mcore/src/dict.rs:145:13
+    [1m[94m|[0m
+[1m[94m145[0m [1m[94m|[0m             top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^[0m [1m[91m`Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
 
-test result: ok. 39 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+[1m[91merror[E0560][0m[1m: struct `dict::Dictionary` has no field named `top_unigram_count`[0m
+   [1m[94m--> [0mcore/src/dict.rs:146:13
+    [1m[94m|[0m
+[1m[94m146[0m [1m[94m|[0m             top_unigram_count: 0,
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91m`dict::Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
 
-[1m[92m     Running[0m tests/corrupt_dictionary.rs (target/debug/deps/corrupt_dictionary-0642d451778f831c)
+[1m[91merror[E0560][0m[1m: struct `Dictionary` has no field named `top_unigram_count`[0m
+   [1m[94m--> [0mcore/src/dict.rs:146:13
+    [1m[94m|[0m
+[1m[94m146[0m [1m[94m|[0m             top_unigram_count: 0,
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91m`Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
 
-running 6 tests
-test corrupt_dictionary_reports_no_words ... ok
-test every_prefix_of_a_valid_file_does_not_panic ... ok
-test random_mutations_of_a_valid_file_do_not_panic ... [1m[92m    Checking[0m kb-core v0.1.0 (/home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/rust/core)
-[1m[92m    Checking[0m kb-jni v0.1.0 (/home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/rust/jni)
-[1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 0.47s
+[1m[91merror[E0560][0m[1m: struct `dict::Dictionary` has no field named `top_unigrams`[0m
+   [1m[94m--> [0mcore/src/dict.rs:180:13
+    [1m[94m|[0m
+[1m[94m180[0m [1m[94m|[0m             top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^[0m [1m[91m`dict::Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `Dictionary` has no field named `top_unigrams`[0m
+   [1m[94m--> [0mcore/src/dict.rs:180:13
+    [1m[94m|[0m
+[1m[94m180[0m [1m[94m|[0m             top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^[0m [1m[91m`Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `Dictionary` has no field named `top_unigram_count`[0m
+   [1m[94m--> [0mcore/src/dict.rs:181:13
+    [1m[94m|[0m
+[1m[94m181[0m [1m[94m|[0m             top_unigram_count: 0,
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91m`Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `dict::Dictionary` has no field named `top_unigram_count`[0m
+   [1m[94m--> [0mcore/src/dict.rs:181:13
+    [1m[94m|[0m
+[1m[94m181[0m [1m[94m|[0m             top_unigram_count: 0,
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91m`dict::Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `Dictionary` has no field named `top_unigrams`[0m
+   [1m[94m--> [0mcore/src/dict.rs:222:17
+    [1m[94m|[0m
+[1m[94m222[0m [1m[94m|[0m                 top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+    [1m[94m|[0m                 [1m[91m^^^^^^^^^^^^[0m [1m[91m`Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `dict::Dictionary` has no field named `top_unigrams`[0m
+   [1m[94m--> [0mcore/src/dict.rs:222:17
+    [1m[94m|[0m
+[1m[94m222[0m [1m[94m|[0m                 top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+    [1m[94m|[0m                 [1m[91m^^^^^^^^^^^^[0m [1m[91m`dict::Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `Dictionary` has no field named `top_unigram_count`[0m
+   [1m[94m--> [0mcore/src/dict.rs:223:17
+    [1m[94m|[0m
+[1m[94m223[0m [1m[94m|[0m                 top_unigram_count: 0,
+    [1m[94m|[0m                 [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91m`Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `dict::Dictionary` has no field named `top_unigram_count`[0m
+   [1m[94m--> [0mcore/src/dict.rs:223:17
+    [1m[94m|[0m
+[1m[94m223[0m [1m[94m|[0m                 top_unigram_count: 0,
+    [1m[94m|[0m                 [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91m`dict::Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `dict::Dictionary` has no field named `top_unigrams`[0m
+   [1m[94m--> [0mcore/src/dict.rs:250:17
+    [1m[94m|[0m
+[1m[94m250[0m [1m[94m|[0m                 top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+    [1m[94m|[0m                 [1m[91m^^^^^^^^^^^^[0m [1m[91m`dict::Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `Dictionary` has no field named `top_unigrams`[0m
+   [1m[94m--> [0mcore/src/dict.rs:250:17
+    [1m[94m|[0m
+[1m[94m250[0m [1m[94m|[0m                 top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+    [1m[94m|[0m                 [1m[91m^^^^^^^^^^^^[0m [1m[91m`Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `Dictionary` has no field named `top_unigram_count`[0m
+   [1m[94m--> [0mcore/src/dict.rs:251:17
+    [1m[94m|[0m
+[1m[94m251[0m [1m[94m|[0m                 top_unigram_count: 0,
+    [1m[94m|[0m                 [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91m`Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `dict::Dictionary` has no field named `top_unigram_count`[0m
+   [1m[94m--> [0mcore/src/dict.rs:251:17
+    [1m[94m|[0m
+[1m[94m251[0m [1m[94m|[0m                 top_unigram_count: 0,
+    [1m[94m|[0m                 [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91m`dict::Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0609][0m[1m: no field `top_unigram_count` on type `&mut dict::Dictionary`[0m
+   [1m[94m--> [0mcore/src/dict.rs:433:14
+    [1m[94m|[0m
+[1m[94m433[0m [1m[94m|[0m         self.top_unigram_count = 0;
+    [1m[94m|[0m              [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91munknown field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: available fields are: `body`, `header`, `trie`, `terminal_table`, `language_model` ... and 6 others
+
+[1m[91merror[E0609][0m[1m: no field `top_unigram_count` on type `&mut Dictionary`[0m
+   [1m[94m--> [0mcore/src/dict.rs:433:14
+    [1m[94m|[0m
+[1m[94m433[0m [1m[94m|[0m         self.top_unigram_count = 0;
+    [1m[94m|[0m              [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91munknown field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: available fields are: `body`, `header`, `trie`, `terminal_table`, `language_model` ... and 6 others
+
+[1m[91merror[E0615][0m[1m: attempted to take value of method `top_unigrams` on type `&mut dict::Dictionary`[0m
+   [1m[94m--> [0mcore/src/dict.rs:470:14
+    [1m[94m|[0m
+[1m[94m470[0m [1m[94m|[0m         self.top_unigrams = best;
+    [1m[94m|[0m              [1m[91m^^^^^^^^^^^^[0m [1m[91mmethod, not a field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mhelp[0m: methods are immutable and cannot be assigned to
+
+[1m[91merror[E0615][0m[1m: attempted to take value of method `top_unigrams` on type `&mut Dictionary`[0m
+   [1m[94m--> [0mcore/src/dict.rs:470:14
+    [1m[94m|[0m
+[1m[94m470[0m [1m[94m|[0m         self.top_unigrams = best;
+    [1m[94m|[0m              [1m[91m^^^^^^^^^^^^[0m [1m[91mmethod, not a field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mhelp[0m: methods are immutable and cannot be assigned to
+
+[1m[91merror[E0609][0m[1m: no field `top_unigram_count` on type `&mut Dictionary`[0m
+   [1m[94m--> [0mcore/src/dict.rs:471:14
+    [1m[94m|[0m
+[1m[94m471[0m [1m[94m|[0m         self.top_unigram_count = count;
+    [1m[94m|[0m              [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91munknown field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: available fields are: `body`, `header`, `trie`, `terminal_table`, `language_model` ... and 6 others
+
+[1m[91merror[E0609][0m[1m: no field `top_unigram_count` on type `&mut dict::Dictionary`[0m
+   [1m[94m--> [0mcore/src/dict.rs:471:14
+    [1m[94m|[0m
+[1m[94m471[0m [1m[94m|[0m         self.top_unigram_count = count;
+    [1m[94m|[0m              [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91munknown field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: available fields are: `body`, `header`, `trie`, `terminal_table`, `language_model` ... and 6 others
+
+[1m[91merror[E0615][0m[1m: attempted to take value of method `top_unigrams` on type `&dict::Dictionary`[0m
+   [1m[94m--> [0mcore/src/dict.rs:477:15
+    [1m[94m|[0m
+[1m[94m477[0m [1m[94m|[0m         &self.top_unigrams[..self.top_unigram_count]
+    [1m[94m|[0m               [1m[91m^^^^^^^^^^^^[0m [1m[91mmethod, not a field[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: use parentheses to call the method
+    [1m[94m|[0m
+[1m[94m477[0m [1m[94m| [0m        &self.top_unigrams[92m()[0m[..self.top_unigram_count]
+    [1m[94m|[0m                           [92m++[0m
+
+[1m[91merror[E0609][0m[1m: no field `top_unigram_count` on type `&dict::Dictionary`[0m
+   [1m[94m--> [0mcore/src/dict.rs:477:35
+    [1m[94m|[0m
+[1m[94m477[0m [1m[94m|[0m         &self.top_unigrams[..self.top_unigram_count]
+    [1m[94m|[0m                                   [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91munknown field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: available fields are: `body`, `header`, `trie`, `terminal_table`, `language_model` ... and 6 others
+
+[1m[91merror[E0615][0m[1m: attempted to take value of method `top_unigrams` on type `&Dictionary`[0m
+   [1m[94m--> [0mcore/src/dict.rs:477:15
+    [1m[94m|[0m
+[1m[94m477[0m [1m[94m|[0m         &self.top_unigrams[..self.top_unigram_count]
+    [1m[94m|[0m               [1m[91m^^^^^^^^^^^^[0m [1m[91mmethod, not a field[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: use parentheses to call the method
+    [1m[94m|[0m
+[1m[94m477[0m [1m[94m| [0m        &self.top_unigrams[92m()[0m[..self.top_unigram_count]
+    [1m[94m|[0m                           [92m++[0m
+
+[1m[91merror[E0609][0m[1m: no field `top_unigram_count` on type `&Dictionary`[0m
+   [1m[94m--> [0mcore/src/dict.rs:477:35
+    [1m[94m|[0m
+[1m[94m477[0m [1m[94m|[0m         &self.top_unigrams[..self.top_unigram_count]
+    [1m[94m|[0m                                   [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91munknown field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: available fields are: `body`, `header`, `trie`, `terminal_table`, `language_model` ... and 6 others
+
+[1m[91merror[E0560][0m[1m: struct `dict::Dictionary` has no field named `top_unigrams`[0m
+    [1m[94m--> [0mcore/src/dict.rs:1019:9
+     [1m[94m|[0m
+[1m[94m1019[0m [1m[94m|[0m         top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+     [1m[94m|[0m         [1m[91m^^^^^^^^^^^^[0m [1m[91m`dict::Dictionary` does not have this field[0m
+     [1m[94m|[0m
+     [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `dict::Dictionary` has no field named `top_unigram_count`[0m
+    [1m[94m--> [0mcore/src/dict.rs:1020:9
+     [1m[94m|[0m
+[1m[94m1020[0m [1m[94m|[0m         top_unigram_count: 0,
+     [1m[94m|[0m         [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91m`dict::Dictionary` does not have this field[0m
+     [1m[94m|[0m
+     [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `dict::Dictionary` has no field named `top_unigrams`[0m
+    [1m[94m--> [0mcore/src/dict.rs:1049:13
+     [1m[94m|[0m
+[1m[94m1049[0m [1m[94m|[0m             top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+     [1m[94m|[0m             [1m[91m^^^^^^^^^^^^[0m [1m[91m`dict::Dictionary` does not have this field[0m
+     [1m[94m|[0m
+     [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `dict::Dictionary` has no field named `top_unigram_count`[0m
+    [1m[94m--> [0mcore/src/dict.rs:1050:13
+     [1m[94m|[0m
+[1m[94m1050[0m [1m[94m|[0m             top_unigram_count: 0,
+     [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91m`dict::Dictionary` does not have this field[0m
+     [1m[94m|[0m
+     [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1mSome errors have detailed explanations: E0560, E0609, E0615.[0m
+[1mFor more information about an error, try `rustc --explain E0560`.[0m
+[1m[91merror[0m: could not compile `kb-core` (lib) due to 13 previous errors
+[1m[33mwarning[0m: build failed, waiting for other jobs to finish...
+[1m[91merror[0m: could not compile `kb-core` (lib test) due to 17 previous errors
+[1m[92m    Checking[0m kb-core v0.1.0 (/home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/rust/core)
+[1m[91merror[E0560][0m[1m: struct `Dictionary` has no field named `top_unigrams`[0m
+   [1m[94m--> [0mcore/src/dict.rs:145:13
+    [1m[94m|[0m
+[1m[94m145[0m [1m[94m|[0m             top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^[0m [1m[91m`Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `Dictionary` has no field named `top_unigram_count`[0m
+   [1m[94m--> [0mcore/src/dict.rs:146:13
+    [1m[94m|[0m
+[1m[94m146[0m [1m[94m|[0m             top_unigram_count: 0,
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91m`Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `Dictionary` has no field named `top_unigrams`[0m
+   [1m[94m--> [0mcore/src/dict.rs:180:13
+    [1m[94m|[0m
+[1m[94m180[0m [1m[94m|[0m             top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^[0m [1m[91m`Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `Dictionary` has no field named `top_unigram_count`[0m
+   [1m[94m--> [0mcore/src/dict.rs:181:13
+    [1m[94m|[0m
+[1m[94m181[0m [1m[94m|[0m             top_unigram_count: 0,
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91m`Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `Dictionary` has no field named `top_unigrams`[0m
+   [1m[94m--> [0mcore/src/dict.rs:222:17
+    [1m[94m|[0m
+[1m[94m222[0m [1m[94m|[0m                 top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+    [1m[94m|[0m                 [1m[91m^^^^^^^^^^^^[0m [1m[91m`Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `Dictionary` has no field named `top_unigram_count`[0m
+   [1m[94m--> [0mcore/src/dict.rs:223:17
+    [1m[94m|[0m
+[1m[94m223[0m [1m[94m|[0m                 top_unigram_count: 0,
+    [1m[94m|[0m                 [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91m`Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `Dictionary` has no field named `top_unigrams`[0m
+   [1m[94m--> [0mcore/src/dict.rs:250:17
+    [1m[94m|[0m
+[1m[94m250[0m [1m[94m|[0m                 top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+    [1m[94m|[0m                 [1m[91m^^^^^^^^^^^^[0m [1m[91m`Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0560][0m[1m: struct `Dictionary` has no field named `top_unigram_count`[0m
+   [1m[94m--> [0mcore/src/dict.rs:251:17
+    [1m[94m|[0m
+[1m[94m251[0m [1m[94m|[0m                 top_unigram_count: 0,
+    [1m[94m|[0m                 [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91m`Dictionary` does not have this field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: all struct fields are already assigned
+
+[1m[91merror[E0609][0m[1m: no field `top_unigram_count` on type `&mut Dictionary`[0m
+   [1m[94m--> [0mcore/src/dict.rs:433:14
+    [1m[94m|[0m
+[1m[94m433[0m [1m[94m|[0m         self.top_unigram_count = 0;
+    [1m[94m|[0m              [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91munknown field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: available fields are: `body`, `header`, `trie`, `terminal_table`, `language_model` ... and 6 others
+
+[1m[91merror[E0615][0m[1m: attempted to take value of method `top_unigrams` on type `&mut Dictionary`[0m
+   [1m[94m--> [0mcore/src/dict.rs:470:14
+    [1m[94m|[0m
+[1m[94m470[0m [1m[94m|[0m         self.top_unigrams = best;
+    [1m[94m|[0m              [1m[91m^^^^^^^^^^^^[0m [1m[91mmethod, not a field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mhelp[0m: methods are immutable and cannot be assigned to
+
+[1m[91merror[E0609][0m[1m: no field `top_unigram_count` on type `&mut Dictionary`[0m
+   [1m[94m--> [0mcore/src/dict.rs:471:14
+    [1m[94m|[0m
+[1m[94m471[0m [1m[94m|[0m         self.top_unigram_count = count;
+    [1m[94m|[0m              [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91munknown field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: available fields are: `body`, `header`, `trie`, `terminal_table`, `language_model` ... and 6 others
+
+[1m[91merror[E0615][0m[1m: attempted to take value of method `top_unigrams` on type `&Dictionary`[0m
+   [1m[94m--> [0mcore/src/dict.rs:477:15
+    [1m[94m|[0m
+[1m[94m477[0m [1m[94m|[0m         &self.top_unigrams[..self.top_unigram_count]
+    [1m[94m|[0m               [1m[91m^^^^^^^^^^^^[0m [1m[91mmethod, not a field[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: use parentheses to call the method
+    [1m[94m|[0m
+[1m[94m477[0m [1m[94m| [0m        &self.top_unigrams[92m()[0m[..self.top_unigram_count]
+    [1m[94m|[0m                           [92m++[0m
+
+[1m[91merror[E0609][0m[1m: no field `top_unigram_count` on type `&Dictionary`[0m
+   [1m[94m--> [0mcore/src/dict.rs:477:35
+    [1m[94m|[0m
+[1m[94m477[0m [1m[94m|[0m         &self.top_unigrams[..self.top_unigram_count]
+    [1m[94m|[0m                                   [1m[91m^^^^^^^^^^^^^^^^^[0m [1m[91munknown field[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: available fields are: `body`, `header`, `trie`, `terminal_table`, `language_model` ... and 6 others
+
+[1mSome errors have detailed explanations: E0560, E0609, E0615.[0m
+[1mFor more information about an error, try `rustc --explain E0560`.[0m
+[1m[91merror[0m: could not compile `kb-core` (lib) due to 13 previous errors
