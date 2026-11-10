@@ -1,15 +1,9 @@
-run 42767177318 at 0070bca15268f79df8bd206c0a4257bf128a464c
+run 42768404059 at 1972bae032675d7b2a84e424d21716a1271d094a
 apk=Rust-Keyboard/dist/keyboard-stable-release.apk
 == largest entries
- 17425243                     1084 files
+  9585389                     1078 files
   5980064  1981-01-01 01:01   classes.dex
-  1606091  1981-01-01 01:01   res/tW.dict
-  1377071  1981-01-01 01:01   res/w4.dict
-  1328933  1981-01-01 01:01   res/Kk.dict
-  1292026  1981-01-01 01:01   res/pm.dict
-  1143338  1981-01-01 01:01   res/3U.dict
-  1092054  1981-01-01 01:01   res/4s.dict
-   741308  1981-01-01 01:01   resources.arsc
+   740968  1981-01-01 01:01   resources.arsc
    605030  1981-01-01 01:01   assets/dict/main_en.dict.gzip
    503632  1981-01-01 01:01   lib/arm64-v8a/libkeyboard_core.so
    424750  1981-01-01 01:01   res/oS.json
@@ -33,7 +27,7 @@ apk=Rust-Keyboard/dist/keyboard-stable-release.apk
      5404  1981-01-01 01:01   res/Qr.xml
      5188  1981-01-01 01:01   res/Fr.xml
      5148  1981-01-01 01:01   res/p9.xml
-     4542  1981-01-01 01:01   assets/dexopt/baseline.prof
+     4541  1981-01-01 01:01   assets/dexopt/baseline.prof
      4432  1981-01-01 01:01   res/XV.xml
      4025  1981-01-01 01:01   res/RJ.png
      3792  1981-01-01 01:01   res/0T.xml
@@ -46,16 +40,16 @@ apk=Rust-Keyboard/dist/keyboard-stable-release.apk
      3268  1981-01-01 01:01   res/sU.xml
      3212  1981-01-01 01:01   res/lD.xml
      3196  1981-01-01 01:01   res/Cy.xml
+     3184  1981-01-01 01:01   res/CD.xml
+     3116  1981-01-01 01:01   res/Bo.xml
+     3100  1981-01-01 01:01   res/wa1.xml
+     3080  1981-01-01 01:01   res/7f.xml
+     3048  1981-01-01 01:01   res/Wq.xml
+     2956  1981-01-01 01:01   assets/layouts/Default/clearflow_symbols_shift.yaml
 
 == by top level
    5980064 classes.dex
-   1606091 res/tW.dict
-   1377071 res/w4.dict
-   1328933 res/Kk.dict
-   1292026 res/pm.dict
-   1143338 res/3U.dict
-   1092054 res/4s.dict
-    741308 resources.arsc
+    740968 resources.arsc
     605030 assets/dict
     520840 lib/arm64-v8a
     424750 res/oS.json
@@ -74,7 +68,13 @@ apk=Rust-Keyboard/dist/keyboard-stable-release.apk
       5404 res/Qr.xml
       5188 res/Fr.xml
       5148 res/p9.xml
-      5124 assets/dexopt
+      5123 assets/dexopt
       4788 res/color-v23
       4432 res/XV.xml
       4025 res/RJ.png
+      3807 assets/spacing-and-punctuations
+      3792 res/0T.xml
+      3624 res/4b.xml
+      3620 res/Lv1.xml
+      3472 res/dO.xml
+      3448 res/bq.xml

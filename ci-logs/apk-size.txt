@@ -1,2 +1,2 @@
-run 42767177318 at 0070bca15268f79df8bd206c0a4257bf128a464c
--rw-r--r-- 1 runner runner 13353196 Nov 10 06:24 Rust-Keyboard/dist/keyboard-stable-release.apk
+run 42768404059 at 1972bae032675d7b2a84e424d21716a1271d094a
+-rw-r--r-- 1 runner runner 5512742 Nov 10 06:32 Rust-Keyboard/dist/keyboard-stable-release.apk
