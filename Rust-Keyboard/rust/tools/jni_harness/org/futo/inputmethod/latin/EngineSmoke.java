@@ -286,6 +286,41 @@ public final class EngineSmoke {
                 "unexpected first suggestion with a padded input array: " + deviceResults);
         System.out.println("== padded input array: " + deviceCount[0] + " suggestions");
 
+        // 5b2. A prediction has to follow the previous word. Neither dictionary
+        //      shape offers usable n-gram data here (the bundled English
+        //      dictionary is a version 2 file, which has no language model at
+        //      all), so what makes this work is the learned pair: the engine
+        //      stores the context hash next to every word it learns, and the
+        //      predictor looks words up by it.
+        final boolean learnedAfterThe = BinaryDictionary.addNgramEntryNative(dict,
+                new int[][] { codePoints("the") }, new boolean[] { false },
+                codePoints("zebra"), 240, 0);
+        final boolean learnedAfterI = BinaryDictionary.addNgramEntryNative(dict,
+                new int[][] { codePoints("i") }, new boolean[] { false },
+                codePoints("yesterday"), 240, 0);
+        check(learnedAfterThe && learnedAfterI, "could not learn a context pair");
+
+        final int[] afterTheCount = new int[1];
+        final ArrayList<String> afterThe = suggest(dict, proximity, session, "",
+                new String[] {"the"}, afterTheCount);
+        System.out.println("== learned context, after \"the\": " + afterTheCount[0]
+                + " predictions: " + head(afterThe, 6));
+
+        final int[] afterICount = new int[1];
+        final ArrayList<String> afterI = suggest(dict, proximity, session, "",
+                new String[] {"i"}, afterICount);
+        System.out.println("== learned context, after \"i\": " + afterICount[0]
+                + " predictions: " + head(afterI, 6));
+
+        check(afterThe.contains("zebra"),
+                "the word learned after \"the\" is not predicted after \"the\": " + afterThe);
+        check(!afterI.contains("zebra"),
+                "a word learned after \"the\" is also predicted after \"i\": " + afterI);
+        check(afterI.contains("yesterday"),
+                "the word learned after \"i\" is not predicted after \"i\": " + afterI);
+        check(!afterThe.contains("yesterday"),
+                "a word learned after \"i\" is also predicted after \"the\": " + afterThe);
+
         // 5c. The real English dictionary, if the caller points at one. This is
         //     the case the settings page and the strip depend on: a word that
         //     should offer an apostrophe variant, and a next word prediction.
@@ -382,41 +417,41 @@ public final class EngineSmoke {
             System.out.println("== \"its\": " + itsCount[0] + " suggestions, apostrophe variant "
                     + (its.contains("it's") ? "present" : "missing"));
 
-            final int[] predictionCount = new int[1];
-            final ArrayList<String> prediction = suggest(englishDict, englishProximity, session, "",
-                    new String[] {"the"}, predictionCount);
-            System.out.println("== after \"the\": " + predictionCount[0] + " predictions: "
-                    + head(prediction, 8));
-
-            // Next-word prediction has to depend on the previous word. It used
-            // to come from a breadth-first walk of the trie, which is storage
-            // order, so every context produced the same "to of in" list.
+            // Predictions with no context are the most probable words of the
+            // dictionary. They used to come from a breadth-first walk that
+            // stopped after a few thousand nodes, and breadth first means short
+            // words: the list was "to of in a is I" and no word of three letters
+            // or more - "the" included - could ever appear.
             final int[] noContextCount = new int[1];
             final ArrayList<String> noContext = suggest(englishDict, englishProximity, session, "",
                     new String[0], noContextCount);
             System.out.println("== no context: " + noContextCount[0] + " predictions: "
                     + head(noContext, 8));
 
-            final int[] afterICount = new int[1];
-            final ArrayList<String> afterI = suggest(englishDict, englishProximity, session, "",
-                    new String[] {"i"}, afterICount);
-            System.out.println("== after \"i\": " + afterICount[0] + " predictions: "
-                    + head(afterI, 8));
-
-            check(predictionCount[0] > 0, "no predictions after \"the\"");
             check(noContextCount[0] > 0, "no predictions with no context");
-            check(afterICount[0] > 0, "no predictions after \"i\"");
-            check(!prediction.equals(noContext),
-                    "predictions after \"the\" are identical to the no-context list");
-            check(!prediction.equals(afterI),
-                    "predictions after \"the\" and after \"i\" are identical");
-            int shared = 0;
-            for (String word : prediction) {
-                if (afterI.contains(word)) {
-                    shared++;
+            check(noContext.contains("the"),
+                    "the most frequent word of the dictionary is not among the no-context predictions: "
+                            + head(noContext, 12));
+            boolean longWord = false;
+            for (String word : noContext) {
+                if (word.length() >= 4) {
+                    longWord = true;
+                    break;
                 }
             }
-            System.out.println("== words suggested for both \"the\" and \"i\": " + shared);
+            check(longWord, "every no-context prediction is a word of three letters or less");
+            check(dictionaryWords.containsAll(noContext),
+                    "the no-context predictions contain words this dictionary does not have");
+
+            final int[] predictionCount = new int[1];
+            final ArrayList<String> prediction = suggest(englishDict, englishProximity, session, "",
+                    new String[] {"the"}, predictionCount);
+            System.out.println("== after \"the\": " + predictionCount[0] + " predictions: "
+                    + head(prediction, 8));
+
+            check(predictionCount[0] > 0, "no predictions after \"the\"");
+            check(prediction.contains("the"),
+                    "the most frequent word is missing after \"the\": " + head(prediction, 12));
 
             // 5d. Predictions are built by walking the whole trie, so the prefix
             //     of every candidate has to be carried along explicitly. When it
@@ -436,8 +471,6 @@ public final class EngineSmoke {
             }
             System.out.println("== predictions that are not dictionary words: " + notInDictionary);
             check(notInDictionary == 0, notInDictionary + " predictions are not dictionary words");
-            check(!noContext.isEmpty() && dictionaryWords.containsAll(noContext),
-                    "the no-context predictions contain words this dictionary does not have");
 
             final int[] completionCount = new int[1];
             final ArrayList<String> completion = suggest(englishDict, englishProximity, session,

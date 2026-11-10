@@ -22,8 +22,8 @@ use crate::ptrie::Node;
 use crate::user;
 use crate::{
     KIND_CORRECTION, KIND_FLAG_APPROPRIATE_FOR_AUTOCORRECTION, KIND_FLAG_EXACT_MATCH,
-    KIND_FLAG_POSSIBLY_OFFENSIVE, KIND_TYPED, MAX_PROXIMITY_CHARS_SIZE, MAX_RESULTS,
-    MAX_WORD_LENGTH, NOT_A_PROBABILITY,
+    KIND_FLAG_POSSIBLY_OFFENSIVE, KIND_TYPED, MAX_PREV_WORD_COUNT_FOR_N_GRAM,
+    MAX_PROXIMITY_CHARS_SIZE, MAX_RESULTS, MAX_WORD_LENGTH, NOT_A_PROBABILITY,
 };
 
 // Scoring constants, copied from `scoring_params.cpp` and `defines.h`.
@@ -104,47 +104,6 @@ impl SuggestOptions {
             result.weight_for_locale = *value as f32 / 1000.0f32;
         }
         result
-    }
-}
-
-/// Node visits per prediction in the trie-walk fallback.
-const PREDICTION_NODE_BUDGET: usize = 1200;
-/// Ceiling on the breadth-first queue of the fallback walk: 1200 entries of
-/// fixed-size prefixes is ~230 KB, where the old 16000 Vec-carrying entries
-/// could grow to megabytes on a corrupt trie.
-const PREDICTION_QUEUE_LIMIT: usize = 1200;
-
-/// A word prefix carried through the fallback walk, in place.
-#[derive(Clone, Copy)]
-struct Prefix {
-    code_points: [i32; MAX_WORD_LENGTH],
-    len: u8,
-}
-
-impl Prefix {
-    fn empty() -> Prefix {
-        Prefix {
-            code_points: [0; MAX_WORD_LENGTH],
-            len: 0,
-        }
-    }
-
-    fn push_node(&mut self, node: &Node) {
-        for index in 0..node.char_count as usize {
-            if (self.len as usize) >= MAX_WORD_LENGTH {
-                return;
-            }
-            self.code_points[self.len as usize] = node.char_at(index);
-            self.len += 1;
-        }
-    }
-
-    fn to_suggestion(&self) -> SuggestedWord {
-        let mut suggestion = SuggestedWord::empty();
-        let length = self.len as usize;
-        suggestion.code_points[..length].copy_from_slice(&self.code_points[..length]);
-        suggestion.length = self.len;
-        suggestion
     }
 }
 
@@ -902,16 +861,20 @@ pub fn get_suggestions(
 
 /// Word predictions for an empty input field ("next word" suggestions).
 ///
-/// Three sources, in this order:
+/// Sources, best first:
 ///
-/// 1. the n-gram table under the previous word, which is the only source that
-///    knows "after *the*" is not the same as "after *I*".
-/// 2. the cached most probable words, for the first word of a sentence.
-/// 3. the trie itself, for a dictionary that carries no n-gram data at all.
+/// 1. what this user typed after this exact context (the personalisation log
+///    keeps a hash of the preceding words with every learned word),
+/// 2. the dictionary's n-gram table under the previous word, when the
+///    dictionary carries one,
+/// 3. the cached most probable words, which is what a dictionary without
+///    n-gram data can honestly offer for a new phrase,
+/// 4. the rest of the user's own vocabulary.
 ///
-/// Before this, predictions always came from 3, and 3 walks the trie in storage
-/// order: the answer was "to/of/in" no matter what had been typed, and would
-/// have been "aardvark" if the budget had run out earlier.
+/// Before this, predictions came from a breadth-first walk of the trie that
+/// stopped after a few thousand nodes. Breadth first means short words, so the
+/// answer was "to, of, in, a, is, I" whatever had been typed, and no word of
+/// three letters or more - *the* included - could ever appear.
 pub fn get_predictions(
     dict: &Dictionary,
     prev_words: &[Vec<i32>],
@@ -923,51 +886,88 @@ pub fn get_predictions(
     }
     let prev_ids = previous_terminal_ids(dict, prev_words);
 
-    let mut candidates: Vec<(SuggestedWord, i32)> = Vec::new();
+    // `rank` decides the order; `probability` only breaks ties inside a rank.
+    let mut candidates: Vec<(SuggestedWord, i32, u8)> = Vec::new();
+    collect_user_predictions(dict, prev_words, &mut candidates);
     collect_ngram_predictions(dict, &prev_ids, &mut candidates);
-    if candidates.is_empty() {
-        collect_cached_predictions(dict, &mut candidates);
-    }
-    if candidates.is_empty() {
-        // A dictionary without a language model: fall back to the trie walk.
-        let mut budget = PREDICTION_NODE_BUDGET;
-        collect_predictions(dict, &prev_ids, &mut budget, &mut candidates);
-    }
+    collect_cached_predictions(dict, &mut candidates);
 
-    if let Some(user_dict) = dict.user.as_ref() {
-        for record in user_dict.words() {
-            if candidates.len() >= 256 {
-                break;
-            }
-            let mut suggestion = SuggestedWord::empty();
-            let length = record.word.len().min(MAX_WORD_LENGTH);
-            for index in 0..length {
-                suggestion.code_points[index] = record.word[index];
-            }
-            suggestion.length = length as u8;
-            candidates.push((suggestion, record.probability));
+    candidates.sort_by(|a, b| b.2.cmp(&a.2).then_with(|| b.1.cmp(&a.1)));
+
+    let mut emitted: Vec<[i32; MAX_WORD_LENGTH]> = Vec::new();
+    for (mut suggestion, probability, _rank) in candidates {
+        if results.len() >= MAX_RESULTS {
+            break;
         }
-    }
+        let mut key = [0i32; MAX_WORD_LENGTH];
+        let length = (suggestion.length as usize).min(MAX_WORD_LENGTH);
+        key[..length].copy_from_slice(&suggestion.code_points[..length]);
+        if emitted.contains(&key) {
+            continue;
+        }
+        emitted.push(key);
 
-    candidates.sort_by(|a, b| b.1.cmp(&a.1));
-    for (mut suggestion, probability) in candidates.into_iter().take(MAX_RESULTS) {
         let clamped = (probability as f32).max(1.0f32);
         let language_term = -(clamped / MAX_PROBABILITY_FOR_WEIGHTING).log10();
-        let score =
-            (TYPING_BASE_OUTPUT_SCORE - language_term / DISTANCE_WEIGHT_LANGUAGE)
-                * SUGGEST_INTERFACE_OUTPUT_SCALE;
+        let score = (TYPING_BASE_OUTPUT_SCORE - language_term / DISTANCE_WEIGHT_LANGUAGE)
+            * SUGGEST_INTERFACE_OUTPUT_SCALE;
         suggestion.score = score as i32;
         suggestion.kind = crate::KIND_PREDICTION;
-        suggestion.index_to_partial_commit = suggestion.length as i32;
+        suggestion.index_to_partial_commit = length as i32;
         results.push(suggestion);
     }
 }
 
-/// Fills `out` with the words the language model has seen after `prev_ids`.
+/// Words this user has typed: the ones logged against the current context
+/// first, then the rest of their vocabulary.
+fn collect_user_predictions(
+    dict: &Dictionary,
+    prev_words: &[Vec<i32>],
+    out: &mut Vec<(SuggestedWord, i32, u8)>,
+) {
+    let user_dict = match dict.user.as_ref() {
+        Some(value) => value,
+        None => return,
+    };
+    let mut context = 0u32;
+    if !prev_words.is_empty() {
+        let mut slices: [&[i32]; MAX_PREV_WORD_COUNT_FOR_N_GRAM] =
+            [&[][..]; MAX_PREV_WORD_COUNT_FOR_N_GRAM];
+        let kept = prev_words.len().min(MAX_PREV_WORD_COUNT_FOR_N_GRAM);
+        for index in 0..kept {
+            slices[index] = prev_words[index].as_slice();
+        }
+        context = crate::user::hash_context(&slices[..kept]);
+    }
+
+    for record in user_dict.words() {
+        if out.len() >= 512 {
+            break;
+        }
+        if record.flags & (crate::user::FLAG_NOT_A_WORD | crate::user::FLAG_BLACKLISTED) != 0 {
+            continue;
+        }
+        let matches_context = context != 0 && record.context == context;
+        if !matches_context && record.probability <= 0 {
+            continue;
+        }
+        let length = record.word.len().min(MAX_WORD_LENGTH);
+        if length == 0 {
+            continue;
+        }
+        let mut suggestion = SuggestedWord::empty();
+        suggestion.code_points[..length].copy_from_slice(&record.word[..length]);
+        suggestion.length = length as u8;
+        let rank = if matches_context { 4 } else { 1 };
+        out.push((suggestion, record.probability, rank));
+    }
+}
+
+/// The words the dictionary's n-gram table puts after `prev_ids`.
 fn collect_ngram_predictions(
     dict: &Dictionary,
     prev_ids: &[i32],
-    out: &mut Vec<(SuggestedWord, i32)>,
+    out: &mut Vec<(SuggestedWord, i32, u8)>,
 ) {
     if prev_ids.is_empty() {
         return;
@@ -980,89 +980,22 @@ fn collect_ngram_predictions(
             let mut suggestion = SuggestedWord::empty();
             suggestion.code_points[..length].copy_from_slice(&buffer[..length]);
             suggestion.length = length as u8;
-            out.push((suggestion, probability));
+            out.push((suggestion, probability, 3));
         }
     }
 }
 
-/// Fills `out` with the cached most probable words of the dictionary.
-fn collect_cached_predictions(dict: &Dictionary, out: &mut Vec<(SuggestedWord, i32)>) {
-    let mut buffer = [0i32; MAX_WORD_LENGTH];
-    for (terminal_id, probability) in dict.top_unigrams() {
-        if out.len() >= MAX_RESULTS {
-            break;
+/// The cached most probable words of the dictionary.
+fn collect_cached_predictions(dict: &Dictionary, out: &mut Vec<(SuggestedWord, i32, u8)>) {
+    for cached in dict.top_unigrams() {
+        let length = (cached.len as usize).min(MAX_WORD_LENGTH);
+        if length == 0 {
+            continue;
         }
-        if let Some(length) = dict.word_of_terminal_id(*terminal_id, &mut buffer) {
-            let mut suggestion = SuggestedWord::empty();
-            suggestion.code_points[..length].copy_from_slice(&buffer[..length]);
-            suggestion.length = length as u8;
-            out.push((suggestion, *probability));
-        }
-    }
-}
-
-/// Last-resort walk of the trie, used only when the dictionary has no language
-/// model data. Keeps its own node budget.
-#[allow(clippy::needless_range_loop)]
-fn collect_predictions(
-    dict: &Dictionary,
-    prev_ids: &[i32],
-    budget: &mut usize,
-    out: &mut Vec<(SuggestedWord, i32)>,
-) {
-    if *budget == 0 || out.len() >= 512 {
-        return;
-    }
-    // This walk touches most of the trie, so ask for it up front instead of
-    // taking a page fault every few nodes.
-    dict.prefetch_trie();
-    let root = Node {
-        pos: 0,
-        children_pos: 0,
-        ..Node::empty()
-    };
-
-    // Breadth first, so every branch of the trie gets a share of the budget.
-    // Each entry carries its own prefix in a fixed-size buffer: a shared one
-    // gave every queued node the prefix of whatever was walked last ("éypt"
-    // for "Egypt"), and a `Vec` per node allocated on every keystroke.
-    let mut queue: std::collections::VecDeque<(Node, Prefix)> =
-        std::collections::VecDeque::with_capacity(PREDICTION_QUEUE_LIMIT);
-    dict.for_each_child(&root, |child| {
-        if child.char_count > 0 {
-            let mut prefix = Prefix::empty();
-            prefix.push_node(child);
-            queue.push_back((*child, prefix));
-        }
-        true
-    });
-
-    while let Some((node, prefix)) = queue.pop_front() {
-        if *budget == 0 || out.len() >= 512 {
-            return;
-        }
-        *budget -= 1;
-
-        if node.is_terminal() {
-            let terminal = terminal_value_of(node, dict.is_v4());
-            let attributes = dict.word_attributes(prev_ids, terminal);
-            if attributes.is_valid() && !attributes.is_not_a_word && !attributes.is_blacklisted {
-                out.push((prefix.to_suggestion(), attributes.probability));
-            }
-        }
-
-        dict.for_each_child(&node, |child| {
-            if queue.len() >= PREDICTION_QUEUE_LIMIT {
-                return false;
-            }
-            if child.char_count > 0 && prefix.len as usize + child.char_count as usize <= MAX_WORD_LENGTH
-            {
-                let mut child_prefix = prefix;
-                child_prefix.push_node(child);
-                queue.push_back((*child, child_prefix));
-            }
-            true
-        });
+        let mut suggestion = SuggestedWord::empty();
+        suggestion.code_points[..length].copy_from_slice(&cached.code_points[..length]);
+        suggestion.length = length as u8;
+        out.push((suggestion, cached.probability, 2));
     }
 }
 

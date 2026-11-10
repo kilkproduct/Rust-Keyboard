@@ -100,12 +100,28 @@ pub struct Dictionary {
     pub user: Option<UserDict>,
     /// True when the file could not be interpreted and the dictionary is empty.
     pub corrupted: bool,
-    /// `(terminal id, probability)` of the most probable words, best first.
-    /// Filled once when the dictionary is opened, so a prediction with no
-    /// context does not walk the trie or the n-gram map: 512 bytes instead of
-    /// a search per keystroke.
-    top_unigrams: [(i32, i32); TOP_UNIGRAM_COUNT],
+    /// The most probable words, best first. Filled once when the dictionary is
+    /// opened: ~13 KB of fixed storage instead of a trie walk per keystroke.
+    top_unigrams: [CachedWord; TOP_UNIGRAM_COUNT],
     top_unigram_count: usize,
+}
+
+/// One word of the prediction cache, in the layout the caller needs.
+#[derive(Clone, Copy)]
+pub struct CachedWord {
+    pub code_points: [i32; MAX_WORD_LENGTH],
+    pub len: u8,
+    pub probability: i32,
+}
+
+impl CachedWord {
+    pub const fn empty() -> CachedWord {
+        CachedWord {
+            code_points: [0; MAX_WORD_LENGTH],
+            len: 0,
+            probability: 0,
+        }
+    }
 }
 
 impl Dictionary {
@@ -148,7 +164,7 @@ impl Dictionary {
             has_historical_info: false,
             user: None,
             corrupted: false,
-            top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+            top_unigrams: [CachedWord::empty(); TOP_UNIGRAM_COUNT],
             top_unigram_count: 0,
         };
         if updatable {
@@ -183,7 +199,7 @@ impl Dictionary {
             has_historical_info: false,
             user: None,
             corrupted: false,
-            top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+            top_unigrams: [CachedWord::empty(); TOP_UNIGRAM_COUNT],
             top_unigram_count: 0,
         };
         dict.has_historical_info = dict.header.has_historical_info();
@@ -225,7 +241,7 @@ impl Dictionary {
                 has_historical_info: false,
                 user: None,
                 corrupted: false,
-                top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+                top_unigrams: [CachedWord::empty(); TOP_UNIGRAM_COUNT],
                 top_unigram_count: 0,
             };
             dict.has_historical_info = dict.header.has_historical_info();
@@ -253,11 +269,14 @@ impl Dictionary {
                 has_historical_info: false,
                 user: None,
                 corrupted: false,
-                top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+                top_unigrams: [CachedWord::empty(); TOP_UNIGRAM_COUNT],
                 top_unigram_count: 0,
             };
             let total = dict.body.len();
             dict.trie = Buf::new(trie_offset, total.saturating_sub(trie_offset));
+            // Version 2 stores its probabilities inside the trie nodes, so the
+            // prediction cache is built from the trie here.
+            dict.build_prediction_cache();
             if updatable {
                 dict.user = Some(UserDict::open(path));
             }
@@ -427,71 +446,35 @@ impl Dictionary {
         Some(length)
     }
 
-    /// Fills [`TOP_UNIGRAM_COUNT`] with the most probable words of the
+    /// Fills the prediction cache with the most probable words of the
     /// dictionary, best first.
     ///
-    /// Predictions with no context used to come from a breadth-first walk of the
-    /// trie, which is alphabetical: the only words it could offer were the ones
-    /// that happen to be stored first. The n-gram table's root level holds every
-    /// word with its unigram probability, so the honest answer is available for
-    /// the cost of one pass at open time.
+    /// Predictions with no context used to come from a breadth-first walk that
+    /// stopped after a few thousand nodes. Breadth first means short words, so
+    /// the list was "to, of, in, a, is" - every word of three letters or more,
+    /// including *the*, was behind the budget. One full pass at open time
+    /// answers the question properly, and a keystroke then costs nothing.
     fn build_prediction_cache(&mut self) {
         self.top_unigram_count = 0;
-        if !self.is_v4 || self.language_model.is_empty() {
-            return;
-        }
-        let data = self.language_model_data();
-        eprintln!(
-            "DIAG buffers: trie={} terminal_table={} language_model={}",
-            self.trie.len, self.terminal_table.len, self.language_model.len
-        );
-        let mut best: [(i32, i32); TOP_UNIGRAM_COUNT] =
-            [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT];
+        self.prefetch_trie();
+        let mut best = [CachedWord::empty(); TOP_UNIGRAM_COUNT];
         let mut count = 0usize;
-        let mut links = 0usize;
-        let visited = triemap::for_each_entry(data, 0, 400_000, &mut |key, value| {
-            if value > 0xFF_FFFF {
-                links += 1;
-            }
-            let (flags, probability) = triemap::decode_probability_entry(value);
-            if flags & (FLAG_NOT_A_VALID_ENTRY | FLAG_NOT_A_WORD | FLAG_BLACKLISTED) != 0 {
-                return true;
-            }
-            if probability <= 0 {
-                return true;
-            }
-            let key = key as i32;
-            // Keep the array sorted, descending; the tail is the weakest entry.
-            let mut slot = if count < TOP_UNIGRAM_COUNT { count } else { TOP_UNIGRAM_COUNT };
-            while slot > 0 && best[slot - 1].1 < probability {
-                slot -= 1;
-            }
-            if slot >= TOP_UNIGRAM_COUNT {
-                return true;
-            }
-            let end = if count < TOP_UNIGRAM_COUNT { count } else { TOP_UNIGRAM_COUNT - 1 };
-            let mut position = end;
-            while position > slot {
-                best[position] = best[position - 1];
-                position -= 1;
-            }
-            best[slot] = (key, probability);
-            if count < TOP_UNIGRAM_COUNT {
-                count += 1;
-            }
-            true
-        });
+        {
+            let dict: &Dictionary = self;
+            let root = Node {
+                pos: 0,
+                children_pos: 0,
+                ..Node::empty()
+            };
+            let mut prefix = [0i32; MAX_WORD_LENGTH];
+            collect_top_words(dict, &root, &mut prefix, 0, &mut best, &mut count);
+        }
         self.top_unigrams = best;
         self.top_unigram_count = count;
-        eprintln!(
-            "DIAG unigram map: {} cached of {} visited, {} terminal-link values",
-            count, visited, links
-        );
     }
 
-    /// The cached most probable words, best first, as `(terminal id,
-    /// probability)` pairs.
-    pub fn top_unigrams(&self) -> &[(i32, i32)] {
+    /// The cached most probable words, best first.
+    pub fn top_unigrams(&self) -> &[CachedWord] {
         &self.top_unigrams[..self.top_unigram_count]
     }
 
@@ -1019,6 +1002,83 @@ pub mod test_trie {
     }
 }
 
+/// Depth-first walk of the whole trie, keeping the most probable words.
+///
+/// The recursion is as deep as the longest word (48 frames) and the only
+/// mutable state is the prefix buffer and the best-of array, so the pass costs
+/// no heap at all.
+fn collect_top_words(
+    dict: &Dictionary,
+    node: &Node,
+    prefix: &mut [i32; MAX_WORD_LENGTH],
+    depth: usize,
+    best: &mut [CachedWord; TOP_UNIGRAM_COUNT],
+    count: &mut usize,
+) {
+    if node.is_terminal() && depth > 0 {
+        let terminal = if dict.is_v4 {
+            node.terminal_id
+        } else {
+            node.probability
+        };
+        let attributes = dict.word_attributes(&[], terminal);
+        if attributes.is_valid() && !attributes.is_not_a_word && !attributes.is_blacklisted {
+            insert_cached_word(best, count, prefix, depth, attributes.probability);
+        }
+    }
+
+    dict.for_each_child(node, |child| {
+        let mut next_depth = depth;
+        for index in 0..child.char_count as usize {
+            if next_depth >= MAX_WORD_LENGTH {
+                // A prefix longer than the engine's longest word: nothing below
+                // it could be suggested, so the subtree is skipped.
+                return true;
+            }
+            prefix[next_depth] = child.char_at(index);
+            next_depth += 1;
+        }
+        collect_top_words(dict, child, prefix, next_depth, best, count);
+        true
+    });
+}
+
+/// Keeps `best` sorted, descending, and bounded by [`TOP_UNIGRAM_COUNT`].
+fn insert_cached_word(
+    best: &mut [CachedWord; TOP_UNIGRAM_COUNT],
+    count: &mut usize,
+    prefix: &[i32; MAX_WORD_LENGTH],
+    len: usize,
+    probability: i32,
+) {
+    if probability <= 0 || len == 0 || len > MAX_WORD_LENGTH {
+        return;
+    }
+    let full = *count >= TOP_UNIGRAM_COUNT;
+    let limit = if full { TOP_UNIGRAM_COUNT - 1 } else { *count };
+    if full && best[limit].probability >= probability {
+        // Not better than the weakest entry that is already cached.
+        return;
+    }
+    let mut slot = limit;
+    while slot > 0 && best[slot - 1].probability < probability {
+        slot -= 1;
+    }
+    let mut position = limit;
+    while position > slot {
+        best[position] = best[position - 1];
+        position -= 1;
+    }
+    let mut word = CachedWord::empty();
+    word.code_points[..len].copy_from_slice(&prefix[..len]);
+    word.len = len as u8;
+    word.probability = probability;
+    best[slot] = word;
+    if !full {
+        *count += 1;
+    }
+}
+
 /// A dictionary that serves the given version 2 trie from memory.
 #[cfg(test)]
 pub fn from_v2_trie_for_test(trie: Vec<u8>) -> Dictionary {
@@ -1041,7 +1101,7 @@ pub fn from_v2_trie_for_test(trie: Vec<u8>) -> Dictionary {
         has_historical_info: false,
         user: None,
         corrupted: false,
-        top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+        top_unigrams: [CachedWord::empty(); TOP_UNIGRAM_COUNT],
         top_unigram_count: 0,
     }
 }
@@ -1071,7 +1131,7 @@ mod tests {
             has_historical_info: false,
             user: None,
             corrupted: false,
-            top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+            top_unigrams: [CachedWord::empty(); TOP_UNIGRAM_COUNT],
             top_unigram_count: 0,
         };
         let root = dict.root_array();
