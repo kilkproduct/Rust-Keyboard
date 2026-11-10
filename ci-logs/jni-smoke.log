@@ -10,6 +10,16 @@
    "hel" -> hello score 925770 kind 1
    "hel" -> help score 893578 kind 1
 == padded input array: 2 suggestions
+   "" -> zebra score 976521 kind 8
+   "" -> yesterday score 976521 kind 8
+   "" -> hello score 905912 kind 8
+   "" -> help score 865108 kind 8
+== learned context, after "the": 4 predictions: zebra, yesterday, hello, help
+   "" -> yesterday score 976521 kind 8
+   "" -> zebra score 976521 kind 8
+   "" -> hello score 905912 kind 8
+   "" -> help score 865108 kind 8
+== learned context, after "i": 4 predictions: yesterday, zebra, hello, help
 == english dictionary: format 202, header 97 bytes, version 202, 5 attributes, file 1054656 bytes
 == first bytes:
 9bc13afe00ca00000000006164617465
@@ -132,129 +142,128 @@ c0770fc04dc078100630c079100809c0
    "its" -> insufficient score 705129 kind 268435457
    "its" -> instituted score 704460 kind 268435457
 == "its": 40 suggestions, apostrophe variant present
+   "" -> the score 946328 kind 8
    "" -> to score 933920 kind 8
    "" -> of score 932114 kind 8
+   "" -> and score 928478 kind 8
    "" -> in score 924807 kind 8
    "" -> a score 921101 kind 8
+   "" -> was score 907843 kind 8
    "" -> is score 905912 kind 8
+   "" -> this score 905912 kind 8
    "" -> I score 898088 kind 8
    "" -> as score 898088 kind 8
+   "" -> for score 898088 kind 8
    "" -> on score 896107 kind 8
+   "" -> with score 896107 kind 8
    "" -> by score 894115 kind 8
+   "" -> that score 890102 kind 8
+   "" -> from score 888080 kind 8
    "" -> at score 886047 kind 8
+   "" -> his score 886047 kind 8
    "" -> an score 879883 kind 8
    "" -> he score 879883 kind 8
+   "" -> are score 877807 kind 8
+   "" -> were score 877807 kind 8
+   "" -> don't score 875719 kind 8
+   "" -> which score 875719 kind 8
    "" -> it score 873620 kind 8
    "" -> or score 873620 kind 8
+   "" -> had score 869387 kind 8
+   "" -> has score 869387 kind 8
+   "" -> one score 869387 kind 8
+   "" -> but score 867253 kind 8
+   "" -> first score 865108 kind 8
+   "" -> very score 865108 kind 8
    "" -> we score 865108 kind 8
-   "" -> be score 849746 kind 8
-   "" -> me score 849746 kind 8
-   "" -> go score 829056 kind 8
-   "" -> so score 826687 kind 8
-   "" -> my score 819493 kind 8
-   "" -> no score 819493 kind 8
-   "" -> up score 819493 kind 8
-   "" -> us score 819493 kind 8
-   "" -> if score 817065 kind 8
-   "" -> do score 807197 kind 8
-   "" -> ex score 739079 kind 8
-   "" -> am score 736088 kind 8
-   "" -> Ohio score 726975 kind 8
-   "" -> vs score 726975 kind 8
-   "" -> Bob score 714481 kind 8
-   "" -> ad score 711294 kind 8
-   "" -> gmail score 708080 kind 8
-   "" -> t-shirts score 698275 kind 8
-   "" -> Ben score 698275 kind 8
-   "" -> pm score 691597 kind 8
-   "" -> oh score 656366 kind 8
-   "" -> Auckland score 656366 kind 8
-   "" -> M's score 645140 kind 8
-   "" -> Bavaria score 645140 kind 8
-   "" -> Xbox score 637470 kind 8
-== after "the": 40 predictions: to, of, in, a, is, I, as, on
+   "" -> not score 862950 kind 8
+   "" -> their score 862950 kind 8
+   "" -> any score 860781 kind 8
+   "" -> have score 860781 kind 8
+   "" -> who score 860781 kind 8
+   "" -> been score 856404 kind 8
+== no context: 40 predictions: the, to, of, and, in, a, was, is
+   "" -> the score 946328 kind 8
    "" -> to score 933920 kind 8
    "" -> of score 932114 kind 8
+   "" -> and score 928478 kind 8
    "" -> in score 924807 kind 8
    "" -> a score 921101 kind 8
+   "" -> was score 907843 kind 8
    "" -> is score 905912 kind 8
+   "" -> this score 905912 kind 8
    "" -> I score 898088 kind 8
    "" -> as score 898088 kind 8
+   "" -> for score 898088 kind 8
    "" -> on score 896107 kind 8
+   "" -> with score 896107 kind 8
    "" -> by score 894115 kind 8
+   "" -> that score 890102 kind 8
+   "" -> from score 888080 kind 8
    "" -> at score 886047 kind 8
+   "" -> his score 886047 kind 8
    "" -> an score 879883 kind 8
    "" -> he score 879883 kind 8
+   "" -> are score 877807 kind 8
+   "" -> were score 877807 kind 8
+   "" -> don't score 875719 kind 8
+   "" -> which score 875719 kind 8
    "" -> it score 873620 kind 8
    "" -> or score 873620 kind 8
+   "" -> had score 869387 kind 8
+   "" -> has score 869387 kind 8
+   "" -> one score 869387 kind 8
+   "" -> but score 867253 kind 8
+   "" -> first score 865108 kind 8
+   "" -> very score 865108 kind 8
    "" -> we score 865108 kind 8
-   "" -> be score 849746 kind 8
-   "" -> me score 849746 kind 8
-   "" -> go score 829056 kind 8
-   "" -> so score 826687 kind 8
-   "" -> my score 819493 kind 8
-   "" -> no score 819493 kind 8
-   "" -> up score 819493 kind 8
-   "" -> us score 819493 kind 8
-   "" -> if score 817065 kind 8
-   "" -> do score 807197 kind 8
-   "" -> ex score 739079 kind 8
-   "" -> am score 736088 kind 8
-   "" -> Ohio score 726975 kind 8
-   "" -> vs score 726975 kind 8
-   "" -> Bob score 714481 kind 8
-   "" -> ad score 711294 kind 8
-   "" -> gmail score 708080 kind 8
-   "" -> t-shirts score 698275 kind 8
-   "" -> Ben score 698275 kind 8
-   "" -> pm score 691597 kind 8
-   "" -> oh score 656366 kind 8
-   "" -> Auckland score 656366 kind 8
-   "" -> M's score 645140 kind 8
-   "" -> Bavaria score 645140 kind 8
-   "" -> Xbox score 637470 kind 8
-== no context: 40 predictions: to, of, in, a, is, I, as, on
-   "" -> to score 933920 kind 8
-   "" -> of score 932114 kind 8
-   "" -> in score 924807 kind 8
-   "" -> a score 921101 kind 8
-   "" -> is score 905912 kind 8
-   "" -> I score 898088 kind 8
-   "" -> as score 898088 kind 8
-   "" -> on score 896107 kind 8
-   "" -> by score 894115 kind 8
-   "" -> at score 886047 kind 8
-   "" -> an score 879883 kind 8
-   "" -> he score 879883 kind 8
-   "" -> it score 873620 kind 8
-   "" -> or score 873620 kind 8
-   "" -> we score 865108 kind 8
-   "" -> be score 849746 kind 8
-   "" -> me score 849746 kind 8
-   "" -> go score 829056 kind 8
-   "" -> so score 826687 kind 8
-   "" -> my score 819493 kind 8
-   "" -> no score 819493 kind 8
-   "" -> up score 819493 kind 8
-   "" -> us score 819493 kind 8
-   "" -> if score 817065 kind 8
-   "" -> do score 807197 kind 8
-   "" -> ex score 739079 kind 8
-   "" -> am score 736088 kind 8
-   "" -> Ohio score 726975 kind 8
-   "" -> vs score 726975 kind 8
-   "" -> Bob score 714481 kind 8
-   "" -> ad score 711294 kind 8
-   "" -> gmail score 708080 kind 8
-   "" -> t-shirts score 698275 kind 8
-   "" -> Ben score 698275 kind 8
-   "" -> pm score 691597 kind 8
-   "" -> oh score 656366 kind 8
-   "" -> Auckland score 656366 kind 8
-   "" -> M's score 645140 kind 8
-   "" -> Bavaria score 645140 kind 8
-   "" -> Xbox score 637470 kind 8
-== after "i": 40 predictions: to, of, in, a, is, I, as, on
-Exception in thread "main" java.lang.AssertionError: predictions after "the" are identical to the no-context list
-	at org.futo.inputmethod.latin.EngineSmoke.check(EngineSmoke.java:38)
-	at org.futo.inputmethod.latin.EngineSmoke.main(EngineSmoke.java:409)
+   "" -> not score 862950 kind 8
+   "" -> their score 862950 kind 8
+   "" -> any score 860781 kind 8
+   "" -> have score 860781 kind 8
+   "" -> who score 860781 kind 8
+   "" -> been score 856404 kind 8
+== after "the": 40 predictions: the, to, of, and, in, a, was, is
+== predictions that are not dictionary words: 0
+   "hel" -> hel score 1526287 kind 1342177280
+   "hel" -> held score 853078 kind 268435457
+   "hel" -> her score 845904 kind 268435457
+   "hel" -> help score 835159 kind 268435457
+   "hel" -> helped score 819118 kind 268435457
+   "hel" -> here score 816114 kind 268435457
+   "hel" -> half score 800442 kind 268435457
+   "hel" -> head score 800442 kind 268435457
+   "hel" -> helping score 788073 kind 268435457
+   "hel" -> hold score 779649 kind 268435457
+   "hel" -> helps score 778373 kind 268435457
+   "hel" -> hear score 775315 kind 268435457
+   "hel" -> hello score 768354 kind 268435457
+   "hel" -> helicopter score 767685 kind 268435457
+   "hel" -> hey score 764872 kind 268435457
+   "hel" -> Hall score 761932 kind 268435457
+   "hel" -> hall score 759643 kind 268435457
+   "hel" -> heat score 757337 kind 268435457
+   "hel" -> Henry score 756668 kind 268435457
+   "hel" -> hill score 752672 kind 268435457
+   "hel" -> helicopters score 751344 kind 268435457
+   "hel" -> helmet score 743865 kind 268435457
+   "hel" -> hero score 743123 kind 268435457
+   "hel" -> hole score 740689 kind 268435457
+   "hel" -> hell score 736831 kind 268435457
+   "hel" -> Helen score 733989 kind 268435457
+   "hel" -> he's score 733266 kind 268435457
+   "hel" -> heir score 733266 kind 268435457
+   "hel" -> helpful score 727555 kind 268435457
+   "hel" -> holy score 723081 kind 268435457
+   "hel" -> hull score 723081 kind 268435457
+   "hel" -> Head score 720480 kind 268435457
+   "hel" -> helm score 719367 kind 268435457
+   "hel" -> helium score 718698 kind 268435457
+   "hel" -> helmets score 711309 kind 268435457
+   "hel" -> Helsinki score 709577 kind 268435457
+   "hel" -> Hebrew score 709183 kind 268435457
+   "hel" -> halt score 704395 kind 268435457
+   "hel" -> Helena score 703341 kind 268435457
+   "hel" -> Holland score 700961 kind 268435457
+== "hel" after "i": 40 suggestions
+== JNI smoke test passed
