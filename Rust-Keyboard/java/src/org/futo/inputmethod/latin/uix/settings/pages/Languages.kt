@@ -64,7 +64,7 @@ import org.futo.inputmethod.latin.uix.settings.Route
 import org.futo.inputmethod.latin.uix.settings.ScreenTitle
 import org.futo.inputmethod.latin.uix.settings.Tip
 import org.futo.inputmethod.latin.uix.settings.UserSettingsMenu
-import org.futo.inputmethod.latin.uix.settings.pages.modelmanager.openModelImporter
+import org.futo.inputmethod.latin.uix.settings.pages.openModelImporter
 import org.futo.inputmethod.latin.uix.settings.useDataStore
 import org.futo.inputmethod.latin.uix.settings.useDataStoreValue
 import org.futo.inputmethod.latin.uix.settings.userSettingNavigationItem
