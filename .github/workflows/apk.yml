@@ -510,15 +510,21 @@ jobs:
           fi
           git commit -q -m "CI: apk size for ${GITHUB_SHA}"
           published=no
+          : > "$RUNNER_TEMP/push.err"
           for attempt in 1 2 3 4; do
-            git fetch --quiet origin "+refs/heads/$GITHUB_REF_NAME:refs/remotes/origin/$GITHUB_REF_NAME" \
+            if git fetch --quiet origin "+refs/heads/$GITHUB_REF_NAME:refs/remotes/origin/$GITHUB_REF_NAME" \
               && git rebase --quiet "refs/remotes/origin/$GITHUB_REF_NAME" \
-              && git push --quiet origin "HEAD:refs/heads/$GITHUB_REF_NAME" && { published=yes; break; }
+              && git push origin "HEAD:refs/heads/$GITHUB_REF_NAME" 2> "$RUNNER_TEMP/push.err"; then
+              published=yes
+              break
+            fi
             git rebase --abort 2>/dev/null || true
             sleep $((attempt * 5))
           done
           if [ "$published" != yes ]; then
-            echo "::warning::could not publish the size report: $(git log --oneline -1) / $(git status --short ci-logs | head -3)"
+            # The reason goes into an annotation: the job log of a private
+            # repository cannot be downloaded from this sandbox.
+            echo "::warning::could not publish the size report: $(tr '\n' ' ' < "$RUNNER_TEMP/push.err" | tail -c 400)"
           fi
 
       # Guards the two claims of this fork: the Rust engine is really inside the
