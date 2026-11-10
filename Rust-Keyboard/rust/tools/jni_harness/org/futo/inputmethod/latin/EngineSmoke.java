@@ -22,6 +22,17 @@ public final class EngineSmoke {
 
     private EngineSmoke() {}
 
+    private static String head(ArrayList<String> words, int count) {
+        final StringBuilder builder = new StringBuilder();
+        for (int index = 0; index < words.size() && index < count; index++) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append(words.get(index));
+        }
+        return builder.toString();
+    }
+
     private static void check(boolean condition, String message) {
         if (!condition) {
             throw new AssertionError(message);
@@ -374,7 +385,38 @@ public final class EngineSmoke {
             final int[] predictionCount = new int[1];
             final ArrayList<String> prediction = suggest(englishDict, englishProximity, session, "",
                     new String[] {"the"}, predictionCount);
-            System.out.println("== after \"the\": " + predictionCount[0] + " predictions");
+            System.out.println("== after \"the\": " + predictionCount[0] + " predictions: "
+                    + head(prediction, 8));
+
+            // Next-word prediction has to depend on the previous word. It used
+            // to come from a breadth-first walk of the trie, which is storage
+            // order, so every context produced the same "to of in" list.
+            final int[] noContextCount = new int[1];
+            final ArrayList<String> noContext = suggest(englishDict, englishProximity, session, "",
+                    new String[0], noContextCount);
+            System.out.println("== no context: " + noContextCount[0] + " predictions: "
+                    + head(noContext, 8));
+
+            final int[] afterICount = new int[1];
+            final ArrayList<String> afterI = suggest(englishDict, englishProximity, session, "",
+                    new String[] {"i"}, afterICount);
+            System.out.println("== after \"i\": " + afterICount[0] + " predictions: "
+                    + head(afterI, 8));
+
+            check(predictionCount[0] > 0, "no predictions after \"the\"");
+            check(noContextCount[0] > 0, "no predictions with no context");
+            check(afterICount[0] > 0, "no predictions after \"i\"");
+            check(!prediction.equals(noContext),
+                    "predictions after \"the\" are identical to the no-context list");
+            check(!prediction.equals(afterI),
+                    "predictions after \"the\" and after \"i\" are identical");
+            int shared = 0;
+            for (String word : prediction) {
+                if (afterI.contains(word)) {
+                    shared++;
+                }
+            }
+            System.out.println("== words suggested for both \"the\" and \"i\": " + shared);
 
             // 5d. Predictions are built by walking the whole trie, so the prefix
             //     of every candidate has to be carried along explicitly. When it
@@ -393,6 +435,9 @@ public final class EngineSmoke {
                 }
             }
             System.out.println("== predictions that are not dictionary words: " + notInDictionary);
+            check(notInDictionary == 0, notInDictionary + " predictions are not dictionary words");
+            check(!noContext.isEmpty() && dictionaryWords.containsAll(noContext),
+                    "the no-context predictions contain words this dictionary does not have");
 
             final int[] completionCount = new int[1];
             final ArrayList<String> completion = suggest(englishDict, englishProximity, session,

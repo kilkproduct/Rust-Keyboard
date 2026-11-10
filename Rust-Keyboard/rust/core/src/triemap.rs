@@ -159,6 +159,80 @@ pub fn get(data: &[u8], key: i32, bitmap_entry_index: i32) -> TrieMapResult {
     }
 }
 
+/// Iterates every `key -> value` pair stored in the sub-map rooted at
+/// `bitmap_entry_index`, depth first.
+///
+/// Keys live in the value entries themselves (`data0` of a key-value entry), so
+/// a walk never has to invert [`shuffled_key`]. The caller bounds the work:
+/// `f` returning `false` stops the walk, and `max_entries` caps how many pairs
+/// are handed out.
+///
+/// This is what turns the n-gram table into *predictions*: the sub-map under
+/// the previous word is exactly the set of words the dictionary has seen after
+/// it, with their conditional probabilities.
+pub fn for_each_entry<F: FnMut(u32, u64) -> bool>(
+    data: &[u8],
+    bitmap_entry_index: i32,
+    max_entries: usize,
+    f: &mut F,
+) -> usize {
+    if bitmap_entry_index < 0 {
+        return 0;
+    }
+    let bitmap = field0(data, bitmap_entry_index as usize);
+    let table_index = field1(data, bitmap_entry_index as usize) as usize;
+    let mut visited = 0usize;
+    walk_entries(data, bitmap, table_index, 0, max_entries, &mut visited, f);
+    visited
+}
+
+fn walk_entries<F: FnMut(u32, u64) -> bool>(
+    data: &[u8],
+    bitmap: u32,
+    table_index: usize,
+    level: u32,
+    max_entries: usize,
+    visited: &mut usize,
+    f: &mut F,
+) -> bool {
+    if level > MAX_LEVEL || bitmap == 0 {
+        return true;
+    }
+    let mut index = 0u32;
+    while index < 32 {
+        if bitmap & (1u32 << index) == 0 {
+            index += 1;
+            continue;
+        }
+        let entry_index = table_index + popcount_below(bitmap, index);
+        let data0 = field0(data, entry_index);
+        let data1 = field1(data, entry_index);
+        if is_bitmap_entry(data1) {
+            // A nested level: `data0` is its bitmap, `data1` its table.
+            if !walk_entries(data, data0, data1 as usize, level + 1, max_entries, visited, f) {
+                return false;
+            }
+        } else {
+            let value = if data1 & TERMINAL_LINK_FLAG != 0 {
+                let value_entry_index = (data1 & TERMINAL_LINK_MASK) as usize;
+                let low = field0(data, value_entry_index) as u64;
+                let high = field1(data, value_entry_index) as u64;
+                (low << 24) | high
+            } else {
+                // `get` masks the flag bit off; do the same so both paths hand
+                // back the same value for the same entry.
+                (data1 & VALUE_MASK) as u64
+            };
+            *visited += 1;
+            if *visited > max_entries || !f(data0, value) {
+                return false;
+            }
+        }
+        index += 1;
+    }
+    true
+}
+
 /// Returns the bitmap index of the sub-map stored under `key`, if any.
 pub fn next_level_bitmap_entry_index(data: &[u8], key: i32, bitmap_entry_index: i32) -> i32 {
     let result = get(data, key, bitmap_entry_index);

@@ -32,6 +32,20 @@ const V4_LANGUAGE_MODEL_BUFFER: usize = 2;
 
 const NOT_A_TERMINAL_ID: i32 = -1;
 
+/// Version 4 keeps a table of terminal addresses: three big-endian bytes per
+/// terminal id, the position of the node that carries it. Zero means "no such
+/// terminal", which is why the id space can have holes.
+const TERMINAL_ADDRESS_SIZE: usize = 3;
+const NOT_A_TERMINAL_ADDRESS: usize = 0;
+
+/// How many of the most probable single words are kept for next-word
+/// predictions. Sixty-four entries cost 512 bytes and are enough to fill the
+/// forty slots the Java side asks for.
+pub const TOP_UNIGRAM_COUNT: usize = 64;
+
+/// Ceiling on the entries read out of one n-gram sub-map for a prediction.
+const MAX_NGRAM_CANDIDATES: usize = 256;
+
 // Probability entry flags, see `Ver4DictConstants`.
 const FLAG_REPRESENTS_BEGINNING_OF_SENTENCE: u8 = 0x1;
 const FLAG_NOT_A_VALID_ENTRY: u8 = 0x2;
@@ -128,6 +142,8 @@ impl Dictionary {
             has_historical_info: false,
             user: None,
             corrupted: false,
+            top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+            top_unigram_count: 0,
         };
         if updatable {
             dict.user = Some(UserDict::empty(""));
@@ -161,12 +177,15 @@ impl Dictionary {
             has_historical_info: false,
             user: None,
             corrupted: false,
+            top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+            top_unigram_count: 0,
         };
         dict.has_historical_info = dict.header.has_historical_info();
         if !dict.split_v4_buffers(0) {
             dict.corrupted = true;
             return Some(dict);
         }
+        dict.build_prediction_cache();
         if updatable {
             dict.user = Some(UserDict::open(path));
         }
@@ -200,10 +219,14 @@ impl Dictionary {
                 has_historical_info: false,
                 user: None,
                 corrupted: false,
+                top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+                top_unigram_count: 0,
             };
             dict.has_historical_info = dict.header.has_historical_info();
             if !dict.split_v4_buffers(data_offset) {
                 dict.corrupted = true;
+            } else {
+                dict.build_prediction_cache();
             }
             if updatable {
                 dict.user = Some(UserDict::open(path));
@@ -224,6 +247,8 @@ impl Dictionary {
                 has_historical_info: false,
                 user: None,
                 corrupted: false,
+                top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+                top_unigram_count: 0,
             };
             let total = dict.body.len();
             dict.trie = Buf::new(trie_offset, total.saturating_sub(trie_offset));
@@ -327,6 +352,170 @@ impl Dictionary {
     /// unchecked offsets, and this crate is built with `panic = "abort"`.
     pub fn is_corrupted(&self) -> bool {
         self.corrupted
+    }
+
+    /// Position of the node that carries `terminal_id`, from the terminal
+    /// address table.
+    pub fn terminal_address(&self, terminal_id: i32) -> Option<usize> {
+        if terminal_id < 0 || self.terminal_table.is_empty() {
+            return None;
+        }
+        let start = (terminal_id as usize).checked_mul(TERMINAL_ADDRESS_SIZE)?;
+        if start + TERMINAL_ADDRESS_SIZE > self.terminal_table.len {
+            return None;
+        }
+        let data = self.body.as_slice();
+        let mut read = self.terminal_table.offset + start;
+        let address = crate::bytes::read_u24(data, &mut read) as usize;
+        if address == NOT_A_TERMINAL_ADDRESS || address >= self.trie.len {
+            return None;
+        }
+        Some(address)
+    }
+
+    /// Rebuilds the word of `terminal_id` by walking the trie upwards from the
+    /// node the terminal address table points at.
+    ///
+    /// This is what makes n-gram data usable for predictions: the language model
+    /// stores terminal ids, and only the trie knows what characters they spell.
+    /// Nothing is allocated; the caller supplies the buffer.
+    pub fn word_of_terminal_id(
+        &self,
+        terminal_id: i32,
+        out: &mut [i32; MAX_WORD_LENGTH],
+    ) -> Option<usize> {
+        let address = self.terminal_address(terminal_id)?;
+        let mut positions = [0usize; MAX_WORD_LENGTH + 1];
+        let mut depth = 0usize;
+        let mut pos = address;
+        loop {
+            if depth > MAX_WORD_LENGTH {
+                // A corrupt parent link can point in a circle.
+                return None;
+            }
+            let node = self.node_at(pos)?;
+            positions[depth] = node.pos;
+            depth += 1;
+            let parent = node.parent_pos;
+            if parent <= 0 || parent as usize == node.pos {
+                break;
+            }
+            pos = parent as usize;
+        }
+
+        let mut length = 0usize;
+        while depth > 0 {
+            depth -= 1;
+            let node = self.node_at(positions[depth])?;
+            for index in 0..node.char_count as usize {
+                if length >= MAX_WORD_LENGTH {
+                    return None;
+                }
+                out[length] = node.char_at(index);
+                length += 1;
+            }
+        }
+        if length == 0 {
+            return None;
+        }
+        Some(length)
+    }
+
+    /// Fills [`TOP_UNIGRAM_COUNT`] with the most probable words of the
+    /// dictionary, best first.
+    ///
+    /// Predictions with no context used to come from a breadth-first walk of the
+    /// trie, which is alphabetical: the only words it could offer were the ones
+    /// that happen to be stored first. The n-gram table's root level holds every
+    /// word with its unigram probability, so the honest answer is available for
+    /// the cost of one pass at open time.
+    fn build_prediction_cache(&mut self) {
+        self.top_unigram_count = 0;
+        if !self.is_v4 || self.language_model.is_empty() {
+            return;
+        }
+        let data = self.language_model_data();
+        let mut best: [(i32, i32); TOP_UNIGRAM_COUNT] =
+            [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT];
+        let mut count = 0usize;
+        triemap::for_each_entry(data, 0, 400_000, &mut |key, value| {
+            let (flags, probability) = triemap::decode_probability_entry(value);
+            if flags & (FLAG_NOT_A_VALID_ENTRY | FLAG_NOT_A_WORD | FLAG_BLACKLISTED) != 0 {
+                return true;
+            }
+            if probability <= 0 {
+                return true;
+            }
+            let key = key as i32;
+            // Keep the array sorted, descending; the tail is the weakest entry.
+            let mut slot = if count < TOP_UNIGRAM_COUNT { count } else { TOP_UNIGRAM_COUNT };
+            while slot > 0 && best[slot - 1].1 < probability {
+                slot -= 1;
+            }
+            if slot >= TOP_UNIGRAM_COUNT {
+                return true;
+            }
+            let end = if count < TOP_UNIGRAM_COUNT { count } else { TOP_UNIGRAM_COUNT - 1 };
+            let mut position = end;
+            while position > slot {
+                best[position] = best[position - 1];
+                position -= 1;
+            }
+            best[slot] = (key, probability);
+            if count < TOP_UNIGRAM_COUNT {
+                count += 1;
+            }
+            true
+        });
+        self.top_unigrams = best;
+        self.top_unigram_count = count;
+    }
+
+    /// The cached most probable words, best first, as `(terminal id,
+    /// probability)` pairs.
+    pub fn top_unigrams(&self) -> &[(i32, i32)] {
+        &self.top_unigrams[..self.top_unigram_count]
+    }
+
+    /// Words the dictionary has seen *after* the given context word, from the
+    /// n-gram table, best first.
+    ///
+    /// `context` is a terminal id of the previous word (most recent first, as
+    /// the caller passes them). The result carries the conditional probability
+    /// and the flags the language model attached to the pair.
+    pub fn ngram_predictions(
+        &self,
+        context: &[i32],
+        out: &mut Vec<(i32, i32, u8)>,
+    ) {
+        out.clear();
+        if !self.is_v4 || self.language_model.is_empty() || context.is_empty() {
+            return;
+        }
+        let data = self.language_model_data();
+        // Descend one level per previous word: the root map is keyed by the most
+        // recent word, the next level by the one before it, and so on.
+        let mut bitmap_entry = 0i32;
+        for id in context.iter().take(MAX_PREV_WORD_COUNT_FOR_N_GRAM) {
+            let next = triemap::next_level_bitmap_entry_index(data, *id, bitmap_entry);
+            if next == triemap::INVALID_INDEX {
+                // No n-gram data for this context; the caller falls back.
+                out.clear();
+                return;
+            }
+            bitmap_entry = next;
+        }
+        triemap::for_each_entry(data, bitmap_entry, MAX_NGRAM_CANDIDATES, &mut |key, value| {
+            let (flags, probability) = triemap::decode_probability_entry(value);
+            if flags & (FLAG_NOT_A_VALID_ENTRY | FLAG_NOT_A_WORD | FLAG_BLACKLISTED) != 0 {
+                return true;
+            }
+            if probability <= 0 {
+                return true;
+            }
+            out.push((key as i32, probability, flags));
+            true
+        });
     }
 
     /// Asks the kernel to pull the trie into the page cache. Only useful
@@ -827,6 +1016,8 @@ pub fn from_v2_trie_for_test(trie: Vec<u8>) -> Dictionary {
         has_historical_info: false,
         user: None,
         corrupted: false,
+        top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+        top_unigram_count: 0,
     }
 }
 
@@ -855,6 +1046,8 @@ mod tests {
             has_historical_info: false,
             user: None,
             corrupted: false,
+            top_unigrams: [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT],
+            top_unigram_count: 0,
         };
         let root = dict.root_array();
         assert_eq!(root.count, 0);
