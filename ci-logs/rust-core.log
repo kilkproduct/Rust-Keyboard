@@ -1,5 +1,5 @@
 [1m[92m   Compiling[0m kb-core v0.1.0 (/home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/rust/core)
-[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 1.32s
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 3.98s
 [1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/kb_core-f781f3eb047d243a)
 
 running 39 tests
@@ -15,10 +15,10 @@ test header::tests::parses_v4_header_with_attributes ... ok
 test header::tests::rejects_bad_magic ... ok
 test mmap::tests::empty_source_is_safe ... ok
 test mmap::tests::heap_backed_source_roundtrip ... ok
-test mmap::tests::mapping_past_the_end_falls_back_to_a_copy ... FAILED
 test mmap::tests::maps_this_test_binary ... ok
 test mmap::tests::page_size_is_sane ... ok
 test mmap::tests::unaligned_offset_is_mapped_not_copied ... ok
+test mmap::tests::window_past_the_end_is_clamped ... ok
 test proximity::tests::classifies_proximity ... ok
 test proximity::tests::distance_is_small_under_the_key ... ok
 test proximity::tests::finds_key_index ... ok
@@ -43,21 +43,13 @@ test user::tests::prefix_search_works ... ok
 test user::tests::repeated_word_gets_stronger ... ok
 test user::tests::roundtrips_through_disk ... ok
 
-failures:
+test result: ok. 39 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
 
----- mmap::tests::mapping_past_the_end_falls_back_to_a_copy stdout ----
+[1m[92m     Running[0m tests/corrupt_dictionary.rs (target/debug/deps/corrupt_dictionary-0642d451778f831c)
 
-thread 'mmap::tests::mapping_past_the_end_falls_back_to_a_copy' (1928) panicked at core/src/mmap.rs:355:9:
-assertion failed: DataSource::open(&path, 4, 0).is_none()
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-
-failures:
-    mmap::tests::mapping_past_the_end_falls_back_to_a_copy
-
-test result: FAILED. 38 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
-
-[1m[91merror[0m: test failed, to rerun pass `-p kb-core --lib`
-[1m[92m    Checking[0m kb-core v0.1.0 (/home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/rust/core)
+running 6 tests
+test corrupt_dictionary_reports_no_words ... ok
+test every_prefix_of_a_valid_file_does_not_panic ... ok
+test random_mutations_of_a_valid_file_do_not_panic ... [1m[92m    Checking[0m kb-core v0.1.0 (/home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/rust/core)
 [1m[92m    Checking[0m kb-jni v0.1.0 (/home/runner/work/Rust-Keyboard/Rust-Keyboard/Rust-Keyboard/rust/jni)
-[1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 0.93s
+[1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 0.47s
