@@ -100,6 +100,12 @@ pub struct Dictionary {
     pub user: Option<UserDict>,
     /// True when the file could not be interpreted and the dictionary is empty.
     pub corrupted: bool,
+    /// `(terminal id, probability)` of the most probable words, best first.
+    /// Filled once when the dictionary is opened, so a prediction with no
+    /// context does not walk the trie or the n-gram map: 512 bytes instead of
+    /// a search per keystroke.
+    top_unigrams: [(i32, i32); TOP_UNIGRAM_COUNT],
+    top_unigram_count: usize,
 }
 
 impl Dictionary {
