@@ -1,17 +1,6 @@
 == sizes
-4.0K	Rust-Keyboard/libs/README.md
-5.2M	Rust-Keyboard/libs/futo-swipe-release.aar
-7.8M	Rust-Keyboard/libs/mozc-release.aar
-400K	Rust-Keyboard/libs/pocketfft-release.aar
-5.7M	Rust-Keyboard/libs/rime-release.aar
-84K	Rust-Keyboard/libs/tensorflow-lite-support-api.aar
-4.0K	Rust-Keyboard/libs/tensorflow-lite-support.aar
-4.0M	Rust-Keyboard/libs/tensorflow-lite.aar
-156K	Rust-Keyboard/libs/vad-release.aar
-45M	Rust-Keyboard/java/res-large
+82M	Rust-Keyboard/java/res-large
 1.3M	Rust-Keyboard/java/assets/layouts
-20M	Rust-Keyboard/java/assets/futo-swipe
-79M	Rust-Keyboard/voiceinput-shared/src/main/ml
 
 == java/res-large
 Rust-Keyboard/java/res-large
@@ -32,6 +21,13 @@ Rust-Keyboard/java/res-large/.git/hooks
 Rust-Keyboard/java/res-large/.git/index
 Rust-Keyboard/java/res-large/.git/info
 Rust-Keyboard/java/res-large/raw
+Rust-Keyboard/java/res-large/raw/ml4_q6_k.gguf
+Rust-Keyboard/java/res-large/raw/main_fr.dict
+Rust-Keyboard/java/res-large/raw/main_pt_br.dict
+Rust-Keyboard/java/res-large/raw/main_it.dict
+Rust-Keyboard/java/res-large/raw/main_de.dict
+Rust-Keyboard/java/res-large/raw/main_es.dict
+Rust-Keyboard/java/res-large/raw/main_ru.dict
 Rust-Keyboard/java/res-large/raw/main_en.dict
 Rust-Keyboard/java/res-large/raw/emoji_i18n.jsondlgz
 
@@ -141,26 +137,23 @@ Rust-Keyboard/java/assets/layouts/Devanagari
 68K	Rust-Keyboard/java/assets/spacing-and-punctuations
 196K	Rust-Keyboard/java/assets/themes
 1.3M	Rust-Keyboard/java/assets/layouts
-20M	Rust-Keyboard/java/assets/futo-swipe
 
 == java/res-large files
-total 5992
--rw-r--r-- 1 runner runner 5077491 Nov  9 21:29 emoji_i18n.jsondlgz
--rw-r--r-- 1 runner runner 1054656 Nov  9 21:29 main_en.dict
+total 43612
+-rw-r--r-- 1 runner runner 30662880 Nov 10 04:58 ml4_q6_k.gguf
+-rw-r--r-- 1 runner runner  5077491 Nov 10 04:58 emoji_i18n.jsondlgz
+-rw-r--r-- 1 runner runner  1606091 Nov 10 04:58 main_de.dict
+-rw-r--r-- 1 runner runner  1377071 Nov 10 04:58 main_es.dict
+-rw-r--r-- 1 runner runner  1328933 Nov 10 04:58 main_fr.dict
+-rw-r--r-- 1 runner runner  1292026 Nov 10 04:58 main_ru.dict
+-rw-r--r-- 1 runner runner  1143338 Nov 10 04:58 main_it.dict
+-rw-r--r-- 1 runner runner  1092054 Nov 10 04:58 main_pt_br.dict
+-rw-r--r-- 1 runner runner  1054656 Nov 10 04:58 main_en.dict
 
 == java/res-large values (the English string tables in resources.arsc)
 total 236
--rw-r--r-- 1 runner runner 204824 Nov  9 21:29 strings-emoji-descriptions.xml
--rw-r--r-- 1 runner runner  31601 Nov  9 21:29 strings-letter-descriptions.xml
-
-== voiceinput ml files
-Rust-Keyboard/voiceinput-shared/src/main/ml:
-total 42532
--rw-r--r-- 1 runner runner 43550795 Nov  9 21:29 tiny_en_acft_q8_0.bin.not.tflite
-
-== java/assets/futo-swipe files
-Rust-Keyboard/java/assets/futo-swipe:
-total 0
+-rw-r--r-- 1 runner runner 204824 Nov 10 04:58 strings-emoji-descriptions.xml
+-rw-r--r-- 1 runner runner  31601 Nov 10 04:58 strings-letter-descriptions.xml
 
 == java/assets/layouts mapping
 languages:
