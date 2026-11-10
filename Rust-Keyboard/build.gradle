@@ -652,7 +652,12 @@ android {
                     if (line.startsWith('#')) {
                         final def language = line.substring(1).trim()
                         final def payload = (index + 1 < lines.size()) ? lines[index + 1] : ''
-                        if (language == 'en' || language.startsWith('en_')) {
+                        // Only the exact "en" section is ever read:
+                        // `language` on the Kotlin side is Locale.language, the
+                        // two-letter code, and the comparison is exact, so the
+                        // "en_GB"/"en_IN"/... sections were 40 KB of dead
+                        // weight in the package.
+                        if (language == 'en') {
                             kept.add(line)
                             kept.add(payload)
                         }
