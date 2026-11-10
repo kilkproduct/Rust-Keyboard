@@ -18,32 +18,25 @@ package org.futo.inputmethod.latin.utils;
 
 import android.util.Log;
 
-import org.futo.inputmethod.latin.define.JniLibName;
-
 public final class JniUtils {
     private static final String TAG = JniUtils.class.getSimpleName();
 
     /**
-     * Name of the Rust core library. It is optional: when it is missing the
-     * keyboard keeps using the C++ engine, so a build without a Rust toolchain
-     * still works.
+     * The only native library of this build. The C++ engine (`jni_latinime`)
+     * it used to sit next to is gone, so there is nothing to try after this.
      */
     private static final String RUST_LIB_NAME = "keyboard_core";
 
     static {
         try {
-            System.loadLibrary(JniLibName.JNI_LIB_NAME);
-        } catch (UnsatisfiedLinkError ule) {
-            Log.e(TAG, "Could not load native library " + JniLibName.JNI_LIB_NAME, ule);
-        }
-        // Loaded *after* the C++ library on purpose: its JNI_OnLoad registers the
-        // dictionary, proximity and traverse-session natives again, replacing the
-        // C++ bindings. The C++ library keeps providing the voice-input natives.
-        try {
             System.loadLibrary(RUST_LIB_NAME);
             Log.i(TAG, "Rust dictionary engine loaded");
         } catch (UnsatisfiedLinkError ule) {
-            Log.i(TAG, "Rust dictionary engine not present, using the C++ engine");
+            // Do not swallow this: the build is supposed to refuse to package an
+            // APK without this library, so reaching here means the installation
+            // is damaged. Every native call will fail the same way, and this is
+            // the message that says why.
+            Log.e(TAG, "Could not load native library " + RUST_LIB_NAME, ule);
         }
     }
 

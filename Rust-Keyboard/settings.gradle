@@ -16,10 +16,5 @@ dependencyResolutionManagement {
         }
         google()
         mavenCentral()
-
-        flatDir {
-            dirs 'libs'
-        }
     }
 }
-// The voice-input module (79 MB of TFLite models) is not part of this build.

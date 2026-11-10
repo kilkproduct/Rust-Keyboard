@@ -319,7 +319,11 @@ jobs:
           fi
           yes | "$SDKMANAGER" --licenses > /dev/null || true
           "$SDKMANAGER" "ndk;${NDK_VERSION}" "cmake;${CMAKE_VERSION}" "platforms;android-35" "build-tools;35.0.0"
+          # cargo/cc read ANDROID_NDK_HOME and the runner image also exports
+          # ANDROID_NDK_ROOT for its own NDK; leaving them different makes
+          # every Rust build warn about which NDK is in use.
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
 
       - name: Install Rust targets
         uses: dtolnay/rust-toolchain@stable
@@ -402,7 +406,9 @@ jobs:
             -PabiFilter="${KB_ABIS}" -PskipRust
             -Dorg.gradle.internal.http.connectionTimeout=60000
             -Dorg.gradle.internal.http.socketTimeout=180000
-            assembleUnstableRelease assembleStableRelease
+            # Only the stable package is built: the unstable flavour doubles
+            # the Gradle work and is never published.
+            assembleStableRelease
           )
           for attempt in 1 2 3; do
             if ./gradlew --no-daemon --console=plain --stacktrace "${gradle_args[@]}" 2>&1 \
@@ -452,7 +458,6 @@ jobs:
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
           mkdir -p dist
-          cp build/outputs/apk/unstable/release/*.apk dist/keyboard-unstable-release.apk
           cp build/outputs/apk/stable/release/*.apk dist/keyboard-stable-release.apk
           ls -l dist
 
@@ -496,10 +501,16 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f ci-logs
           git commit -m "CI: apk size for ${GITHUB_SHA}" || exit 0
-          git fetch --quiet origin "$GITHUB_REF_NAME" \
-            && git rebase --quiet "origin/$GITHUB_REF_NAME" \
-            && git push --quiet origin "HEAD:refs/heads/$GITHUB_REF_NAME" \
-            || echo "::warning::could not push the size report"
+          # Same detached-HEAD retry as the smoke-test job: another job may have
+          # pushed a log commit to this branch in the meantime.
+          for attempt in 1 2 3 4; do
+            git fetch --quiet origin "$GITHUB_REF_NAME" \
+              && git rebase --quiet "origin/$GITHUB_REF_NAME" \
+              && git push --quiet origin "HEAD:refs/heads/$GITHUB_REF_NAME" && exit 0
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+          echo "::warning::could not push the size report"
 
       # Guards the two claims of this fork: the Rust engine is really inside the
       # package, and the package really cannot reach the network.
@@ -605,9 +616,7 @@ jobs:
             signed with a different key.
           * No network permission is requested at all: see `PRIVACY.md`.
           * `keyboard-stable-release.apk` installs as
-            `org.futo.inputmethod.latin`; `keyboard-unstable-release.apk`
-            installs as `org.futo.inputmethod.latin.unstable` and can be
-            installed side by side.
+            `org.futo.inputmethod.latin`.
           TEXT
           } > dist/RELEASE_BODY.md
           cat dist/RELEASE_BODY.md

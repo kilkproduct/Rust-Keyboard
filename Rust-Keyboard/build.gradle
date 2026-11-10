@@ -343,13 +343,15 @@ android {
     sourceSets {
         main {
             // English only: the translated string sets are not merged in.
+            // `stripUnusedResources` fills these from java/res, java/res-large
+            // and java/assets, minus everything this fork cannot reach.
             res.srcDirs = [
-                    'java/res',
-                    'java/res-large'
+                    'build/stripped/res',
+                    'build/stripped/res-large'
             ]
             java.srcDirs = ['common/src', 'java/src']
             manifest.srcFile 'java/AndroidManifest.xml'
-            assets.srcDirs = ['java/assets']
+            assets.srcDirs = ['build/stripped/assets']
             // Produced by rust/build-android.sh (libkeyboard_core.so).
             jniLibs.srcDirs = ['java/jniLibs']
         }
@@ -401,43 +403,98 @@ android {
             ]
         }
         jniLibs {
-            // Keep the libraries compressed inside the APK: extracting them on
-            // install stored a second copy on the device.
+            // Store libkeyboard_core.so uncompressed and page aligned so the
+            // loader maps it straight out of the APK: smaller on the device
+            // (no extracted copy), slightly larger in the package.
             useLegacyPackaging false
         }
     }
 
     // The C++ engine is gone: the Rust core registers every native the app uses
-    // (dictionary, proximity info, traverse session), so building llama.cpp,
-    // whisper.cpp, sentencepiece and protobuf-lite here only cost package size
-    // and build time. `native/` stays in the tree for reference.
+    // (dictionary, proximity info, traverse session). llama.cpp, whisper.cpp,
+    // sentencepiece, protobuf-lite, the `native/` sources and the voice-input
+    // module that needed them are not in this tree any more.
 
     // Builds the Rust core (rust/) and copies libkeyboard_core.so into
-    // java/jniLibs. The script is a no-op when no Rust toolchain is installed,
-    // so plain `./gradlew assembleDebug` keeps working without Rust.
-    // Pass -PskipRust to skip it explicitly.
+    // java/jniLibs. The script fails when cargo or the NDK is missing; this is
+    // the only engine the app has. `-PskipRust` exists for debug builds that
+    // reuse a library built earlier (checkRustNative still guards releases).
     def rustBuildScript = file('rust/build-android.sh')
     tasks.register('rustNativeBuild', Exec) {
         onlyIf { rustBuildScript.exists() && !project.hasProperty('skipRust') }
         workingDir project.rootDir
         commandLine 'sh', rustBuildScript.absolutePath
         doLast {
-            logger.lifecycle('Rust core: java/jniLibs populated (if a toolchain was available)')
+            logger.lifecycle('Rust core: libkeyboard_core.so built into java/jniLibs')
         }
     }
     tasks.named('preBuild').configure { dependsOn 'rustNativeBuild' }
 
-    // English only, small package: drop what the shared submodules carry for
-    // features this build does not have. This runs inside Gradle, right before
-    // packaging, so it cannot be skipped by a stale checkout.
-    tasks.register('stripUnusedResources') {
+    // There is no second engine: an APK without libkeyboard_core.so installs
+    // and then dies on the first keystroke, which is exactly the failure this
+    // check exists to make impossible. Debug builds are allowed to skip it so
+    // that UI work does not need a Rust toolchain; releases are not.
+    tasks.register('checkRustNative') {
         doLast {
-            // The transformer language model: a multilingual model (it predicted
-            // words in other languages) worth ~30 MB of package and hundreds of
-            // megabytes of RAM.
-            fileTree(dir: 'java/res-large/raw', include: ['*.gguf', 'ml4_*']).each { it.delete() }
-            // Swipe decoding: three TFLite models nothing reads any more.
-            file('java/assets/futo-swipe').listFiles()?.each { it.delete() }
+            final def abiFilter = project.findProperty('abiFilter') ?: 'arm64-v8a'
+            final def abis = abiFilter.toString().split(',').collect { it.trim() }.findAll { it }
+            final def missing = abis.findAll { abi ->
+                final def lib = file("java/jniLibs/${abi}/libkeyboard_core.so")
+                !lib.isFile() || lib.length() < 100_000L
+            }
+            if (!missing.isEmpty()) {
+                throw new GradleException(
+                        "java/jniLibs is missing libkeyboard_core.so for ${missing}. " +
+                        "Run ./rust/build-android.sh (it needs cargo and the NDK); " +
+                        "the keyboard has no other engine to fall back to.")
+            }
+            logger.lifecycle("Rust core present for ${abis}")
+        }
+    }
+    tasks.matching { it.name.startsWith('pre') && it.name.endsWith('ReleaseBuild') }
+            .configureEach { dependsOn 'checkRustNative' }
+    tasks.matching { it.name == 'mergeStableReleaseJniLibFolders' }
+            .configureEach { dependsOn 'checkRustNative' }
+
+    // English only, small package: drop what the shared submodules carry for
+    // features this build does not have.
+    //
+    // The trimming happens on copies under build/stripped, and those copies are
+    // what the source sets point at. Deleting files in place used to mutate the
+    // checkout (and the shared resource submodules) on every build: a second
+    // build saw a different tree, git reported the deletions, and two Gradle
+    // daemons could not agree on what the inputs were.
+    final def strippedRoot = new File(project.layout.buildDirectory.get().asFile, 'stripped')
+    final def strippedRes = new File(strippedRoot, 'res')
+    final def strippedLarge = new File(strippedRoot, 'res-large')
+    final def strippedAssets = new File(strippedRoot, 'assets')
+
+    tasks.register('stripUnusedResources') {
+        // The inputs are submodules whose contents change between CI runs, and
+        // the copy is cheap next to the resource merge that follows it.
+        outputs.upToDateWhen { false }
+        doLast {
+            [strippedRes, strippedLarge, strippedAssets].each { it.deleteDir() }
+            project.copy {
+                from 'java/res'
+                into strippedRes
+                exclude '.git', '**/.git', '**/.git/**'
+            }
+            project.copy {
+                from 'java/res-large'
+                into strippedLarge
+                exclude '.git', '**/.git', '**/.git/**'
+                // The transformer language model: a multilingual model (it
+                // predicted words in other languages) worth ~30 MB of package
+                // and hundreds of megabytes of RAM. Never copied in the first
+                // place.
+                exclude 'raw/*.gguf', 'raw/ml4_*'
+            }
+            project.copy {
+                from 'java/assets'
+                into strippedAssets
+                exclude '.git', '**/.git', '**/.git/**'
+            }
 
             // Keyboard layouts ship for every script upstream supports (~900 KB,
             // plus 230 KB of git metadata that would be packaged as assets). An
@@ -446,7 +503,7 @@ android {
             // en_Shaw; everything else is unreachable. safeGetLayout() turns a
             // missing layout into a bug report instead of a crash, so a stale
             // preference cannot take the keyboard down.
-            final def layoutRoot = file('java/assets/layouts')
+            final def layoutRoot = new File(strippedAssets, 'layouts')
             if (layoutRoot.isDirectory()) {
                 final def keepRootFiles = ['mapping.yaml', 'names.yaml', 'LICENSE'] as Set
                 final def keepDirectories = ['Default', 'Special'] as Set
@@ -492,13 +549,12 @@ android {
                     ['mipmap-xxhdpi', 'mipmap-xxxhdpi', 'mipmap-xhdpi',
                      'mipmap-hdpi', 'mipmap-mdpi'],
             ]
-            final def resRoot = file('java/res')
-            if (resRoot.isDirectory()) {
+            if (strippedRes.isDirectory()) {
                 long droppedBitmapBytes = 0
                 densityBuckets.each { buckets ->
                     final Map<String, File> preferred = [:]
                     buckets.each { bucket ->
-                        final def bucketDir = new File(resRoot, bucket)
+                        final def bucketDir = new File(strippedRes, bucket)
                         if (!bucketDir.isDirectory()) { return }
                         bucketDir.listFiles()?.each { entry ->
                             if (!entry.isFile()) { return }
@@ -522,11 +578,11 @@ android {
             // megabyte of a six megabyte package. Ship it gzipped in the assets
             // instead: Dictionaries.kt unpacks it into the app's files directory
             // on first use (background thread) and hands the engine that path.
-            final def bundledDict = file('java/res-large/raw/main_en.dict')
+            final def bundledDict = new File(strippedLarge, 'raw/main_en.dict')
             if (bundledDict.isFile()) {
                 // .gz assets are unpacked by aapt2 and lose their suffix, so the
                 // archive keeps a name packaging leaves alone.
-                final def dictArchive = file('java/assets/dict/main_en.dict.gzip')
+                final def dictArchive = new File(strippedAssets, 'dict/main_en.dict.gzip')
                 dictArchive.parentFile.mkdirs()
                 new java.util.zip.GZIPOutputStream(new java.io.FileOutputStream(dictArchive)).withStream { sink ->
                     bundledDict.withInputStream { source -> source.transferTo(sink) }
@@ -541,7 +597,7 @@ android {
             // resource nor a class refers to emoji_desc_*. The resource shrinker
             // cannot prove that, because the accessibility code calls
             // Resources.getIdentifier(), which makes it keep everything.
-            final def emojiDescriptions = file('java/res-large/values/strings-emoji-descriptions.xml')
+            final def emojiDescriptions = new File(strippedLarge, 'values/strings-emoji-descriptions.xml')
             if (emojiDescriptions.isFile()) {
                 final long removedBytes = emojiDescriptions.length()
                 emojiDescriptions.delete()
@@ -552,7 +608,7 @@ android {
             // language, but an English build only ever reaches "default" and
             // "default-sw600dp"; a missing candidate is caught as IOException and
             // the default table is always the last fallback.
-            file('java/assets/spacing-and-punctuations').listFiles()?.each { entry ->
+            new File(strippedAssets, 'spacing-and-punctuations').listFiles()?.each { entry ->
                 if (entry.isFile() && !entry.name.startsWith('default')) { entry.delete() }
             }
 
@@ -560,7 +616,7 @@ android {
             // supports (~5 MB gzipped). Keep the English section only: the file
             // is a sequence of "#<language>" marker lines, each followed by one
             // line of JSON.
-            final def emojiI18n = file('java/res-large/raw/emoji_i18n.jsondlgz')
+            final def emojiI18n = new File(strippedLarge, 'raw/emoji_i18n.jsondlgz')
             if (emojiI18n.isFile()) {
                 final def lines = new java.util.zip.GZIPInputStream(
                         new java.io.FileInputStream(emojiI18n)).getText('UTF-8').readLines()
@@ -590,7 +646,14 @@ android {
             }
         }
     }
-    tasks.named('preBuild').configure { dependsOn 'stripUnusedResources' }
+
+    // Everything that reads resources, assets or the manifest has to wait for
+    // the copies above: mergeResources, mergeAssets and their per-flavour
+    // variants. `preBuild` is kept as well so a task that only declares a
+    // dependency on it still sees the stripped tree.
+    tasks.matching {
+        it.name.startsWith('merge') || it.name == 'preBuild'
+    }.configureEach { dependsOn 'stripUnusedResources' }
 
     kotlinOptions {
         jvmTarget = '1.8'
