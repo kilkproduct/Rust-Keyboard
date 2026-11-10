@@ -18,9 +18,9 @@ use crate::triemap;
 use crate::user::UserDict;
 use crate::{MAX_PREV_WORD_COUNT_FOR_N_GRAM, MAX_WORD_LENGTH, NOT_A_PROBABILITY};
 
-/// Upper bound on the children of one node. A real node array holds at most a
-/// few hundred entries (one per distinct code point that continues the word).
-const MAX_CHILDREN_PER_NODE: usize = 4096;
+/// Upper bound on the children of one node: one entry per distinct code point
+/// that can continue the word. Even a CJK dictionary stays well under this.
+const MAX_CHILDREN_PER_NODE: usize = 512;
 
 /// Number of size-prefixed buffers inside a version 4 body file:
 /// trie, terminal table, language model map, language model counters,
