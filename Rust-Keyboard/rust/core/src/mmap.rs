@@ -345,15 +345,24 @@ mod tests {
     }
 
     #[test]
-    fn mapping_past_the_end_falls_back_to_a_copy() {
+    fn window_past_the_end_is_clamped() {
         let path = std::env::temp_dir().join(format!("kb-mmap-short-{}", std::process::id()));
         let path = path.to_string_lossy().to_string();
         std::fs::write(&path, [1u8, 2, 3, 4]).expect("write");
-        // The window is clamped to the end of the file; nothing reads past it.
+
         let source = DataSource::open(&path, 2, 0).expect("opens");
         assert_eq!(source.as_slice(), &[3, 4]);
-        assert!(DataSource::open(&path, 4, 0).is_none());
+
+        // A size that runs past the end is clamped to the end, not rejected.
+        let source = DataSource::open(&path, 2, 4096).expect("opens");
+        assert_eq!(source.as_slice(), &[3, 4]);
+
+        // Opening at the very end yields an empty window; past it, nothing.
+        let source = DataSource::open(&path, 4, 0).expect("opens");
+        assert!(source.as_slice().is_empty());
+        assert!(DataSource::open(&path, 5, 0).is_none());
         assert!(DataSource::open(&path, 99, 0).is_none());
+
         let _ = std::fs::remove_file(&path);
     }
 
