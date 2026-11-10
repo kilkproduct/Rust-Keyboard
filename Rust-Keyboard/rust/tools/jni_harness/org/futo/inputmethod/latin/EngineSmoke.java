@@ -453,13 +453,11 @@ public final class EngineSmoke {
             check(prediction.contains("the"),
                     "the most frequent word is missing after \"the\": " + head(prediction, 12));
 
-            // 5d. Predictions are built by walking the whole trie, so the prefix
-            //     of every candidate has to be carried along explicitly. When it
-            //     was read out of one shared buffer instead, every prediction
-            //     came back as "the last first letter the walk visited" followed
-            //     by the tail of a real word ("éypt", "émail", "é-shirts"): none
-            //     of those is a word of the dictionary, so checking membership
-            //     catches the whole class of bug.
+            // 5d. Every prediction has to be a word of this dictionary. The
+            //     cache is filled by a walk of the whole trie, and a prefix read
+            //     from the wrong buffer turns into "the last letter the walk
+            //     visited" followed by the tail of a real word ("éypt", "émail",
+            //     "é-shirts"); membership catches that whole class of bug.
             int notInDictionary = 0;
             for (String word : prediction) {
                 if (!dictionaryWords.contains(word)) {
