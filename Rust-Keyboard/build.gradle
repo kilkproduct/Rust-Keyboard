@@ -385,7 +385,11 @@ android {
     }
 
     aaptOptions {
-        noCompress 'dict'
+        // Assets that are already compressed. `noCompress` matches extensions,
+        // so the old `'dict'` never applied to anything: the dictionary ships as
+        // `assets/dict/main_en.dict.gzip`, and aapt deflated the archive a second
+        // time, which cost 185 bytes and the CPU to do it.
+        noCompress 'gzip'
     }
 
     packagingOptions {
@@ -658,11 +662,17 @@ android {
                     }
                 }
                 if (!kept.isEmpty()) {
-                    final def sink = new java.util.zip.GZIPOutputStream(
-                            new java.io.FileOutputStream(emojiI18n), 9)
-                    sink.write((kept.join('\n') + '\n').getBytes('UTF-8'))
-                    sink.close()
-                    logger.lifecycle("emoji_i18n trimmed to ${kept.size() / 2} language(s)")
+                    // Written as plain JSON on purpose: aapt deflates raw
+                    // resources, so shipping this gzipped meant the package held
+                    // a compressed copy of JSON, and a compressed copy of *that*
+                    // (52 KB where deflating the text gives ~13 KB). The
+                    // resource keeps the name `emoji_i18n`, so R.raw is
+                    // unchanged and the reader just drops its GZIPInputStream.
+                    final def plain = new File(emojiI18n.parentFile, 'emoji_i18n.json')
+                    plain.write(kept.join('\n') + '\n', 'UTF-8')
+                    emojiI18n.delete()
+                    logger.lifecycle("emoji_i18n trimmed to ${kept.size() / 2} language(s), " +
+                            "${plain.length() / 1024} KB of JSON left for aapt to deflate")
                 }
             }
         }

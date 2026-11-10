@@ -125,7 +125,6 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 import java.util.Locale
-import java.util.zip.GZIPInputStream
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -983,7 +982,9 @@ class PersistentEmojiState : PersistentActionState {
             }
 
             GlobalScope.launch(Dispatchers.IO) {
-                val inputStream = GZIPInputStream(context.resources.openRawResource(R.raw.emoji_i18n))
+                // Plain JSON in the package: aapt already deflates raw
+                // resources, so gzipping it here saved nothing and cost a decode.
+                val inputStream = context.resources.openRawResource(R.raw.emoji_i18n)
 
                 var data: JsonObject? = null
                 BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8)).use { reader ->
