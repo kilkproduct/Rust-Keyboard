@@ -1,2 +1,2 @@
-run 42758584834 at f3f8c4a846a58111f4a5653a9b94efa787472d8f
-no apks
+run 42767177318 at 0070bca15268f79df8bd206c0a4257bf128a464c
+-rw-r--r-- 1 runner runner 13353196 Nov 10 06:24 Rust-Keyboard/dist/keyboard-stable-release.apk
