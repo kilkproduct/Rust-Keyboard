@@ -441,10 +441,18 @@ impl Dictionary {
             return;
         }
         let data = self.language_model_data();
+        eprintln!(
+            "DIAG buffers: trie={} terminal_table={} language_model={}",
+            self.trie.len, self.terminal_table.len, self.language_model.len
+        );
         let mut best: [(i32, i32); TOP_UNIGRAM_COUNT] =
             [(NOT_A_TERMINAL_ID, 0); TOP_UNIGRAM_COUNT];
         let mut count = 0usize;
-        triemap::for_each_entry(data, 0, 400_000, &mut |key, value| {
+        let mut links = 0usize;
+        let visited = triemap::for_each_entry(data, 0, 400_000, &mut |key, value| {
+            if value > 0xFF_FFFF {
+                links += 1;
+            }
             let (flags, probability) = triemap::decode_probability_entry(value);
             if flags & (FLAG_NOT_A_VALID_ENTRY | FLAG_NOT_A_WORD | FLAG_BLACKLISTED) != 0 {
                 return true;
@@ -475,6 +483,10 @@ impl Dictionary {
         });
         self.top_unigrams = best;
         self.top_unigram_count = count;
+        eprintln!(
+            "DIAG unigram map: {} cached of {} visited, {} terminal-link values",
+            count, visited, links
+        );
     }
 
     /// The cached most probable words, best first, as `(terminal id,
@@ -504,6 +516,13 @@ impl Dictionary {
         let mut bitmap_entry = 0i32;
         for id in context.iter().take(MAX_PREV_WORD_COUNT_FOR_N_GRAM) {
             let next = triemap::next_level_bitmap_entry_index(data, *id, bitmap_entry);
+            eprintln!(
+                "DIAG ngram descent: id={} address={:?} from={} next={}",
+                id,
+                self.terminal_address(*id),
+                bitmap_entry,
+                next
+            );
             if next == triemap::INVALID_INDEX {
                 // No n-gram data for this context; the caller falls back.
                 out.clear();
