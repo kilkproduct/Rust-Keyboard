@@ -22,7 +22,6 @@ import org.futo.inputmethod.latin.uix.SettingsExporter.ExportingMenu
 import org.futo.inputmethod.latin.uix.actions.AllActions
 import org.futo.inputmethod.latin.uix.settings.pages.ActionEditorScreen
 import org.futo.inputmethod.latin.uix.settings.pages.ActionsScreen
-import org.futo.inputmethod.latin.uix.settings.pages.AdvancedParametersScreen
 import org.futo.inputmethod.latin.uix.settings.pages.AlreadyPaidDialog
 import org.futo.inputmethod.latin.uix.settings.pages.BlacklistScreen
 import org.futo.inputmethod.latin.uix.settings.pages.BlacklistScreenLite
@@ -58,7 +57,6 @@ import org.futo.inputmethod.latin.uix.settings.pages.SelectLanguageScreen
 import org.futo.inputmethod.latin.uix.settings.pages.SelectLayoutsScreen
 import org.futo.inputmethod.latin.uix.settings.pages.SwipeMenu
 import org.futo.inputmethod.latin.uix.settings.pages.TypingSettingsMenu
-import org.futo.inputmethod.latin.uix.settings.pages.addModelManagerNavigation
 import org.futo.inputmethod.latin.uix.settings.pages.buggyeditors.BuggyTextEditVariations
 import org.futo.inputmethod.latin.uix.settings.pages.pdict.PersonalDictionaryLanguageList
 import org.futo.inputmethod.latin.uix.settings.pages.pdict.PersonalDictionaryLanguageListForLocale
@@ -159,7 +157,6 @@ fun SettingsNavigator(
             composable("pdict") {
                 PersonalDictionaryLanguageList()
             }
-            composable("advancedparams") { AdvancedParametersScreen(navController) }
             composable("actionEdit") { ActionEditorScreen(navController) }
             SettingsMenus.forEach { menu ->
                 if(menu.registerNavPath) composable(menu.navPath) { UserSettingsMenuScreen(menu) }
@@ -190,7 +187,6 @@ fun SettingsNavigator(
             dialog("customThemeDialog") {
                 CustomThemeDialog(navController = navController)
             }
-            addModelManagerNavigation(navController)
         }
     }
 }

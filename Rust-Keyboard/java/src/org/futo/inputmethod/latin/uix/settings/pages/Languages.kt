@@ -74,7 +74,6 @@ import org.futo.inputmethod.latin.uix.theme.presets.DynamicDarkTheme
 import org.futo.inputmethod.latin.uix.urlEncode
 import org.futo.inputmethod.latin.utils.Dictionaries
 import org.futo.inputmethod.latin.utils.SubtypeLocaleUtils
-import org.futo.inputmethod.latin.xlm.ModelPaths
 import org.futo.inputmethod.updates.openURI
 import java.util.Locale
 
@@ -677,12 +676,9 @@ fun LanguagesScreen(navController: NavHostController = rememberNavController()) 
                 null
             }
 
-            val transformerName =
-                runBlocking { ModelPaths.getModelOptions(context) }.get(locale.language)?.let {
-                    it.loadDetails()?.let {
-                        it.name + if (it.isUnsupported()) (" " + resources.getString(R.string.language_settings_resource_unsupported_indicator)) else ""
-                    }
-                }
+            // No language model ships with this build (and no code can inspect
+            // a model file any more), so there is never a transformer to show.
+            val transformerName: String? = null
 
             val options = LanguageOptions(
                 voiceInputModel = voiceInputModelName,
@@ -720,11 +716,9 @@ fun LanguagesScreen(navController: NavHostController = rememberNavController()) 
                     }
                 },
                 onConfigurableSelected = { kind ->
-                    if (kind == FileKind.Transformer && transformerName != null) {
-                        navController.navigate("models")
-                    } else {
-                        deleteDialogInfo.value = DeleteInfo(locale, kind)
-                    }
+                    // There is no model manager any more: an imported resource
+                    // can only be deleted.
+                    deleteDialogInfo.value = DeleteInfo(locale, kind)
                 },
                 onLayoutAdditionRequested = {
                     navController.navigate(Route.AddLayout(locale.toLanguageTag()))

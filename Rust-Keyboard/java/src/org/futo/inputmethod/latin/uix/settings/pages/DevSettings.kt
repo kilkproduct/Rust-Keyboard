@@ -76,7 +76,6 @@ import org.futo.inputmethod.latin.uix.theme.TonalPalette
 import org.futo.inputmethod.latin.uix.theme.dynamicTonalPalette
 import org.futo.inputmethod.latin.uix.theme.serialization.AlphaOrder
 import org.futo.inputmethod.latin.uix.theme.serialization.argbLongToHexColorString
-import org.futo.inputmethod.latin.xlm.AllowTransformerOnNonQWERTYLayouts
 import org.futo.inputmethod.updates.DISABLE_UPDATE_REMINDER
 import org.futo.inputmethod.updates.dismissedMigrateUpdateNotice
 import kotlin.system.exitProcess
@@ -266,12 +265,6 @@ fun DeveloperScreen(navController: NavHostController = rememberNavController()) 
             style = NavigationItemStyle.Misc,
             navigate = { navController.navigate("dynamicpalette") }
         )
-
-        SettingToggleDataStore(
-            title = "Allow transformer models on non QWERTY layouts",
-            setting = AllowTransformerOnNonQWERTYLayouts
-        )
-
 
         ScreenTitle("Text input debug")
         SettingToggleDataStore(

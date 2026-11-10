@@ -26,23 +26,24 @@ Please do not submit AI-generated pull requests, as these tend to make the codeb
 
 ## Rust core
 
-The dictionary and suggestion engine is being ported from C++ to Rust to cut
-memory use; see [`rust/README.md`](rust/README.md) for the architecture, the
-porting status and the build steps. `./gradlew assembleDebug` builds it
-automatically when a Rust toolchain is installed and falls back to the C++
-engine otherwise.
+The dictionary and suggestion engine is Rust, to cut memory use; see
+[`rust/README.md`](rust/README.md) for the architecture and the build steps. It
+is the only engine: `./gradlew assembleDebug` builds it (it needs cargo and the
+NDK, and fails without them), and release packaging refuses to produce an APK
+without it.
 
 The keyboard does not talk to the network. What was removed, and how to verify
 it, is documented in [`PRIVACY.md`](PRIVACY.md).
 
 ## English only
 
-This fork ships the Latin engine only. The Japanese (mozc) and Chinese (Rime)
-engines, their AARs and dictionaries, the other compiled dictionaries and the
-`translations` submodule are gone, which took the package from 128 MB to 101 MB.
-`tools/strip-non-english-resources.sh` does the same trim on the resource
-submodules at build time, because those submodules are shared. The translation
-instructions above therefore do not apply to this fork.
+This fork ships the Latin engine only: `arm64-v8a`, English resources, no
+voice input. The Japanese (mozc) and Chinese (Rime) engines, their AARs and
+dictionaries, the transformer language model, the voice-input module and the
+`translations` submodule are not in this tree. The package is about 5.5 MB; the
+`stripUnusedResources` step trims the shared resource submodules into `build/`
+at build time. The translation instructions above therefore do not apply to
+this fork.
 
 ## Layouts
 

@@ -12,7 +12,6 @@ import org.futo.inputmethod.latin.R
 import org.futo.inputmethod.latin.uix.SettingsKey
 import org.futo.inputmethod.latin.uix.getSetting
 import org.futo.inputmethod.latin.uix.setSetting
-import org.futo.inputmethod.latin.utils.JniUtils
 import java.io.File
 import java.io.FileOutputStream
 
@@ -54,18 +53,14 @@ class ModelInfoLoader(
     val path: File,
     val name: String,
 ) {
-    fun loadDetails(): ModelInfo? {
-        JniUtils.loadNativeLibrary()
-        return try {
-            loadNative(path.absolutePath)
-        } catch (missing: UnsatisfiedLinkError) {
-            // Model inspection lived in the C++ library, which is no longer
-            // built: this build has no language model at all.
-            null
-        }
-    }
-
-    external fun loadNative(path: String): ModelInfo?
+    /**
+     * Reading a `.gguf` header lived in the C++ library, which is no longer
+     * built (and this fork ships no model). Returning null unconditionally is
+     * what the caller saw before *and* it keeps an `external fun` that no
+     * library implements out of the picture: a missing native there was an
+     * `UnsatisfiedLinkError` on every language row.
+     */
+    fun loadDetails(): ModelInfo? = null
 }
 
 object ModelPaths {

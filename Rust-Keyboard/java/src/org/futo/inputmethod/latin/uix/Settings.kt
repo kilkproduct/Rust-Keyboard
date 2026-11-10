@@ -379,11 +379,6 @@ val SYSTEM_VOICE_INPUT_PACKAGE = SettingsKey(
     default = ""
 )
 
-val USE_TRANSFORMER_FINETUNING = SettingsKey(
-    key = booleanPreferencesKey("useTransformerFinetuning2"),
-    default = false
-)
-
 val SUGGESTION_BLACKLIST = SettingsKey(
     key = stringSetPreferencesKey("suggestionBlacklist"),
     default = setOf()
